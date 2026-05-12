@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#C0392B">
+<title>Vigilancia - Rentadores de Equipos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/@azure/msal-browser@3.14.0/lib/msal-browser.min.js"></script>
+<style>
+:root{
+  --r:#C0392B;--ro:#962d22;--rc:#f8e8e6;
+  --v:#3B6D11;--vc:#EAF3DE;
+  --am:#BA7517;--amc:#FAEEDA;
+  --az:#185FA5;--azc:#E6F1FB;
+  --go:#2C2C2A;--gm:#5F5E5A;--gc:#F1EFE8;
+  --bl:#ffffff;--bd:#D3D1C7;
+  --sh:0 2px 12px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gc);color:var(--go);min-height:100vh;font-size:15px;}
+
+/* HEADER */
+.hdr{background:var(--r);color:white;padding:10px 14px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.hdr-logo{background:rgba(255,255,255,0.18);border-radius:6px;padding:4px 8px;font-weight:900;font-size:12px;letter-spacing:-0.5px;line-height:1.2;flex-shrink:0;}
+.hdr-logo small{display:block;font-size:8px;font-weight:500;letter-spacing:1px;}
+.hdr-t{flex:1;font-size:12px;opacity:.9;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hdr-acts{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.btn-hdr{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:white;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;white-space:nowrap;}
+.btn-hdr:hover{background:rgba(255,255,255,0.28);}
+.sp-dot{width:8px;height:8px;border-radius:50%;background:#aaa;flex-shrink:0;}
+.sp-dot.ok{background:#5dca93;}
+.sp-dot.no{background:#f5986a;}
+
+/* SCREENS */
+.scr{display:none;padding:14px;max-width:680px;margin:0 auto;}
+.scr.on{display:block;}
+
+/* LOGIN */
+.login-wrap{min-height:calc(100vh - 52px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.login-logo{background:var(--r);color:white;border-radius:14px;padding:20px 32px;text-align:center;margin-bottom:22px;box-shadow:0 4px 20px rgba(192,57,43,0.35);}
+.login-logo-txt{font-size:26px;font-weight:900;letter-spacing:-1px;}
+.login-logo-sub{font-size:10px;letter-spacing:2px;opacity:.85;margin-top:2px;}
+.login-card{background:var(--bl);border-radius:14px;padding:26px 22px;width:100%;max-width:360px;box-shadow:var(--sh);text-align:center;}
+.login-title{font-size:18px;font-weight:700;margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--gm);margin-bottom:22px;line-height:1.5;}
+.btn-ms{background:#0078d4;color:white;border:none;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .2s;}
+.btn-ms:hover{background:#006bbf;}
+.btn-ms:disabled{background:#aaa;cursor:not-allowed;}
+.ms-ico{width:18px;height:18px;flex-shrink:0;}
+.login-note{font-size:11px;color:var(--gm);margin-top:14px;line-height:1.5;}
+
+/* CARDS */
+.card{background:var(--bl);border-radius:10px;padding:16px;box-shadow:var(--sh);margin-bottom:12px;}
+.card-t{font-size:14px;font-weight:700;margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--bd);}
+
+/* SELECTORES */
+.sel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sel-btn{border:2px solid var(--bd);background:var(--bl);border-radius:10px;padding:11px 8px;text-align:center;cursor:pointer;transition:all .2s;font-size:13px;font-weight:600;color:var(--go);}
+.sel-btn:hover{border-color:var(--r);background:var(--rc);}
+.sel-btn.on{border-color:var(--r);background:var(--rc);color:var(--r);}
+.sel-ico{font-size:22px;display:block;margin-bottom:4px;}
+
+/* BOTONES */
+.btn{width:100%;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn:disabled{background:var(--bd)!important;color:var(--gm)!important;cursor:not-allowed!important;}
+.btn-r{background:var(--r);color:white;}
+.btn-r:hover:not(:disabled){background:var(--ro);}
+.btn-s{background:var(--bl);color:var(--r);border:2px solid var(--r);}
+.btn-s:hover:not(:disabled){background:var(--rc);}
+.btn-a{background:var(--am);color:white;}
+.btn-a:hover:not(:disabled){background:#8c5c10;}
+.btn-p{background:#A32D2D;color:white;border:none;}
+.btn-sm{width:auto;padding:5px 11px;font-size:12px;border-radius:6px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* TURNO ACTIVO BADGE */
+.turno-activo{background:var(--vc);border:1.5px solid #C0DD97;border-radius:10px;padding:11px 13px;margin-bottom:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;align-items:center;}
+.turno-activo.alerta{background:var(--rc);border-color:#f0997b;}
+.inf-d{font-size:10px;color:var(--gm);text-transform:uppercase;letter-spacing:.3px;}
+.inf-v{font-weight:700;font-size:13px;}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:700;}
+.b-dia{background:var(--amc);color:var(--am);}
+.b-noche{background:var(--azc);color:var(--az);}
+.b-normal{background:var(--vc);color:var(--v);}
+.b-alerta{background:var(--rc);color:var(--r);border:1px solid #f0997b;}
+.b-recorrido{background:#E6F1FB;color:#185FA5;}
+.b-vehiculo{background:#FAEEDA;color:#BA7517;}
+.b-asistencia{background:#EAF3DE;color:#3B6D11;}
+
+/* MÓDULOS GRID */
+.mod-grid{display:grid;gap:10px;}
+.mod-btn{background:var(--bl);border:2px solid var(--bd);border-radius:12px;padding:14px;text-align:left;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;width:100%;}
+.mod-btn:hover:not(:disabled){border-color:var(--r);background:var(--rc);}
+.mod-btn:disabled{opacity:.45;cursor:not-allowed;}
+.mod-ico{font-size:28px;flex-shrink:0;}
+.mod-nom{font-size:14px;font-weight:700;}
+.mod-desc{font-size:12px;color:var(--gm);margin-top:2px;}
+.mod-badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;margin-top:3px;display:inline-block;}
+.mb-ok{background:var(--amc);color:var(--am);}
+.mb-prox{background:var(--gc);color:var(--gm);}
+
+/* EVENTOS LISTA */
+.ev{border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:9px;}
+.ev-h{padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;}
+.ev-h.hn{background:var(--vc);border-left:4px solid var(--v);}
+.ev-h.ha{background:var(--rc);border-left:4px solid var(--r);}
+.ev-hora{font-size:16px;font-weight:800;}
+.ev-hora.hn{color:var(--v);}
+.ev-hora.ha{color:var(--r);}
+.ev-body{padding:9px 11px;}
+.ev-obs{font-size:13px;color:var(--gm);line-height:1.5;}
+.ev-fotos{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.thumb{width:50px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--bd);}
+.ev-acts{display:flex;gap:5px;align-items:center;}
+
+/* FOTOS */
+.fp{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.fw{position:relative;width:68px;height:68px;}
+.fw img{width:68px;height:68px;object-fit:cover;border-radius:7px;border:1px solid var(--bd);}
+.fdel{position:absolute;top:-5px;right:-5px;background:var(--r);color:white;border:none;border-radius:50%;width:17px;height:17px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.upa{border:2px dashed var(--bd);border-radius:9px;padding:14px;text-align:center;cursor:pointer;color:var(--gm);font-size:13px;transition:all .2s;margin-top:5px;display:block;}
+.upa:hover{border-color:var(--r);color:var(--r);background:var(--rc);}
+.upa-ico{font-size:26px;display:block;margin-bottom:3px;}
+input[type=file]{display:none;}
+
+/* TOGGLE */
+.tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
+.tog-info{display:flex;align-items:center;gap:7px;}
+.tog-txt{font-size:12px;font-weight:700;color:var(--v);transition:color .3s;}
+.tog-txt.on{color:var(--r);}
+.tog-sw{position:relative;width:46px;height:23px;flex-shrink:0;}
+.tog-sw input{display:none;}
+.tog-sl{position:absolute;inset:0;background:#C0DD97;border-radius:23px;transition:background .3s;cursor:pointer;}
+.tog-sl::before{content:'';position:absolute;width:17px;height:17px;left:3px;top:3px;background:white;border-radius:50%;transition:transform .3s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.tog-sw input:checked+.tog-sl{background:var(--r);}
+.tog-sw input:checked+.tog-sl::before{transform:translateX(23px);}
+
+/* CAMPOS */
+.fld{margin-bottom:11px;}
+.fld label{display:block;font-size:11px;font-weight:700;color:var(--gm);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px;}
+.fld input,.fld select,.fld textarea{width:100%;padding:9px 11px;border:1.5px solid var(--bd);border-radius:8px;font-size:14px;color:var(--go);background:var(--bl);font-family:inherit;transition:border-color .2s;}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--r);}
+.fld textarea{resize:vertical;min-height:78px;}
+
+/* MODAL */
+.mov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:flex-end;justify-content:center;}
+.mov.on{display:flex;}
+.modal{background:var(--bl);border-radius:16px 16px 0 0;padding:18px 15px;width:100%;max-width:680px;max-height:92vh;overflow-y:auto;}
+.modal-t{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.bx{background:var(--gc);border:none;border-radius:50%;width:26px;height:26px;font-size:13px;cursor:pointer;color:var(--go);display:flex;align-items:center;justify-content:center;}
+
+/* PREVIEW */
+.pev{border:1px solid var(--bd);border-radius:8px;margin-bottom:9px;overflow:hidden;}
+.pev-h{display:flex;align-items:center;gap:9px;padding:9px 11px;flex-wrap:wrap;}
+.pev-h.pn{background:var(--vc);}
+.pev-h.pa{background:var(--rc);}
+.pev-hora{font-size:14px;font-weight:800;}
+.pev-obs{font-size:13px;line-height:1.5;padding:7px 11px;}
+.pev-fotos{display:flex;gap:5px;flex-wrap:wrap;padding:0 11px 9px;}
+.pthumb{width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid var(--bd);}
+
+/* ADMIN */
+.adm-s{margin-bottom:16px;}
+.adm-s h3{font-size:11px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.le{list-style:none;}
+.le li{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd);font-size:13px;}
+.ar{display:flex;gap:7px;margin-top:7px;}
+.ar input{flex:1;padding:7px 9px;border:1.5px solid var(--bd);border-radius:7px;font-size:13px;}
+
+/* MISC */
+.vacio{text-align:center;padding:28px 14px;color:var(--gm);}
+.vic{font-size:40px;display:block;margin-bottom:9px;}
+.sep{height:1px;background:var(--bd);margin:12px 0;}
+.alerta-box{padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:12px;}
+.alerta-info{background:var(--azc);color:var(--az);border:1px solid #B5D4F4;}
+.alerta-warn{background:var(--amc);color:var(--am);border:1px solid #FAC775;}
+
+/* SPIN */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:5px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-logo">RE<small>NTADORES</small></div>
+  <div class="hdr-t" id="hdr-t">Sistema de Vigilancia</div>
+  <div class="hdr-acts">
+    <span class="sp-dot no" id="sp-dot"></span>
+    <button class="btn-hdr" onclick="abrirAdmin()">⚙ Admin</button>
+  </div>
+</header>
+
+<!-- ============================================================
+     PANTALLA 1: LOGIN
+     ============================================================ -->
+<div class="scr on" id="s-login">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="login-logo-txt">RENTADORES</div>
+      <div class="login-logo-sub">DE EQUIPOS</div>
+    </div>
+    <div class="login-card">
+      <div class="login-title">Sistema de Vigilancia</div>
+      <div class="login-sub">Inicia sesión con tu cuenta Microsoft corporativa para continuar</div>
+      <button class="btn-ms" id="btn-ms-login" onclick="loginMS()">
+        <svg class="ms-ico" viewBox="0 0 21 21" fill="none">
+          <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+          <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+          <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+          <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+        </svg>
+        Iniciar sesión con Microsoft
+      </button>
+      <div id="login-err" style="color:var(--r);font-size:12px;margin-top:12px;display:none;">
+        ❌ Error al iniciar sesión. Intenta nuevamente.
+      </div>
+      <div class="login-note">Solo usuarios de la organización pueden acceder.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PANTALLA 2: CONFIGURAR TURNO (Sede / Operario / Turno)
+     ============================================================ -->
+<div class="scr" id="s-turno">
+  <div style="text-align:center;padding:12px 0 6px;">
+    <div style="font-size:17px;font-weight:700;">Configurar Turno</div>
+    <div style="font-size:12px;color:var(--gm);margin-top:3px;">Selecciona sede, operario y turno de trabajo</div>
+  </div>
+
+  <!-- Aviso turno en progreso -->
+  <div id="turno-en-progreso" style="display:none;" class="alerta-box alerta-warn">
+    <div style="font-weight:700;margin-bottom:6px;">⚠ Turno en progreso</div>
+    <div id="turno-progreso-info" style="font-size:13px;margin-bottom:10px;"></div>
+    <div class="g2">
+      <button class="btn btn-a" onclick="continuarTurno()">Continuar turno</button>
+      <button class="btn btn-s" onclick="cerrarTurnoForzado()">Cerrar turno</button>
+    </div>
+  </div>
+
+  <div id="form-turno">
+    <div class="card"><div class="card-t">🏢 Sede</div><div class="sel-grid" id="sel-sede"></div></div>
+    <div class="card"><div class="card-t">👤 Operario</div><div class="sel-grid" id="sel-op"></div></div>
+    <div class="card">
+      <div class="card-t">🕐 Turno</div>
+      <div class="sel-grid">
+        <button class="sel-btn" id="btn-dia" onclick="selVal('turno','DIA',this)"><span class="sel-ico">☀️</span>DÍA</button>
+        <button class="sel-btn" id="btn-noche" onclick="selVal('turno','NOCHE',this)"><span class="sel-ico">🌙</span>NOCHE</button>
+      </div>
+    </div>
+    <button class="btn btn-r" id="btn-abrir-turno" disabled onclick="abrirTurno()">Abrir Turno →</button>
+  </div>
+
+  <!-- Panel diagnóstico oculto -->
+  <div id="diag-panel" style="display:none;background:#1e1e2e;color:#a6e3a1;border-radius:8px;padding:12px;font-size:11px;font-family:monospace;margin-top:10px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;"></div>
+</div>
+
+<!-- ============================================================
+     PANTALLA 3: MÓDULOS (dentro del turno)
+     ============================================================ -->
+<div class="scr" id="s-mod">
+  <!-- Info del turno activo -->
+  <div class="turno-activo" id="mod-turno-bar"></div>
+
+  <div style="font-size:13px;color:var(--gm);text-align:center;margin-bottom:10px;">
+    ¿Qué evento deseas registrar?
+  </div>
+
+  <div class="mod-grid">
+    <button class="mod-btn" onclick="irRegistro('recorrido')">
+      <div class="mod-ico">🚶</div>
+      <div>
+        <div class="mod-nom">Recorrido de Instalaciones</div>
+        <div class="mod-desc">Ronda de seguridad perimetral con fotos</div>
+        <span class="mod-badge mb-ok">Disponible</span>
+      </div>
+    </button>
+    <button class="mod-btn" disabled>
+      <div class="mod-ico">🚗</div>
+      <div>
+        <div class="mod-nom">Control Vehicular</div>
+        <div class="mod-desc">Ingreso y salida de vehículos</div>
+        <span class="mod-badge mb-prox">Próximamente</span>
+      </div>
+    </button>
+    <button class="mod-btn" disabled>
+      <div class="mod-ico">📋</div>
+      <div>
+        <div class="mod-nom">Toma de Asistencia</div>
+        <div class="mod-desc">Registro de personal por turno</div>
+        <span class="mod-badge mb-prox">Próximamente</span>
+      </div>
+    </button>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- Resumen eventos del turno -->
+  <div class="card">
+    <div class="card-t" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>📋 Eventos del turno</span>
+      <span id="contador-eventos" style="font-size:13px;color:var(--gm);font-weight:400;"></span>
+    </div>
+    <div id="lista-eventos-resumen"></div>
+    <div class="sep"></div>
+    <button class="btn btn-a" onclick="pedirCerrarTurno()">🔒 Cerrar Turno y Generar Informe</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     PANTALLA 4: REGISTRO RECORRIDO
+     ============================================================ -->
+<div class="scr" id="s-recorrido">
+  <div style="text-align:center;padding:10px 0 5px;">
+    <div style="font-size:16px;font-weight:700;">🚶 Recorrido de Instalaciones</div>
+    <div style="font-size:12px;color:var(--gm);margin-top:2px;">Registra la ronda y adjunta fotos</div>
+  </div>
+
+  <div class="card">
+    <div class="fld"><label>Hora del evento</label><input type="time" id="r-hora"></div>
+    <div class="fld">
+      <div class="tog-row">
+        <label style="margin-bottom:0;">Observación</label>
+        <div class="tog-info">
+          <span class="tog-txt" id="tog-txt-r">NORMAL</span>
+          <label class="tog-sw"><input type="checkbox" id="tog-r" onchange="setTog('r')"><span class="tog-sl"></span></label>
+        </div>
+      </div>
+      <textarea id="r-obs" placeholder="Describa lo observado durante la ronda..."></textarea>
+    </div>
+    <div class="fld">
+      <label>Fotos</label>
+      <input type="file" id="inp-r" multiple accept="image/*" onchange="procesarFotos(this,'r')">
+      <label for="inp-r" class="upa"><span class="upa-ico">📷</span>Tomar foto o elegir desde galería</label>
+      <div class="fp" id="fp-r"></div>
+    </div>
+    <button class="btn btn-r" id="btn-guardar-r" onclick="guardarEvento('recorrido')">✅ Guardar Evento</button>
+  </div>
+  <button class="btn btn-s" onclick="irA('s-mod')">← Volver a módulos</button>
+</div>
+
+<!-- ============================================================
+     PANTALLA 5: PREVISUALIZACIÓN
+     ============================================================ -->
+<div class="scr" id="s-prev">
+  <div class="alerta-box alerta-info">📄 Revisa el informe completo antes de generar el PDF.</div>
+  <div id="prev-cont"></div>
+  <div class="g2" style="margin-top:8px;">
+    <button class="btn btn-r" id="btn-pdf" onclick="generarPDF()">📥 Generar PDF y Enviar</button>
+    <button class="btn btn-s" onclick="irA('s-mod')">← Volver</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     PANTALLA 6: ADMIN
+     ============================================================ -->
+<div class="scr" id="s-adm">
+  <div class="card">
+    <div class="card-t">⚙️ Administración</div>
+    <div class="adm-s">
+      <h3>📧 Correos de notificación</h3>
+      <ul class="le" id="adm-correos"></ul>
+      <div class="ar">
+        <input type="email" id="adm-cemail" placeholder="correo@empresa.com">
+        <button class="btn btn-r btn-sm" onclick="adm_addCorreo()">Agregar</button>
+      </div>
+      <div style="font-size:11px;color:var(--gm);margin-top:4px;">El PDF se envía a todos los correos.</div>
+    </div>
+    <div class="adm-s">
+      <h3>👥 Operarios</h3>
+      <ul class="le" id="adm-ops"></ul>
+      <div class="ar">
+        <input type="text" id="adm-opnew" placeholder="Nombre completo">
+        <button class="btn btn-r btn-sm" onclick="adm_addOp()">Agregar</button>
+      </div>
+    </div>
+    <div class="adm-s">
+      <h3>🏢 Sedes</h3>
+      <ul class="le" id="adm-sedes"></ul>
+      <div class="ar">
+        <input type="text" id="adm-sednew" placeholder="Nombre de sede">
+        <button class="btn btn-r btn-sm" onclick="adm_addSede()">Agregar</button>
+      </div>
+    </div>
+    <div class="adm-s">
+      <h3>📄 Informe</h3>
+      <div class="fld"><label>Título</label><input type="text" id="adm-tit" placeholder="INFORME - SEGURIDAD"></div>
+      <div class="fld"><label>Versión</label><input type="text" id="adm-ver" placeholder="1.0"></div>
+    </div>
+    <div class="adm-s">
+      <h3>🔐 Cambiar clave admin</h3>
+      <div class="fld"><input type="password" id="adm-clv" placeholder="Nueva clave"></div>
+    </div>
+    <button class="btn btn-r" onclick="adm_guardar()">💾 Guardar</button>
+    <div style="margin-top:8px;"><button class="btn btn-s" onclick="cerrarAdmin()">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: CLAVE ADMIN
+     ============================================================ -->
+<div class="mov" id="m-clave">
+  <div class="modal" style="border-radius:16px;max-width:360px;margin:auto;">
+    <div class="modal-t">🔐 Admin<button class="bx" onclick="cerrarMov('m-clave')">✕</button></div>
+    <div class="fld"><label>Clave</label><input type="password" id="inp-clave" placeholder="••••••" onkeydown="if(event.key==='Enter')chkClave()"></div>
+    <div id="clave-err" style="color:var(--r);font-size:12px;margin-bottom:7px;display:none;">Clave incorrecta</div>
+    <button class="btn btn-r" onclick="chkClave()">Ingresar</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: EDITAR EVENTO
+     ============================================================ -->
+<div class="mov" id="m-editar">
+  <div class="modal">
+    <div class="modal-t">✏️ Editar Evento<button class="bx" onclick="cerrarMov('m-editar')">✕</button></div>
+    <div class="fld"><label>Hora del evento</label><input type="time" id="e-hora"></div>
+    <div class="fld">
+      <div class="tog-row">
+        <label style="margin-bottom:0;">Observación</label>
+        <div class="tog-info">
+          <span class="tog-txt" id="tog-txt-e">NORMAL</span>
+          <label class="tog-sw"><input type="checkbox" id="tog-e" onchange="setTog('e')"><span class="tog-sl"></span></label>
+        </div>
+      </div>
+      <textarea id="e-obs" placeholder="Describa lo observado..."></textarea>
+    </div>
+    <div class="fld">
+      <label>Fotos</label>
+      <div class="fp" id="fp-e"></div>
+      <input type="file" id="inp-fotos-e" multiple accept="image/*" onchange="procesarFotos(this,'e')">
+      <label for="inp-fotos-e" class="upa" style="margin-top:5px;"><span class="upa-ico">📷</span>Agregar más fotos</label>
+    </div>
+    <button class="btn btn-r" onclick="guardarEdicion()">💾 Guardar Cambios</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURACIÓN
+// ============================================================
+let cfg = {
+  operarios: ['Cesar Perea','Donato Reyes'],
+  sedes: ['Campiña','Lurín'],
+  correos: ['luis.canales@valledelzana.com.pe','giancarlo.reina@obrasdeingenieria-odi.com.pe'],
+  titulo: 'INFORME - SEGURIDAD',
+  version: '1.0',
+  clave: '123456'
+};
+try{ const c=localStorage.getItem('vig_cfg'); if(c) cfg={...cfg,...JSON.parse(c)}; }catch(e){}
+
+// ============================================================
+// ESTADO DEL TURNO (persiste en localStorage)
+// ============================================================
+// Estructura del turno:
+// {
+//   abierto: true/false,
+//   sede, operario, turno (DIA/NOCHE),
+//   horaInicio: ISO string,
+//   informeId: string,
+//   eventos: [
+//     { tipo: 'recorrido'|'vehiculo'|'asistencia',
+//       hora, obs, esAlerta, fotos:[{nombre,data}], fotosURLs:[], timestamp }
+//   ]
+// }
+
+let turno = { abierto: false, sede:null, operario:null, turno:null, horaInicio:null, informeId:null, eventos:[] };
+
+function saveTurno(){
+  try{
+    const t = {
+      ...turno,
+      eventos: turno.eventos.map(e=>({...e, fotos:(e.fotos||[]).map(f=>({nombre:f.nombre,data:f.data})), fotosURLs:e.fotosURLs||[]}))
+    };
+    localStorage.setItem('vig_turno', JSON.stringify(t));
+  }catch(err){
+    // Si falla por tamaño (fotos), guardar sin datos de fotos pero mantener metadata
+    const t2 = {
+      ...turno,
+      eventos: turno.eventos.map(e=>({...e, fotos:[], fotosURLs:e.fotosURLs||[]}))
+    };
+    try{ localStorage.setItem('vig_turno', JSON.stringify(t2)); }catch(e2){}
+  }
+}
+
+function loadTurno(){
+  try{
+    const raw = localStorage.getItem('vig_turno');
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+
+function clearTurno(){ localStorage.removeItem('vig_turno'); }
+
+// Fotos temporales para formularios
+let fotR=[], fotE=[], idxEditar=null;
+
+// ============================================================
+// NAVEGACIÓN
+// ============================================================
+function irA(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+// PANTALLA 2: CONFIGURAR TURNO
+// ============================================================
+function mostrarPantallaTurno(){
+  buildSelectores();
+  const t = loadTurno();
+  if(t && t.abierto){
+    // Hay turno activo — mostrar aviso
+    document.getElementById('turno-en-progreso').style.display='block';
+    document.getElementById('form-turno').style.display='none';
+    const inicio = new Date(t.horaInicio);
+    document.getElementById('turno-progreso-info').textContent =
+      `${t.sede} · ${t.operario} · Turno ${t.turno} · Iniciado a las ${fmtH(inicio)} · ${t.eventos.length} evento${t.eventos.length!==1?'s':''}`;
+  }else{
+    document.getElementById('turno-en-progreso').style.display='none';
+    document.getElementById('form-turno').style.display='block';
+  }
+  irA('s-turno');
+}
+
+function continuarTurno(){
+  const t = loadTurno();
+  if(!t) return;
+  Object.assign(turno, t);
+  actualizarBarMod();
+  renderEventosResumen();
+  document.getElementById('hdr-t').textContent=`${turno.sede} · ${turno.turno}`;
+  irA('s-mod');
+  notif('✅ Turno restaurado');
+}
+
+async function cerrarTurnoForzado(){
+  if(!confirm('¿Seguro que deseas cerrar el turno en progreso? Se perderán los eventos no guardados.')) return;
+  await spCerrarTurno();
+  clearTurno();
+  turno = { abierto:false, sede:null, operario:null, turno:null, horaInicio:null, informeId:null, eventos:[] };
+  document.getElementById('turno-en-progreso').style.display='none';
+  document.getElementById('form-turno').style.display='block';
+  buildSelectores();
+  notif('Turno cerrado');
+}
+
+function buildSelectores(){
+  // Sede
+  const cS=document.getElementById('sel-sede'); cS.innerHTML='';
+  cfg.sedes.forEach(s=>{
+    const b=document.createElement('button');
+    b.className='sel-btn'; b.innerHTML=`<span class="sel-ico">🏢</span>${s}`;
+    b.addEventListener('click',()=>selVal('sede',s,b));
+    cS.appendChild(b);
+  });
+  // Operario
+  const cO=document.getElementById('sel-op'); cO.innerHTML='';
+  cfg.operarios.forEach(op=>{
+    const b=document.createElement('button');
+    b.className='sel-btn'; b.innerHTML=`<span class="sel-ico">👤</span>${op}`;
+    b.addEventListener('click',()=>selVal('operario',op,b));
+    cO.appendChild(b);
+  });
+  // Reset turno
+  document.getElementById('btn-dia').classList.remove('on');
+  document.getElementById('btn-noche').classList.remove('on');
+  turno.sede=null; turno.operario=null; turno.turno=null;
+  document.getElementById('btn-abrir-turno').disabled=true;
+}
+
+function selVal(tipo,val,btn){
+  btn.parentElement.querySelectorAll('.sel-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  turno[tipo]=val;
+  document.getElementById('btn-abrir-turno').disabled=!(turno.sede&&turno.operario&&turno.turno);
+}
+
+function generarUUID(){
+  // Genera un ID único tipo UUID v4
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r=Math.random()*16|0;
+    return (c==='x'?r:(r&0x3|0x8)).toString(16);
+  });
+}
+
+async function abrirTurno(){
+  const btn=document.getElementById('btn-abrir-turno');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Abriendo turno...';
+
+  turno.abierto = true;
+  turno.horaInicio = new Date().toISOString();
+  turno.eventos = [];
+  turno.informeId = generarUUID();
+  saveTurno();
+
+  const tok=await getToken();
+  if(tok&&spSiteId&&spTurnosId){
+    await spCrearTurno();
+    notif('✅ Turno abierto y sincronizado con SharePoint');
+  }else{
+    notif('✅ Turno abierto (guardado localmente)');
+  }
+
+  actualizarBarMod();
+  renderEventosResumen();
+  document.getElementById('hdr-t').textContent=`${turno.sede} · ${turno.turno}`;
+  btn.disabled=false; btn.innerHTML='Abrir Turno →';
+  irA('s-mod');
+}
+
+// ============================================================
+// PANTALLA 3: MÓDULOS
+// ============================================================
+function actualizarBarMod(){
+  const h=new Date(turno.horaInicio);
+  const badge=turno.turno==='DIA'?`<span class="badge b-dia">☀ DÍA</span>`:`<span class="badge b-noche">🌙 NOCHE</span>`;
+  const al=turno.eventos.filter(e=>e.esAlerta).length;
+  document.getElementById('mod-turno-bar').innerHTML=`
+    <div><div class="inf-d">Sede</div><div class="inf-v">${turno.sede}</div></div>
+    <div><div class="inf-d">Operario</div><div class="inf-v">${turno.operario}</div></div>
+    <div><div class="inf-d">Turno</div>${badge}</div>
+    <div><div class="inf-d">Inicio</div><div class="inf-v">${fmtH(h)}</div></div>
+    <div><div class="inf-d">Eventos</div><div class="inf-v">${turno.eventos.length}</div></div>
+    ${al>0?`<div><div class="inf-d" style="color:var(--r)">Alertas</div><div class="inf-v" style="color:var(--r)">${al}</div></div>`:''}`;
+
+  const cnt=document.getElementById('contador-eventos');
+  cnt.textContent=`${turno.eventos.length} evento${turno.eventos.length!==1?'s':''}`;
+}
+
+// Ordenamiento cronológico por timestamp completo (fecha+hora)
+function sortEventos(eventos){
+  return [...eventos].sort((a,b)=>{
+    const ta=a.timestamp||0;
+    const tb=b.timestamp||0;
+    // Si tienen timestamp usar ese (fecha+hora exacta)
+    if(ta&&tb) return ta-tb;
+    // Fallback: ordenar por hora string
+    return (a.hora||'').localeCompare(b.hora||'');
+  });
+}
+
+function renderEventosResumen(){
+  const cont=document.getElementById('lista-eventos-resumen');
+  if(!turno.eventos.length){
+    cont.innerHTML=`<div class="vacio"><span class="vic">📋</span>Sin eventos registrados aún<br><small>Selecciona un módulo para registrar</small></div>`;
+    return;
+  }
+  // Ordenar por timestamp completo (fecha+hora)
+  const evOrdenados=sortEventos(turno.eventos);
+  cont.innerHTML=evOrdenados.map((ev,i)=>{
+    const idx=turno.eventos.indexOf(ev);
+    const al=ev.esAlerta;
+    const badge=al?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`;
+    const tipoBadge=ev.tipo==='recorrido'?`<span class="badge b-recorrido">🚶 Recorrido</span>`:
+                    ev.tipo==='vehiculo'?`<span class="badge b-vehiculo">🚗 Vehículo</span>`:
+                    `<span class="badge b-asistencia">📋 Asistencia</span>`;
+    return `<div class="ev">
+      <div class="ev-h ${al?'ha':'hn'}">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          ${tipoBadge}${badge}
+          <span class="ev-hora ${al?'ha':'hn'}">${ev.hora}</span>
+        </div>
+        <div class="ev-acts">
+          <button class="btn btn-s btn-sm" onclick="abrirEditar(${idx})">✏️</button>
+          <button class="btn btn-p btn-sm" onclick="elimEvento(${idx})">🗑</button>
+        </div>
+      </div>
+      <div class="ev-body">
+        <div class="ev-obs">${ev.obs||''}</div>
+        ${renderFotoEvento(ev)}
+      </div>
+    </div>`;
+  }).join('');
+  actualizarBarMod();
+}
+
+function renderFotoEvento(ev){
+  // Si tiene fotos en base64 (local) → usar base64
+  // Si solo tiene URLs de SP → mostrar con tag img apuntando a SP
+  if(ev.fotos&&ev.fotos.length>0){
+    return `
+      <div class="ev-fotos">
+        ${ev.fotos.slice(0,4).map(f=>`<img class="thumb" src="${f.data}">`).join('')}
+        ${ev.fotos.length>4?`<div style="width:50px;height:50px;background:var(--gc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gm);">+${ev.fotos.length-4}</div>`:''}
+      </div>
+      <div style="font-size:11px;color:var(--gm);margin-top:4px;">📷 ${ev.fotos.length} foto${ev.fotos.length>1?'s':''}</div>`;
+  }else if(ev.fotosURLs&&ev.fotosURLs.length>0){
+    // Fotos desde SharePoint — mostrar directamente con la URL
+    // SharePoint permite acceso autenticado via cookie de sesión Microsoft
+    return `
+      <div class="ev-fotos">
+        ${ev.fotosURLs.slice(0,4).map(url=>`<img class="thumb" src="${url}" onerror="this.style.display='none'">`).join('')}
+        ${ev.fotosURLs.length>4?`<div style="width:50px;height:50px;background:var(--gc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gm);">+${ev.fotosURLs.length-4}</div>`:''}
+      </div>
+      <div style="font-size:11px;color:var(--gm);margin-top:4px;">📷 ${ev.fotosURLs.length} foto${ev.fotosURLs.length>1?'s':''} (SP)</div>`;
+  }else{
+    return `<div style="font-size:12px;color:var(--gm);margin-top:4px;">Sin fotos</div>`;
+  }
+}
+
+function elimEvento(idx){
+  if(!confirm('¿Eliminar este evento?')) return;
+  turno.eventos.splice(idx,1);
+  saveTurno();
+  renderEventosResumen();
+}
+
+// ============================================================
+// PANTALLA 4: REGISTRO DE EVENTOS
+// ============================================================
+function irRegistro(tipo){
+  if(tipo==='recorrido'){
+    fotR=[];
+    document.getElementById('r-hora').value=fmtHI(new Date());
+    document.getElementById('r-obs').value='';
+    resetTog('r');
+    document.getElementById('fp-r').innerHTML='';
+    document.getElementById('btn-guardar-r').disabled=false;
+    document.getElementById('btn-guardar-r').textContent='✅ Guardar Evento';
+    irA('s-recorrido');
+  }
+}
+
+async function guardarEvento(tipo){
+  const hora=document.getElementById('r-hora').value;
+  const obs=document.getElementById('r-obs').value.trim();
+  const esAlerta=document.getElementById('tog-r').checked;
+  if(!hora){alert('Indica la hora.');return;}
+  if(!obs){alert('Ingresa una observación.');return;}
+
+  const btn=document.getElementById('btn-guardar-r');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Guardando...';
+
+  const evento={tipo, hora, obs, esAlerta, fotos:[...fotR], fotosURLs:[], timestamp:Date.now()};
+
+  // SharePoint
+  const tok=await getToken();
+  console.log('guardarEvento — token:', tok?'OK':'NULL', 'spSiteId:', spSiteId, 'spListId:', spListId);
+  console.log('turno.informeId:', turno.informeId);
+
+  if(tok&&spSiteId&&spListId){
+    try{
+      // Carpeta usando UUID del turno para relacionar todo
+      const carp=`${turno.sede}/${turno.informeId}`;
+      for(let i=0;i<evento.fotos.length;i++){
+        const url=await spUpFoto(evento.fotos[i].data,`${tipo}_${hora.replace(':','-')}_f${i+1}.jpg`,carp);
+        if(url) evento.fotosURLs.push(url);
+      }
+      const ok=await spSaveEv(evento);
+      console.log('spSaveEv resultado:', ok);
+      if(ok){
+        notif('✅ Guardado en SharePoint');
+      }else{
+        notif('⚠ Error al guardar en SharePoint — solo local');
+        console.error('spSaveEv retornó false');
+      }
+    }catch(e){
+      console.error('SP guardarEvento error:',e);
+      notif('⚠ Error SP: '+e.message);
+    }
+  }else{
+    const razon=!tok?'sin token':!spSiteId?'sin siteId':'sin listId';
+    console.warn('Sin SP:', razon);
+    notif('💾 Guardado localmente ('+razon+')');
+  }
+
+  turno.eventos.push(evento);
+  saveTurno();
+  renderEventosResumen();
+  irA('s-mod');
+  btn.disabled=false; btn.innerHTML='✅ Guardar Evento';
+}
+
+// ============================================================
+// EDITAR EVENTO
+// ============================================================
+function abrirEditar(idx){
+  idxEditar=idx;
+  const ev=turno.eventos[idx];
+  fotE=[...(ev.fotos||[])];
+  document.getElementById('e-hora').value=ev.hora;
+  document.getElementById('e-obs').value=ev.obs||'';
+  document.getElementById('tog-e').checked=ev.esAlerta||false;
+  setTog('e');
+  renderFP('fp-e',fotE,'e');
+  abrirMov('m-editar');
+}
+
+function guardarEdicion(){
+  const hora=document.getElementById('e-hora').value;
+  const obs=document.getElementById('e-obs').value.trim();
+  const esAlerta=document.getElementById('tog-e').checked;
+  if(!hora||!obs){alert('Completa todos los campos.');return;}
+  turno.eventos[idxEditar]={...turno.eventos[idxEditar],hora,obs,esAlerta,fotos:[...fotE],timestamp:Date.now()};
+  saveTurno();
+  renderEventosResumen();
+  cerrarMov('m-editar');
+}
+
+// ============================================================
+// CERRAR TURNO
+// ============================================================
+function pedirCerrarTurno(){
+  if(!turno.eventos.length){alert('No hay eventos registrados en el turno.');return;}
+  if(!confirm('¿Cerrar turno y preparar el informe final?')) return;
+  renderPreview();
+  irA('s-prev');
+}
+
+// ============================================================
+// TOGGLE
+// ============================================================
+function setTog(modo){
+  const chk=document.getElementById(`tog-${modo}`);
+  const txt=document.getElementById(`tog-txt-${modo}`);
+  txt.textContent=chk.checked?'ALERTA':'NORMAL';
+  txt.className='tog-txt'+(chk.checked?' on':'');
+}
+function resetTog(modo){
+  document.getElementById(`tog-${modo}`).checked=false;
+  const txt=document.getElementById(`tog-txt-${modo}`);
+  txt.textContent='NORMAL'; txt.className='tog-txt';
+}
+
+// ============================================================
+// FOTOS
+// ============================================================
+function procesarFotos(input,modo){
+  const arr=modo==='r'?fotR:fotE;
+  const pid=modo==='r'?'fp-r':'fp-e';
+  Array.from(input.files).forEach(f=>{
+    const rd=new FileReader();
+    rd.onload=e=>{ arr.push({nombre:f.name,data:e.target.result}); renderFP(pid,arr,modo); };
+    rd.readAsDataURL(f);
+  });
+  input.value='';
+}
+function renderFP(pid,arr,modo){
+  document.getElementById(pid).innerHTML=arr.map((f,i)=>`
+    <div class="fw"><img src="${f.data}"><button class="fdel" onclick="delFoto('${modo}',${i})">✕</button></div>`).join('');
+}
+function delFoto(modo,i){
+  const arr=modo==='r'?fotR:fotE;
+  arr.splice(i,1);
+  renderFP(modo==='r'?'fp-r':'fp-e',arr,modo);
+}
+
+// ============================================================
+// PREVISUALIZACIÓN
+// ============================================================
+function renderPreview(){
+  const fecha=fmtF(new Date());
+  const evOrd=sortEventos(turno.eventos);
+  const al=evOrd.filter(e=>e.esAlerta).length;
+  const tF=evOrd.reduce((a,e)=>a+(e.fotos?e.fotos.length:0),0);
+
+  let h=`<div class="card">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bd);">
+      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Sede</div><div style="font-weight:700;">${turno.sede}</div></div>
+      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Operario</div><div style="font-weight:700;">${turno.operario}</div></div>
+      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Turno</div><span class="badge ${turno.turno==='DIA'?'b-dia':'b-noche'}">${turno.turno}</span></div>
+      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Fecha</div><div style="font-weight:700;">${fecha}</div></div>
+      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Eventos</div><div style="font-weight:700;">${evOrd.length}</div></div>
+      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Fotos</div><div style="font-weight:700;">${tF}</div></div>
+      ${al>0?`<div><div style="font-size:11px;color:var(--r);text-transform:uppercase;">Alertas</div><div style="font-weight:700;color:var(--r);">${al}</div></div>`:''}
+    </div>`;
+
+  evOrd.forEach((ev,i)=>{
+    const al2=ev.esAlerta;
+    const badge=al2?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`;
+    const tipoBadge=ev.tipo==='recorrido'?`<span class="badge b-recorrido">🚶 Recorrido</span>`:
+                    ev.tipo==='vehiculo'?`<span class="badge b-vehiculo">🚗 Vehículo</span>`:
+                    `<span class="badge b-asistencia">📋 Asistencia</span>`;
+    h+=`<div class="pev">
+      <div class="pev-h ${al2?'pa':'pn'}">
+        ${tipoBadge}${badge}
+        <span class="pev-hora" style="color:${al2?'var(--r)':'var(--v)'};">${ev.hora}</span>
+      </div>
+      <div class="pev-obs">${ev.obs||''}</div>
+      ${ev.fotos&&ev.fotos.length>0
+        ?`<div class="pev-fotos">${ev.fotos.map(f=>`<img class="pthumb" src="${f.data}">`).join('')}</div>`
+        :ev.fotosURLs&&ev.fotosURLs.length>0
+          ?`<div class="pev-fotos">${ev.fotosURLs.map(url=>`<img class="pthumb" src="${url}" onerror="this.style.display='none'">`).join('')}</div>`
+          :''}
+    </div>`;
+  });
+  h+='</div>';
+  document.getElementById('prev-cont').innerHTML=h;
+}
+
+// ============================================================
+// GENERAR PDF
+// ============================================================
+async function generarPDF(){
+  const btn=document.getElementById('btn-pdf');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Preparando fotos...';
+
+  // PASO PREVIO: descargar fotos desde SP para eventos que solo tienen URLs
+  const tok=await getToken();
+  if(tok){
+    for(const ev of turno.eventos){
+      if((!ev.fotos||ev.fotos.length===0) && ev.fotosURLs&&ev.fotosURLs.length>0){
+        ev.fotos=[];
+        for(const url of ev.fotosURLs){
+          try{
+            // Usar Graph API para descargar — más confiable que URL directa
+            const res=await fetch(url,{headers:{Authorization:`Bearer ${tok}`}});
+            if(res.ok){
+              const blob=await res.blob();
+              const b64=await new Promise(r=>{
+                const rd=new FileReader();
+                rd.onload=e=>r(e.target.result);
+                rd.readAsDataURL(blob);
+              });
+              ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
+            }
+          }catch(e){ console.warn('No se pudo descargar foto:',url,e); }
+        }
+      }
+    }
+  }
+
+  btn.innerHTML='<span class="spin"></span>Generando PDF...';
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pW=210,pH=297,mg=15,cW=pW-mg*2;
+    let y=mg,pag=1;
+    const fecha=fmtF(new Date());
+    const evOrd=sortEventos(turno.eventos);
+
+    function cab(n){
+      doc.setDrawColor(180,180,180); doc.setLineWidth(0.4); doc.rect(mg,y,cW,22);
+      doc.setFillColor(192,57,43); doc.rect(mg,y,38,22,'F');
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+      doc.text('RENTADORES',mg+19,y+8,{align:'center'});
+      doc.setFontSize(6); doc.setFont('helvetica','normal');
+      doc.text('DE EQUIPOS',mg+19,y+13,{align:'center'});
+      doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+      doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+38+(cW-38-50)/2,y+13,{align:'center'});
+      doc.setDrawColor(180,180,180);
+      doc.line(pW-mg-50,y,pW-mg-50,y+22);
+      doc.line(pW-mg-50,y+8,pW-mg,y+8);
+      doc.line(pW-mg-50,y+15,pW-mg,y+15);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(30,30,30);
+      doc.text('Version: '+cfg.version,pW-mg-25,y+5.5,{align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+      doc.text('Elaborado por: '+turno.operario,pW-mg-25,y+12.5,{align:'center'});
+      doc.text('Fecha:',pW-mg-41,y+19.5);
+      doc.text(fecha,pW-mg-2,y+19.5,{align:'right'});
+      y+=26;
+      doc.setFontSize(7); doc.setTextColor(120,120,120); doc.setFont('helvetica','normal');
+      doc.text(`Pagina ${n}`,pW-mg,y,{align:'right'});
+      doc.text(`Sede: ${turno.sede}  |  Turno: ${turno.turno}  |  Inicio: ${fmtH(new Date(turno.horaInicio))}`,mg,y);
+      y+=7;
+    }
+    function newPag(){ doc.addPage(); y=mg; pag++; cab(pag); }
+
+    cab(1);
+
+    // Resumen
+    const tF=evOrd.reduce((a,e)=>a+(e.fotos?e.fotos.length:0),0);
+    const tA=evOrd.filter(e=>e.esAlerta).length;
+    doc.setFillColor(248,232,230); doc.roundedRect(mg,y,cW,18,2,2,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(192,57,43);
+    doc.text('RESUMEN DEL TURNO',mg+5,y+7);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+    doc.text(`Operario: ${turno.operario}`,mg+5,y+13);
+    doc.text(`Eventos: ${evOrd.length}`,mg+80,y+13);
+    doc.text(`Fotos: ${tF}`,mg+118,y+13);
+    doc.text(`Alertas: ${tA}`,mg+148,y+13);
+    y+=22;
+
+    if(tA>0){
+      doc.setFillColor(192,57,43); doc.roundedRect(mg,y,cW,8,1.5,1.5,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(255,255,255);
+      doc.text(`! ATENCION: ${tA} evento${tA>1?'s':''} con ALERTA en este turno`,pW/2,y+5.5,{align:'center'});
+      y+=12;
+    }
+
+    // Eventos
+    for(let i=0;i<evOrd.length;i++){
+      const ev=evOrd[i];
+      if(y+32>pH-20) newPag();
+      const al=ev.esAlerta||false;
+      const cf=al?[248,232,230]:[234,243,222];
+      const cc=al?[192,57,43]:[59,109,17];
+      const tipoLabel=ev.tipo==='recorrido'?'RECORRIDO':ev.tipo==='vehiculo'?'VEHICULO':'ASISTENCIA';
+
+      doc.setFillColor(...cf); doc.roundedRect(mg,y,cW,10,1.5,1.5,'F');
+      doc.setFillColor(...cc); doc.rect(mg,y,3,10,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...cc);
+      doc.text(`${tipoLabel} - Evento ${i+1}`,mg+7,y+7);
+      doc.setFillColor(...cc); doc.roundedRect(mg+80,y+1.5,al?24:22,7,1.5,1.5,'F');
+      doc.setFontSize(7); doc.setTextColor(255,255,255);
+      doc.text(al?'! ALERTA':'NORMAL',mg+(al?92:91),y+6.5,{align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(80,80,80);
+      doc.text('Hora:',pW-mg-30,y+7);
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...cc);
+      doc.text(ev.hora,pW-mg-4,y+7,{align:'right'});
+      y+=13;
+
+      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+      const lns=doc.splitTextToSize(ev.obs||'',cW-4);
+      const aO=lns.length*5+4;
+      if(y+aO>pH-20) newPag();
+      doc.text(lns,mg+2,y+4); y+=aO+4;
+
+      if(ev.fotos&&ev.fotos.length>0){
+        const fpF=3,fW=(cW-(fpF-1)*3)/fpF,fH=fW*0.7;
+        const fils=Math.ceil(ev.fotos.length/fpF);
+        for(let fi=0;fi<fils;fi++){
+          if(y+fH+2>pH-20) newPag();
+          for(let fc=0;fc<fpF;fc++){
+            const ix=fi*fpF+fc; if(ix>=ev.fotos.length) break;
+            const ft=ev.fotos[ix]; const x=mg+fc*(fW+3);
+            try{
+              const fmt=ft.data.startsWith('data:image/png')?'PNG':'JPEG';
+              doc.addImage(ft.data,fmt,x,y,fW,fH);
+              doc.setDrawColor(200,200,200); doc.rect(x,y,fW,fH);
+            }catch(e){
+              doc.setFillColor(240,240,240); doc.rect(x,y,fW,fH,'F');
+              doc.setFontSize(7); doc.setTextColor(150,150,150);
+              doc.text('Sin imagen',x+fW/2,y+fH/2,{align:'center'});
+            }
+          }
+          y+=fH+3;
+        }
+        doc.setFontSize(7); doc.setTextColor(120,120,120);
+        doc.text(`Fotos: ${ev.fotos.length}`,mg+2,y); y+=5;
+      }else{
+        doc.setFontSize(8); doc.setTextColor(150,150,150); doc.setFont('helvetica','italic');
+        doc.text('Sin fotos registradas',mg+2,y); doc.setFont('helvetica','normal'); y+=6;
+      }
+      doc.setDrawColor(220,220,220); doc.line(mg,y,pW-mg,y); y+=6;
+    }
+
+    // Firma
+    if(y+22>pH-10) newPag();
+    doc.setFillColor(248,232,230); doc.roundedRect(mg,y,cW,20,2,2,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(192,57,43);
+    doc.text('FIRMA DEL OPERARIO',mg+cW/4,y+7,{align:'center'});
+    doc.text('V.B. SUPERVISOR',mg+cW*3/4,y+7,{align:'center'});
+    doc.setDrawColor(192,57,43);
+    doc.line(mg+10,y+17,mg+cW/2-10,y+17);
+    doc.line(mg+cW/2+10,y+17,mg+cW-10,y+17);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(80,80,80);
+    doc.text(turno.operario,mg+cW/4,y+19,{align:'center'});
+
+    const fa=new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const nom=`Informe_${turno.sede}_${turno.turno}_${fa}_${turno.operario.replace(' ','')}.pdf`;
+    doc.save(nom);
+    notif('✅ PDF descargado');
+
+    const tok=await getToken();
+    if(tok&&spSiteId){
+      // Guardar en SharePoint
+      btn.innerHTML='<span class="spin"></span>Guardando en SharePoint...';
+      try{
+        const pb=doc.output('blob');
+        await fetch(
+          `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/Fotos_Vigilancia/Informes/${turno.sede}/${nom}:/content`,
+          {method:'PUT',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/pdf'},body:pb}
+        );
+        notif('✅ PDF guardado en SharePoint');
+      }catch(e){console.error('SP PDF:',e);}
+
+      // Enviar correo
+      btn.innerHTML='<span class="spin"></span>Enviando correo...';
+      try{
+        const pb64=doc.output('datauristring').split(',')[1];
+        const res=await fetch('https://graph.microsoft.com/v1.0/me/sendMail',{
+          method:'POST',
+          headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+          body:JSON.stringify({
+            message:{
+              subject:`Informe Turno ${turno.turno} - ${turno.sede} - ${fecha} - ${turno.operario}`,
+              body:{contentType:'HTML',content:`
+                <p>Estimado/a,</p>
+                <p>Se adjunta informe de vigilancia - Turno <strong>${turno.turno}</strong> - Sede <strong>${turno.sede}</strong>.</p>
+                <ul>
+                  <li><strong>Operario:</strong> ${turno.operario}</li>
+                  <li><strong>Fecha:</strong> ${fecha}</li>
+                  <li><strong>Total eventos:</strong> ${evOrd.length}</li>
+                  <li><strong>Alertas:</strong> ${tA}</li>
+                </ul>
+                <p>Saludos,<br>Sistema de Vigilancia - Rentadores de Equipos</p>`},
+              toRecipients:cfg.correos.map(c=>({emailAddress:{address:c}})),
+              attachments:[{'@odata.type':'#microsoft.graph.fileAttachment',name:nom,contentType:'application/pdf',contentBytes:pb64}]
+            },
+            saveToSentItems:true
+          })
+        });
+        if(res.ok){
+          notif(`✅ Correo enviado a ${cfg.correos.length} destinatario${cfg.correos.length>1?'s':''}`);
+        }else{
+          const err=await res.json();
+          console.error('Mail:',err);
+          alert(`Error correo:\n${err?.error?.code}: ${err?.error?.message}`);
+        }
+      }catch(e){console.error('Mail:',e);notif('⚠ Error al enviar correo');}
+    }else{
+      notif('⚠ Sin conexión Microsoft - solo descarga local');
+    }
+
+    // Limpiar turno
+    await spCerrarTurno();
+    clearTurno();
+    turno={abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[]};
+    btn.innerHTML='✅ Completado';
+    setTimeout(()=>{
+      btn.innerHTML='📥 Generar PDF y Enviar'; btn.disabled=false;
+      document.getElementById('hdr-t').textContent='Sistema de Vigilancia';
+      mostrarPantallaTurno();
+    },3000);
+
+  }catch(err){
+    console.error(err);
+    btn.innerHTML='❌ Error - Reintentar'; btn.disabled=false;
+    alert('Error PDF:\n'+err.message);
+  }
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+function abrirAdmin(){
+  document.getElementById('inp-clave').value='';
+  document.getElementById('clave-err').style.display='none';
+  abrirMov('m-clave');
+}
+function chkClave(){
+  if(document.getElementById('inp-clave').value===cfg.clave){
+    cerrarMov('m-clave'); cargarAdmin(); irA('s-adm');
+  }else{ document.getElementById('clave-err').style.display='block'; }
+}
+function cargarAdmin(){
+  document.getElementById('adm-tit').value=cfg.titulo;
+  document.getElementById('adm-ver').value=cfg.version;
+  document.getElementById('adm-clv').value='';
+  adm_rl('adm-correos',cfg.correos,'correos');
+  adm_rl('adm-ops',cfg.operarios,'operarios');
+  adm_rl('adm-sedes',cfg.sedes,'sedes');
+}
+function adm_rl(id,arr,tipo){
+  document.getElementById(id).innerHTML=arr.map((it,i)=>`
+    <li><span>${it}</span><button class="btn btn-p btn-sm" onclick="adm_del('${tipo}',${i})">🗑</button></li>`).join('');
+}
+function adm_del(tipo,i){
+  const mp={correos:'adm-correos',operarios:'adm-ops',sedes:'adm-sedes'};
+  if(cfg[tipo].length<=1){alert('Debe haber al menos uno.');return;}
+  cfg[tipo].splice(i,1); adm_rl(mp[tipo],cfg[tipo],tipo);
+}
+function adm_addCorreo(){
+  const v=document.getElementById('adm-cemail').value.trim();
+  if(!v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){alert('Correo inválido.');return;}
+  if(cfg.correos.includes(v)){alert('Ya existe.');return;}
+  cfg.correos.push(v); document.getElementById('adm-cemail').value='';
+  adm_rl('adm-correos',cfg.correos,'correos');
+}
+function adm_addOp(){
+  const v=document.getElementById('adm-opnew').value.trim(); if(!v) return;
+  cfg.operarios.push(v); document.getElementById('adm-opnew').value='';
+  adm_rl('adm-ops',cfg.operarios,'operarios');
+}
+function adm_addSede(){
+  const v=document.getElementById('adm-sednew').value.trim(); if(!v) return;
+  cfg.sedes.push(v); document.getElementById('adm-sednew').value='';
+  adm_rl('adm-sedes',cfg.sedes,'sedes');
+}
+function adm_guardar(){
+  cfg.titulo=document.getElementById('adm-tit').value||'INFORME - SEGURIDAD';
+  cfg.version=document.getElementById('adm-ver').value||'1.0';
+  const nc=document.getElementById('adm-clv').value; if(nc) cfg.clave=nc;
+  localStorage.setItem('vig_cfg',JSON.stringify(cfg));
+  notif('✅ Configuración guardada');
+  setTimeout(()=>cerrarAdmin(),800);
+}
+function cerrarAdmin(){
+  if(turno.abierto) irA('s-mod');
+  else irA('s-turno');
+}
+
+// ============================================================
+// MODALES
+// ============================================================
+function abrirMov(id){ document.getElementById(id).classList.add('on'); }
+function cerrarMov(id){ document.getElementById(id).classList.remove('on'); }
+
+// ============================================================
+// MICROSOFT / SHAREPOINT
+// ============================================================
+const AZ={
+  clientId:'980f6bda-3b4a-485b-b959-1d1757f55c07',
+  tenantId:'dd0f78f4-3420-49a8-b7d2-072e8886c255',
+  scopes:['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/Files.ReadWrite.All','https://graph.microsoft.com/Mail.Send','https://graph.microsoft.com/User.Read']
+};
+let msalApp=null, spSiteId=null, spListId=null;
+
+async function initMS(){
+  try{
+    msalApp=new msal.PublicClientApplication({
+      auth:{clientId:AZ.clientId,authority:`https://login.microsoftonline.com/${AZ.tenantId}`,redirectUri:window.location.origin+window.location.pathname},
+      cache:{cacheLocation:'sessionStorage',storeAuthStateInCookie:true}
+    });
+    await msalApp.initialize();
+    await msalApp.handleRedirectPromise();
+    const accounts=msalApp.getAllAccounts();
+    if(accounts.length>0){
+      const r=await msalApp.acquireTokenSilent({scopes:AZ.scopes,account:accounts[0]});
+      setSpUI(true);
+      document.getElementById('hdr-t').textContent=accounts[0].name.split(' ')[0];
+      await spGetIds(r.accessToken);
+      await mostrarPantallaTurno();
+    }
+    // Sin sesión → se queda en s-login
+  }catch(e){ console.warn('MSAL:',e.message); }
+}
+
+async function loginMS(){
+  const btn=document.getElementById('btn-ms-login');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Conectando...';
+  document.getElementById('login-err').style.display='none';
+  try{
+    const r=await msalApp.loginPopup({scopes:AZ.scopes});
+    setSpUI(true);
+    document.getElementById('hdr-t').textContent=r.account.name.split(' ')[0];
+    notif('✅ Bienvenido '+r.account.name.split(' ')[0]);
+    await spGetIds(r.accessToken);
+    await mostrarPantallaTurno();
+  }catch(e){
+    console.error('Login:',e);
+    document.getElementById('login-err').style.display='block';
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML=`<svg class="ms-ico" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>Iniciar sesión con Microsoft`;
+  }
+}
+
+async function getToken(){
+  if(!msalApp) return null;
+  const a=msalApp.getAllAccounts();
+  if(!a.length) return null;
+  try{ const r=await msalApp.acquireTokenSilent({scopes:AZ.scopes,account:a[0]}); return r.accessToken; }
+  catch(e){ return null; }
+}
+
+function setSpUI(ok){
+  document.getElementById('sp-dot').className='sp-dot '+(ok?'ok':'no');
+}
+
+async function spGetIds(tok){
+  if(!tok) tok=await getToken();
+  if(!tok) return;
+  try{
+    const sr=await fetch('https://graph.microsoft.com/v1.0/sites/obrainsape.sharepoint.com:/sites/Vigilancia-Rentadores',{headers:{Authorization:`Bearer ${tok}`}});
+    const sd=await sr.json(); spSiteId=sd.id;
+    const lr=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists`,{headers:{Authorization:`Bearer ${tok}`}});
+    const ld=await lr.json();
+    const li=ld.value.find(l=>l.displayName==='Eventos_Vigilancia'||l.name==='Eventos_Vigilancia');
+    if(li) spListId=li.id;
+    const lt=ld.value.find(l=>l.displayName==='Turnos_Activos'||l.name==='Turnos_Activos');
+    if(lt) spTurnosId=lt.id;
+    console.log('SP listo — site:',spSiteId,'eventos:',spListId,'turnos:',spTurnosId);
+  }catch(e){ console.error('spGetIds:',e); }
+}
+
+// ============================================================
+// SP: TURNO ACTIVO
+// ============================================================
+let spTurnosId=null;
+let spTurnoItemId=null; // ID del item en Turnos_Activos
+
+async function spCrearTurno(){
+  const tok=await getToken();
+  if(!tok||!spSiteId||!spTurnosId) return;
+  try{
+    const res=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items`,
+      {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+       body:JSON.stringify({fields:{
+         Title: turno.informeId,
+         Sede: turno.sede,
+         Operario: turno.operario,
+         Turno: turno.turno,
+         HoraInicio: turno.horaInicio,
+         Estado: 'Abierto'
+       }})}
+    );
+    if(res.ok){
+      const d=await res.json();
+      spTurnoItemId=d.id;
+      // Guardar ID en localStorage para referencia
+      localStorage.setItem('vig_turno_spid', spTurnoItemId);
+      console.log('Turno creado en SP, item ID:', spTurnoItemId);
+    }
+  }catch(e){ console.error('spCrearTurno:',e); }
+}
+
+async function spCerrarTurno(){
+  const tok=await getToken();
+  if(!tok||!spSiteId||!spTurnosId) return;
+  // Recuperar ID si no está en memoria
+  if(!spTurnoItemId) spTurnoItemId=localStorage.getItem('vig_turno_spid');
+  if(!spTurnoItemId) return;
+  try{
+    await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items/${spTurnoItemId}/fields`,
+      {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+       body:JSON.stringify({Estado:'Cerrado'})}
+    );
+    localStorage.removeItem('vig_turno_spid');
+    spTurnoItemId=null;
+    console.log('Turno cerrado en SP');
+  }catch(e){ console.error('spCerrarTurno:',e); }
+}
+
+async function spBuscarTurnoAbierto(){
+  const tok=await getToken();
+  if(!tok||!spSiteId||!spTurnosId) return null;
+  try{
+    const res=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items?$expand=fields&$top=50&$orderby=createdDateTime desc`,
+      {headers:{Authorization:`Bearer ${tok}`}}
+    );
+    const d=await res.json();
+    if(!d.value||!d.value.length) return null;
+
+    // Buscar el primero con Estado = Abierto
+    const item=d.value.find(i=>{
+      const f=i.fields||{};
+      const estado=(f.Estado||'').toString().trim();
+      return estado==='Abierto';
+    });
+
+    if(!item) return null;
+
+    spTurnoItemId=item.id;
+    localStorage.setItem('vig_turno_spid', spTurnoItemId);
+    const f=item.fields||{};
+    console.log('Turno abierto encontrado en SP:', f);
+    console.log('InformeID (UUID):', f.Title);
+
+    return {
+      spItemId: item.id,
+      informeId: f.Title||'', // El UUID está guardado en Title
+      sede: f.Sede||'',
+      operario: f.Operario||'',
+      turno: f.Turno||'',
+      horaInicio: f.HoraInicio||item.createdDateTime,
+    };
+  }catch(e){
+    console.error('spBuscarTurnoAbierto:',e);
+    return null;
+  }
+}
+
+async function spCargarEventosTurno(informeId){
+  const tok=await getToken();
+  if(!tok||!spSiteId||!spListId) return [];
+  try{
+    const res=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spListId}/items?$expand=fields&$top=200&$orderby=createdDateTime asc`,
+      {headers:{Authorization:`Bearer ${tok}`}}
+    );
+    const d=await res.json();
+    if(!d.value) return [];
+
+    // Log de diagnóstico — ver todos los InformeID disponibles
+    diag('=== Items en Eventos_Vigilancia ===');
+    diag('UUID buscado: '+informeId);
+    diag('Total items: '+d.value.length);
+    d.value.slice(0,10).forEach((i,n)=>{
+      const f=i.fields||{};
+      diag(`[${n}] InformeID="${f.InformeID}" Title="${f.Title}"`);
+    });
+
+    // Filtro estricto por UUID
+    const items=d.value.filter(i=>{
+      const f=i.fields||{};
+      const idEvento=(f.InformeID||'').toString().trim();
+      const coincide=idEvento===informeId;
+      if(!coincide && idEvento) console.log(`No coincide: "${idEvento}" vs "${informeId}"`);
+      return coincide;
+    });
+
+    console.log('Coincidencias exactas:', items.length);
+    diag('Coincidencias exactas: '+items.length);
+
+    // Si no hay coincidencias, intentar buscar por Title también
+    let itemsFinal=items;
+    if(items.length===0){
+      diag('Intentando por Title...');
+      itemsFinal=d.value.filter(i=>{
+        const f=i.fields||{};
+        return (f.Title||'').toString().trim()===informeId;
+      });
+      diag('Por Title: '+itemsFinal.length);
+    }
+
+    return itemsFinal.map(item=>{
+      const f=item.fields||{};
+      // Usar FechaTurno como timestamp para orden cronológico correcto entre días
+      const ts=f.FechaTurno ? new Date(f.FechaTurno).getTime() : Date.now();
+      return {
+        tipo: f.TipoEvento||'recorrido',
+        hora: f.HoraEvento||'',
+        obs: f.Observacion||f.observacion||'',
+        esAlerta: f.EsAlerta||false,
+        fotos: [],
+        fotosURLs: (()=>{ try{ return JSON.parse(f.FotosURLs||'[]'); }catch(e){ return []; } })(),
+        timestamp: ts,
+        spItemId: item.id
+      };
+    });
+  }catch(e){ console.error('spCargarEventos error:',e); return []; }
+}
+
+async function cargarFotosDesdeURLs(eventos){
+  // Para eventos sincronizados desde SP, cargar fotos desde sus URLs
+  const tok=await getToken();
+  if(!tok) return eventos;
+  for(const ev of eventos){
+    if((!ev.fotos||ev.fotos.length===0) && ev.fotosURLs&&ev.fotosURLs.length>0){
+      ev.fotos=[];
+      for(const url of ev.fotosURLs){
+        try{
+          // Construir URL de descarga via Graph API
+          // La URL de SP es pública dentro del tenant, usamos el token
+          const res=await fetch(url,{headers:{Authorization:`Bearer ${tok}`}});
+          if(res.ok){
+            const blob=await res.blob();
+            const b64=await new Promise(resolve=>{
+              const rd=new FileReader();
+              rd.onload=e=>resolve(e.target.result);
+              rd.readAsDataURL(blob);
+            });
+            ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
+          }
+        }catch(e){ console.warn('No se pudo cargar foto desde URL:',url,e); }
+      }
+    }
+  }
+  return eventos;
+}
+function diag(msg){
+  // Diagnóstico solo en consola, no en pantalla
+  console.log('[DIAG]', msg);
+}
+
+async function mostrarPantallaTurno(){
+  buildSelectores();
+  irA('s-turno');
+  // Limpiar panel diagnóstico
+  const dp=document.getElementById('diag-panel');
+  if(dp){ dp.textContent=''; dp.style.display='block'; }
+
+  const tLocal=loadTurno();
+  diag('Local turno: '+(tLocal?`abierto=${tLocal.abierto} id=${tLocal.informeId} eventos=${tLocal.eventos?.length}`:'ninguno'));
+
+  notifSilencioso('🔄 Verificando turno activo...');
+  diag('Buscando turno en SharePoint...');
+  diag('spSiteId='+spSiteId);
+  diag('spTurnosId='+spTurnosId);
+  diag('spListId='+spListId);
+
+  let tSP=null;
+  try{
+    tSP=await spBuscarTurnoAbierto();
+    diag('SP turno: '+(tSP?`id=${tSP.informeId} sede=${tSP.sede}`:'ninguno'));
+  }catch(e){
+    diag('ERROR buscando turno: '+e.message);
+  }
+
+  // Si hay turno local pero SP no tiene ninguno abierto → el turno fue cerrado desde otro dispositivo
+  if(tLocal&&tLocal.abierto&&!tSP){
+    diag('Turno local existe pero SP no tiene ninguno abierto → fue cerrado desde otro dispositivo');
+    clearTurno();
+    Object.assign(turno,{abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[]});
+    document.getElementById('turno-en-progreso').style.display='none';
+    document.getElementById('form-turno').style.display='block';
+    notifSilencioso('');
+    return; // Salir — mostrar pantalla de nuevo turno
+  }
+
+  if(tSP && tSP.informeId){
+    document.getElementById('turno-en-progreso').style.display='block';
+    document.getElementById('form-turno').style.display='none';
+
+    if(!tLocal || tLocal.informeId!==tSP.informeId || (tLocal.eventos||[]).length===0){
+      // UUID diferente o local vacío → sincronizar desde SP
+      notifSilencioso('🔄 Sincronizando eventos...');
+      diag('Cargando eventos para UUID: '+tSP.informeId);
+      let eventos=[];
+      try{
+        eventos=await spCargarEventosTurno(tSP.informeId);
+        diag('Eventos cargados: '+eventos.length);
+        eventos.forEach((e,i)=>diag(`  ev${i}: hora=${e.hora} obs=${e.obs?.substring(0,30)}`));
+      }catch(e){
+        diag('ERROR cargando eventos: '+e.message);
+      }
+      Object.assign(turno,{
+        abierto:true, sede:tSP.sede, operario:tSP.operario,
+        turno:tSP.turno, horaInicio:tSP.horaInicio,
+        informeId:tSP.informeId, eventos:eventos
+      });
+      // Cargar fotos desde URLs de SP en background
+      cargarFotosDesdeURLs(turno.eventos).then(()=>{ saveTurno(); renderEventosResumen&&renderEventosResumen(); });
+      saveTurno();
+      document.getElementById('turno-progreso-info').textContent=
+        `${tSP.sede} · ${tSP.operario} · Turno ${tSP.turno} · ${eventos.length} evento${eventos.length!==1?'s':''} · sincronizado desde SharePoint`;
+    }else{
+      // UUID coincide y local tiene eventos — verificar si SP tiene más
+      diag('UUID coincide, local='+tLocal.eventos.length+' eventos, consultando SP...');
+      let eventosSP=[];
+      try{
+        eventosSP=await spCargarEventosTurno(tSP.informeId);
+        diag('SP tiene '+eventosSP.length+' eventos');
+      }catch(e){ diag('Error SP: '+e.message); }
+
+      if(eventosSP.length > tLocal.eventos.length){
+        // SP tiene más → combinar, conservando fotos del local
+        diag('SP tiene más eventos, fusionando...');
+        const fusionados=eventosSP.map(evSP=>{
+          const evLocal=tLocal.eventos.find(el=>el.hora===evSP.hora&&el.tipo===evSP.tipo);
+          return (evLocal&&evLocal.fotos?.length>0)?{...evSP,fotos:evLocal.fotos}:evSP;
+        });
+        Object.assign(turno,{...tLocal, eventos:fusionados});
+        // Cargar fotos SP en background para eventos sin fotos locales
+        cargarFotosDesdeURLs(turno.eventos).then(()=>{ saveTurno(); renderEventosResumen&&renderEventosResumen(); });
+        saveTurno();
+        document.getElementById('turno-progreso-info').textContent=
+          `${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${fusionados.length} evento${fusionados.length!==1?'s':''} · actualizado desde SharePoint`;
+      }else{
+        // Local al día
+        Object.assign(turno, tLocal);
+        diag('Local al día con SP ('+tLocal.eventos.length+' eventos)');
+        document.getElementById('turno-progreso-info').textContent=
+          `${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''}`;
+      }
+    }
+    notifSilencioso('✅ Turno activo encontrado');
+
+  }else if(tLocal && tLocal.abierto){
+    document.getElementById('turno-en-progreso').style.display='block';
+    document.getElementById('form-turno').style.display='none';
+    Object.assign(turno, tLocal);
+    diag('Usando solo turno local');
+    document.getElementById('turno-progreso-info').textContent=
+      `${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''} · guardado localmente`;
+    notifSilencioso('⚠ Turno local (sin SP)');
+
+  }else{
+    document.getElementById('turno-en-progreso').style.display='none';
+    document.getElementById('form-turno').style.display='block';
+    diag('Sin turno activo');
+    notifSilencioso('');
+  }
+}
+
+function notifSilencioso(msg){
+  // Notificación pequeña no intrusiva
+  let el=document.getElementById('notif-sync');
+  if(!el){
+    el=document.createElement('div');
+    el.id='notif-sync';
+    el.style.cssText='position:fixed;top:58px;right:10px;background:var(--azc);color:var(--az);padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;z-index:999;border:1px solid #B5D4F4;';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg;
+  el.style.display='block';
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>{el.style.display='none';},3000);
+}
+
+// ============================================================
+// SP: FOTO
+// ============================================================
+async function spUpFoto(dataUrl,nombre,carpeta){
+  const tok=await getToken(); if(!tok||!spSiteId) return null;
+  try{
+    const b64=dataUrl.split(',')[1];
+    const by=atob(b64); const arr=new Uint8Array(by.length);
+    for(let i=0;i<by.length;i++) arr[i]=by.charCodeAt(i);
+    const blob=new Blob([arr],{type:'image/jpeg'});
+    const res=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/Fotos_Vigilancia/${carpeta}/${nombre}:/content`,
+      {method:'PUT',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'image/jpeg'},body:blob}
+    );
+    const d=await res.json(); return d.webUrl||null;
+  }catch(e){ console.error('spUpFoto:',e); return null; }
+}
+
+// ============================================================
+// SP: GUARDAR EVENTO
+// ============================================================
+async function spSaveEv(ev){
+  const tok=await getToken(); if(!tok||!spSiteId||!spListId) return false;
+  try{
+    const body={fields:{
+      Title: turno.informeId,
+      Sede: turno.sede,
+      Operario: turno.operario,
+      Turno: turno.turno,
+      TipoEvento: ev.tipo||'recorrido',
+      HoraEvento: ev.hora,
+      Observacion: ev.obs||'',
+      EsAlerta: ev.esAlerta||false,
+      FotosURLs: JSON.stringify(ev.fotosURLs||[]),
+      InformeID: turno.informeId,
+      FechaTurno: new Date().toISOString()
+    }};
+    console.log('spSaveEv body:', JSON.stringify(body));
+    const res=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spListId}/items`,
+      {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+       body:JSON.stringify(body)}
+    );
+    if(!res.ok){
+      const err=await res.json();
+      console.error('spSaveEv HTTP error:', res.status, JSON.stringify(err));
+      return false;
+    }
+    const data=await res.json();
+    console.log('spSaveEv OK, item id:', data.id);
+    return true;
+  }catch(e){ console.error('spSaveEv exception:',e); return false; }
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmtH(d){ return d.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}); }
+function fmtHI(d){ return d.toTimeString().slice(0,5); }
+function fmtF(d){ return d.toLocaleDateString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function notif(msg){
+  const n=document.createElement('div');
+  n.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--go);color:white;padding:9px 18px;border-radius:22px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,.3);animation:fadeUp .3s ease;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;';
+  n.textContent=msg; document.body.appendChild(n); setTimeout(()=>n.remove(),3500);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+initMS();
+</script>
+</body>
+</html>
