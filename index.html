@@ -919,9 +919,10 @@ async function generarPDF(){
             const siteIdx=decoded.indexOf(siteMarker);
             if(siteIdx===-1){ console.warn('Ruta no encontrada en:', decoded); continue; }
             const rutaRelativa=decoded.substring(siteIdx+siteMarker.length);
+            const rutaEncoded=rutaRelativa.split('/').map(s=>encodeURIComponent(s)).join('/');
             console.log('Descargando foto:', rutaRelativa);
             const driveRes=await fetch(
-              `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaRelativa}:/content`,
+              `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`,
               {headers:{Authorization:`Bearer ${tok}`}}
             );
             if(driveRes.ok){
@@ -1464,14 +1465,14 @@ async function cargarFotosDesdeURLs(eventos){
           const decoded=decodeURIComponent(new URL(url).pathname);
           console.log('URL original:', url);
           console.log('URL decodificada:', decoded);
-          // Extraer ruta desde /sites/Vigilancia-Rentadores/
           const siteMarker='/sites/Vigilancia-Rentadores/';
           const siteIdx=decoded.indexOf(siteMarker);
-          if(siteIdx===-1){ console.warn('No se encontró /sites/Vigilancia-Rentadores/ en:', decoded); continue; }
+          if(siteIdx===-1){ console.warn('Ruta no encontrada en:', decoded); continue; }
           const rutaRelativa=decoded.substring(siteIdx+siteMarker.length);
           console.log('Ruta relativa al sitio:', rutaRelativa);
-          // Usar drive principal del sitio (igual que spUpFoto)
-          const apiUrl=`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaRelativa}:/content`;
+          // Encodear cada segmento de la ruta por separado
+          const rutaEncoded=rutaRelativa.split('/').map(s=>encodeURIComponent(s)).join('/');
+          const apiUrl=`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`;
           console.log('API URL:', apiUrl);
           const res=await fetch(apiUrl,{headers:{Authorization:`Bearer ${tok}`}});
           if(res.ok){
