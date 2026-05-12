@@ -907,26 +907,21 @@ async function generarPDF(){
 
   // PASO PREVIO: descargar fotos desde SP para eventos que solo tienen URLs
   const tok=await getToken();
-  if(tok&&spSiteId&&spFotosDriveId){
+  if(tok&&spSiteId){
     btn.innerHTML='<span class="spin"></span>Descargando fotos...';
     for(const ev of turno.eventos){
       if((!ev.fotos||ev.fotos.length===0) && ev.fotosURLs&&ev.fotosURLs.length>0){
         ev.fotos=[];
         for(const url of ev.fotosURLs){
           try{
-            // Extraer ruta del archivo desde la URL de SharePoint
-            // URL: .../Documentos compartidos/Fotos_Vigilancia/Campiña/UUID/archivo.jpg
-            // Necesitamos solo: Campiña/UUID/archivo.jpg
             const decoded=decodeURIComponent(new URL(url).pathname);
-            const marker='Fotos_Vigilancia/';
-            const idx=decoded.indexOf(marker);
-            if(idx===-1){ console.warn('No se encontró Fotos_Vigilancia en URL:', url); continue; }
-            const rutaEnLibreria=decoded.substring(idx+marker.length);
-            console.log('Descargando foto via drive:', rutaEnLibreria);
-
-            // Usar driveId de Fotos_Vigilancia
+            const siteMarker='/sites/Vigilancia-Rentadores/';
+            const siteIdx=decoded.indexOf(siteMarker);
+            if(siteIdx===-1){ console.warn('Ruta no encontrada en:', decoded); continue; }
+            const rutaRelativa=decoded.substring(siteIdx+siteMarker.length);
+            console.log('Descargando foto:', rutaRelativa);
             const driveRes=await fetch(
-              `https://graph.microsoft.com/v1.0/drives/${spFotosDriveId}/root:/${rutaEnLibreria}:/content`,
+              `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaRelativa}:/content`,
               {headers:{Authorization:`Bearer ${tok}`}}
             );
             if(driveRes.ok){
@@ -937,10 +932,10 @@ async function generarPDF(){
                 rd.readAsDataURL(blob);
               });
               ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
-              console.log('✅ Foto descargada OK:', rutaEnLibreria);
+              console.log('✅ Foto descargada OK:', rutaRelativa);
             }else{
               const err=await driveRes.json();
-              console.error('❌ Error foto:', driveRes.status, err?.error?.message, rutaEnLibreria);
+              console.error('❌ Error foto:', driveRes.status, err?.error?.message, rutaRelativa);
             }
           }catch(e){ console.warn('Error foto:', e.message); }
         }
@@ -1469,12 +1464,14 @@ async function cargarFotosDesdeURLs(eventos){
           const decoded=decodeURIComponent(new URL(url).pathname);
           console.log('URL original:', url);
           console.log('URL decodificada:', decoded);
-          const marker='Fotos_Vigilancia/';
-          const idx=decoded.indexOf(marker);
-          if(idx===-1){ console.warn('No se encontró Fotos_Vigilancia en:', decoded); continue; }
-          const rutaEnLibreria=decoded.substring(idx+marker.length);
-          console.log('Ruta en librería:', rutaEnLibreria);
-          const apiUrl=`https://graph.microsoft.com/v1.0/drives/${spFotosDriveId}/root:/${encodeURIComponent(rutaEnLibreria).replace(/%2F/g,'/')}:/content`;
+          // Extraer ruta desde /sites/Vigilancia-Rentadores/
+          const siteMarker='/sites/Vigilancia-Rentadores/';
+          const siteIdx=decoded.indexOf(siteMarker);
+          if(siteIdx===-1){ console.warn('No se encontró /sites/Vigilancia-Rentadores/ en:', decoded); continue; }
+          const rutaRelativa=decoded.substring(siteIdx+siteMarker.length);
+          console.log('Ruta relativa al sitio:', rutaRelativa);
+          // Usar drive principal del sitio (igual que spUpFoto)
+          const apiUrl=`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaRelativa}:/content`;
           console.log('API URL:', apiUrl);
           const res=await fetch(apiUrl,{headers:{Authorization:`Bearer ${tok}`}});
           if(res.ok){
@@ -1488,7 +1485,7 @@ async function cargarFotosDesdeURLs(eventos){
             console.log('✅ Foto cargada OK');
           }else{
             const err=await res.json().catch(()=>({}));
-            console.error('❌ Error foto:', res.status, err?.error?.message, 'ruta:', rutaEnLibreria);
+            console.error('❌ Error foto:', res.status, err?.error?.message, 'ruta:', rutaRelativa);
           }
         }catch(e){ console.warn('cargarFotosDesdeURLs:',e.message); }
       }
