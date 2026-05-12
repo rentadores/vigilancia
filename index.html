@@ -907,26 +907,26 @@ async function generarPDF(){
 
   // PASO PREVIO: descargar fotos desde SP para eventos que solo tienen URLs
   const tok=await getToken();
-  if(tok&&spSiteId){
+  if(tok&&spSiteId&&spFotosDriveId){
     btn.innerHTML='<span class="spin"></span>Descargando fotos...';
     for(const ev of turno.eventos){
       if((!ev.fotos||ev.fotos.length===0) && ev.fotosURLs&&ev.fotosURLs.length>0){
         ev.fotos=[];
         for(const url of ev.fotosURLs){
           try{
-            // Construir ruta relativa dentro de la biblioteca
-            // URL ejemplo: https://obrainsape.sharepoint.com/sites/Vigilancia-Rentadores/Documentos%20compartidos/Fotos_Vigilancia/Campiña/UUID/archivo.jpg
-            // Extraer la ruta relativa desde /sites/...
-            const urlObj=new URL(url);
-            const pathParts=decodeURIComponent(urlObj.pathname);
-            // Obtener solo la parte después de /sites/Vigilancia-Rentadores/
-            const match=pathParts.match(/\/sites\/[^/]+\/(.+)/);
-            if(!match){ console.warn('No se pudo extraer ruta de:', url); continue; }
-            const rutaRelativa=match[1]; // Ej: Documentos compartidos/Fotos_Vigilancia/...
+            // Extraer ruta del archivo desde la URL de SharePoint
+            // URL: .../Documentos compartidos/Fotos_Vigilancia/Campiña/UUID/archivo.jpg
+            // Necesitamos solo: Campiña/UUID/archivo.jpg
+            const decoded=decodeURIComponent(new URL(url).pathname);
+            const marker='Fotos_Vigilancia/';
+            const idx=decoded.indexOf(marker);
+            if(idx===-1){ console.warn('No se encontró Fotos_Vigilancia en URL:', url); continue; }
+            const rutaEnLibreria=decoded.substring(idx+marker.length);
+            console.log('Descargando foto via drive:', rutaEnLibreria);
 
-            // Usar Graph API drive para descargar
+            // Usar driveId de Fotos_Vigilancia
             const driveRes=await fetch(
-              `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaRelativa}:/content`,
+              `https://graph.microsoft.com/v1.0/drives/${spFotosDriveId}/root:/${rutaEnLibreria}:/content`,
               {headers:{Authorization:`Bearer ${tok}`}}
             );
             if(driveRes.ok){
@@ -937,12 +937,12 @@ async function generarPDF(){
                 rd.readAsDataURL(blob);
               });
               ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
-              console.log('Foto descargada OK:', rutaRelativa);
+              console.log('✅ Foto descargada OK:', rutaEnLibreria);
             }else{
               const err=await driveRes.json();
-              console.error('Error descargando foto:', driveRes.status, err?.error?.message);
+              console.error('❌ Error foto:', driveRes.status, err?.error?.message, rutaEnLibreria);
             }
-          }catch(e){ console.warn('Error foto:', url, e.message); }
+          }catch(e){ console.warn('Error foto:', e.message); }
         }
       }
     }
@@ -1223,7 +1223,7 @@ const AZ={
   tenantId:'dd0f78f4-3420-49a8-b7d2-072e8886c255',
   scopes:['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/Files.ReadWrite.All','https://graph.microsoft.com/Mail.Send','https://graph.microsoft.com/User.Read']
 };
-let msalApp=null, spSiteId=null, spListId=null;
+let msalApp=null, spSiteId=null, spListId=null, spFotosLibId=null, spFotosDriveId=null;
 
 async function initMS(){
   try{
@@ -1289,7 +1289,21 @@ async function spGetIds(tok){
     if(li) spListId=li.id;
     const lt=ld.value.find(l=>l.displayName==='Turnos_Activos'||l.name==='Turnos_Activos');
     if(lt) spTurnosId=lt.id;
-    console.log('SP listo — site:',spSiteId,'eventos:',spListId,'turnos:',spTurnosId);
+
+    // Obtener driveId de la biblioteca Fotos_Vigilancia para descargas correctas
+    const libFotos=ld.value.find(l=>l.displayName==='Fotos_Vigilancia'||l.name==='Fotos_Vigilancia');
+    if(libFotos){
+      spFotosLibId=libFotos.id;
+      // Obtener el driveId real de la biblioteca
+      const driveRes=await fetch(
+        `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${libFotos.id}/drive`,
+        {headers:{Authorization:`Bearer ${tok}`}}
+      );
+      const driveData=await driveRes.json();
+      spFotosDriveId=driveData.id;
+      console.log('Fotos drive ID:', spFotosDriveId);
+    }
+    console.log('SP listo — site:',spSiteId,'eventos:',spListId,'turnos:',spTurnosId,'fotosDrive:',spFotosDriveId);
   }catch(e){ console.error('spGetIds:',e); }
 }
 
@@ -1445,27 +1459,32 @@ async function spCargarEventosTurno(informeId){
 }
 
 async function cargarFotosDesdeURLs(eventos){
-  // Para eventos sincronizados desde SP, cargar fotos desde sus URLs
   const tok=await getToken();
-  if(!tok) return eventos;
+  if(!tok||!spFotosDriveId) return eventos;
   for(const ev of eventos){
-    if((!ev.fotos||ev.fotos.length===0) && ev.fotosURLs&&ev.fotosURLs.length>0){
+    if((!ev.fotos||ev.fotos.length===0)&&ev.fotosURLs&&ev.fotosURLs.length>0){
       ev.fotos=[];
       for(const url of ev.fotosURLs){
         try{
-          // Construir URL de descarga via Graph API
-          // La URL de SP es pública dentro del tenant, usamos el token
-          const res=await fetch(url,{headers:{Authorization:`Bearer ${tok}`}});
+          const decoded=decodeURIComponent(new URL(url).pathname);
+          const marker='Fotos_Vigilancia/';
+          const idx=decoded.indexOf(marker);
+          if(idx===-1) continue;
+          const rutaEnLibreria=decoded.substring(idx+marker.length);
+          const res=await fetch(
+            `https://graph.microsoft.com/v1.0/drives/${spFotosDriveId}/root:/${rutaEnLibreria}:/content`,
+            {headers:{Authorization:`Bearer ${tok}`}}
+          );
           if(res.ok){
             const blob=await res.blob();
-            const b64=await new Promise(resolve=>{
+            const b64=await new Promise(r=>{
               const rd=new FileReader();
-              rd.onload=e=>resolve(e.target.result);
+              rd.onload=e=>r(e.target.result);
               rd.readAsDataURL(blob);
             });
             ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
           }
-        }catch(e){ console.warn('No se pudo cargar foto desde URL:',url,e); }
+        }catch(e){ console.warn('cargarFotosDesdeURLs:',e.message); }
       }
     }
   }
