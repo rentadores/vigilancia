@@ -750,8 +750,9 @@ async function guardarEvento(tipo){
 
   if(tok&&spSiteId&&spListId){
     try{
-      // Carpeta usando UUID del turno para relacionar todo
-      const carp=`${turno.sede}/${turno.informeId}`;
+      // Normalizar sede para carpeta (sin tildes ni caracteres especiales)
+      const sedeNorm=turno.sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+      const carp=`${sedeNorm}/${turno.informeId}`;
       for(let i=0;i<evento.fotos.length;i++){
         const url=await spUpFoto(evento.fotos[i].data,`${tipo}_${hora.replace(':','-')}_f${i+1}.jpg`,carp);
         if(url) evento.fotosURLs.push(url);
@@ -915,12 +916,12 @@ async function generarPDF(){
         for(const url of ev.fotosURLs){
           try{
             const decoded=decodeURIComponent(new URL(url).pathname);
-            const siteMarker='/sites/Vigilancia-Rentadores/';
-            const siteIdx=decoded.indexOf(siteMarker);
-            if(siteIdx===-1){ console.warn('Ruta no encontrada en:', decoded); continue; }
-            const rutaRelativa=decoded.substring(siteIdx+siteMarker.length);
-            const rutaEncoded=rutaRelativa.split('/').map(s=>encodeURIComponent(s)).join('/');
-            console.log('Descargando foto:', rutaRelativa);
+            const marker='Fotos_Vigilancia/';
+            const markerIdx=decoded.indexOf(marker);
+            if(markerIdx===-1){ console.warn('No se encontró Fotos_Vigilancia en:', decoded); continue; }
+            const rutaDesdeLib=decoded.substring(markerIdx);
+            const rutaEncoded=rutaDesdeLib.split('/').map(s=>encodeURIComponent(s)).join('/');
+            console.log('Descargando foto:', rutaDesdeLib);
             const driveRes=await fetch(
               `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`,
               {headers:{Authorization:`Bearer ${tok}`}}
@@ -1071,8 +1072,9 @@ async function generarPDF(){
     doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(80,80,80);
     doc.text(turno.operario,mg+cW/4,y+19,{align:'center'});
 
+    const sedeNorm=turno.sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
     const fa=new Date().toISOString().slice(0,10).replace(/-/g,'');
-    const nom=`Informe_${turno.sede}_${turno.turno}_${fa}_${turno.operario.replace(' ','')}.pdf`;
+    const nom=`Informe_${sedeNorm}_${turno.turno}_${fa}_${turno.operario.replace(/ /g,'')}.pdf`;
     doc.save(nom);
     notif('✅ PDF descargado');
 
@@ -1083,7 +1085,7 @@ async function generarPDF(){
       try{
         const pb=doc.output('blob');
         await fetch(
-          `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/Fotos_Vigilancia/Informes/${turno.sede}/${nom}:/content`,
+          `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/Fotos_Vigilancia/Informes/${sedeNorm}/${nom}:/content`,
           {method:'PUT',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/pdf'},body:pb}
         );
         notif('✅ PDF guardado en SharePoint');
@@ -1465,14 +1467,14 @@ async function cargarFotosDesdeURLs(eventos){
           const decoded=decodeURIComponent(new URL(url).pathname);
           console.log('URL original:', url);
           console.log('URL decodificada:', decoded);
-          const siteMarker='/sites/Vigilancia-Rentadores/';
-          const siteIdx=decoded.indexOf(siteMarker);
-          if(siteIdx===-1){ console.warn('Ruta no encontrada en:', decoded); continue; }
-          const rutaRelativa=decoded.substring(siteIdx+siteMarker.length);
-          console.log('Ruta relativa al sitio:', rutaRelativa);
-          // Encodear cada segmento de la ruta por separado
-          const rutaEncoded=rutaRelativa.split('/').map(s=>encodeURIComponent(s)).join('/');
+          // La ruta en el drive es desde Fotos_Vigilancia (sin Documentos compartidos)
+          const marker='Fotos_Vigilancia/';
+          const markerIdx=decoded.indexOf(marker);
+          if(markerIdx===-1){ console.warn('No se encontró Fotos_Vigilancia en:', decoded); continue; }
+          const rutaDesdeLib=decoded.substring(markerIdx); // incluye Fotos_Vigilancia/...
+          const rutaEncoded=rutaDesdeLib.split('/').map(s=>encodeURIComponent(s)).join('/');
           const apiUrl=`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`;
+          console.log('Ruta:', rutaDesdeLib);
           console.log('API URL:', apiUrl);
           const res=await fetch(apiUrl,{headers:{Authorization:`Bearer ${tok}`}});
           if(res.ok){
