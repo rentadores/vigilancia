@@ -1465,17 +1465,12 @@ async function cargarFotosDesdeURLs(eventos){
       for(const url of ev.fotosURLs){
         try{
           const decoded=decodeURIComponent(new URL(url).pathname);
-          console.log('URL original:', url);
-          console.log('URL decodificada:', decoded);
-          // La ruta en el drive es desde Fotos_Vigilancia (sin Documentos compartidos)
           const marker='Fotos_Vigilancia/';
           const markerIdx=decoded.indexOf(marker);
           if(markerIdx===-1){ console.warn('No se encontró Fotos_Vigilancia en:', decoded); continue; }
-          const rutaDesdeLib=decoded.substring(markerIdx); // incluye Fotos_Vigilancia/...
+          const rutaDesdeLib=decoded.substring(markerIdx);
           const rutaEncoded=rutaDesdeLib.split('/').map(s=>encodeURIComponent(s)).join('/');
           const apiUrl=`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`;
-          console.log('Ruta:', rutaDesdeLib);
-          console.log('API URL:', apiUrl);
           const res=await fetch(apiUrl,{headers:{Authorization:`Bearer ${tok}`}});
           if(res.ok){
             const blob=await res.blob();
