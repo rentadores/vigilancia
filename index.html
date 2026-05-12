@@ -1467,7 +1467,8 @@ async function cargarFotosDesdeURLs(eventos){
       for(const url of ev.fotosURLs){
         try{
           const decoded=decodeURIComponent(new URL(url).pathname);
-          console.log('URL decodificada completa:', decoded);
+          console.log('URL original:', url);
+          console.log('URL decodificada:', decoded);
           const marker='Fotos_Vigilancia/';
           const idx=decoded.indexOf(marker);
           if(idx===-1){ console.warn('No se encontró Fotos_Vigilancia en:', decoded); continue; }
