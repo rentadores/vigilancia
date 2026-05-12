@@ -1467,14 +1467,15 @@ async function cargarFotosDesdeURLs(eventos){
       for(const url of ev.fotosURLs){
         try{
           const decoded=decodeURIComponent(new URL(url).pathname);
+          console.log('URL decodificada completa:', decoded);
           const marker='Fotos_Vigilancia/';
           const idx=decoded.indexOf(marker);
-          if(idx===-1) continue;
+          if(idx===-1){ console.warn('No se encontró Fotos_Vigilancia en:', decoded); continue; }
           const rutaEnLibreria=decoded.substring(idx+marker.length);
-          const res=await fetch(
-            `https://graph.microsoft.com/v1.0/drives/${spFotosDriveId}/root:/${rutaEnLibreria}:/content`,
-            {headers:{Authorization:`Bearer ${tok}`}}
-          );
+          console.log('Ruta en librería:', rutaEnLibreria);
+          const apiUrl=`https://graph.microsoft.com/v1.0/drives/${spFotosDriveId}/root:/${encodeURIComponent(rutaEnLibreria).replace(/%2F/g,'/')}:/content`;
+          console.log('API URL:', apiUrl);
+          const res=await fetch(apiUrl,{headers:{Authorization:`Bearer ${tok}`}});
           if(res.ok){
             const blob=await res.blob();
             const b64=await new Promise(r=>{
@@ -1483,6 +1484,10 @@ async function cargarFotosDesdeURLs(eventos){
               rd.readAsDataURL(blob);
             });
             ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
+            console.log('✅ Foto cargada OK');
+          }else{
+            const err=await res.json().catch(()=>({}));
+            console.error('❌ Error foto:', res.status, err?.error?.message, 'ruta:', rutaEnLibreria);
           }
         }catch(e){ console.warn('cargarFotosDesdeURLs:',e.message); }
       }
