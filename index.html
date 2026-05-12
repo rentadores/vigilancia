@@ -91,6 +91,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gc);color:var(
 .b-recorrido{background:#E6F1FB;color:#185FA5;}
 .b-vehiculo{background:#FAEEDA;color:#BA7517;}
 .b-asistencia{background:#EAF3DE;color:#3B6D11;}
+.b-entrada{background:#3B6D11;color:white;border-radius:4px;}
+.b-salida{background:#A32D2D;color:white;border-radius:4px;}
 
 /* MÓDULOS GRID */
 .mod-grid{display:grid;gap:10px;}
@@ -109,14 +111,33 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gc);color:var(
 .ev-h{padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;}
 .ev-h.hn{background:var(--vc);border-left:4px solid var(--v);}
 .ev-h.ha{background:var(--rc);border-left:4px solid var(--r);}
+.ev-h.hv{background:var(--amc);border-left:4px solid var(--am);}
 .ev-hora{font-size:16px;font-weight:800;}
 .ev-hora.hn{color:var(--v);}
 .ev-hora.ha{color:var(--r);}
+.ev-hora.hv{color:var(--am);}
 .ev-body{padding:9px 11px;}
 .ev-obs{font-size:13px;color:var(--gm);line-height:1.5;}
 .ev-fotos{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
 .thumb{width:50px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--bd);}
 .ev-acts{display:flex;gap:5px;align-items:center;}
+
+/* FICHA VEHICULAR en lista */
+.veh-mini{background:var(--gc);border-radius:7px;padding:7px 9px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.veh-mini-placa{font-size:15px;font-weight:700;color:var(--go);letter-spacing:1px;}
+.veh-mini-campo{font-size:11px;color:var(--gm);}
+.veh-mini-campo b{color:var(--go);}
+.veh-items-box{background:#FFF8F0;border-left:3px solid var(--am);border-radius:0 5px 5px 0;padding:5px 8px;margin-top:4px;font-size:12px;color:var(--gm);}
+.veh-items-box b{color:var(--go);}
+
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative;}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:var(--bl);border:1.5px solid var(--r);border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.12);}
+.ac-item{padding:9px 11px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--bd);}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover{background:var(--rc);}
+.ac-item b{color:var(--r);}
+.ac-sub{font-size:11px;color:var(--gm);margin-top:2px;}
 
 /* FOTOS */
 .fp{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
@@ -159,6 +180,7 @@ input[type=file]{display:none;}
 .pev-h{display:flex;align-items:center;gap:9px;padding:9px 11px;flex-wrap:wrap;}
 .pev-h.pn{background:var(--vc);}
 .pev-h.pa{background:var(--rc);}
+.pev-h.pv{background:var(--amc);}
 .pev-hora{font-size:14px;font-weight:800;}
 .pev-obs{font-size:13px;line-height:1.5;padding:7px 11px;}
 .pev-fotos{display:flex;gap:5px;flex-wrap:wrap;padding:0 11px 9px;}
@@ -169,8 +191,15 @@ input[type=file]{display:none;}
 .adm-s h3{font-size:11px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
 .le{list-style:none;}
 .le li{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd);font-size:13px;}
+.le li .det{font-size:11px;color:var(--gm);margin-top:2px;}
 .ar{display:flex;gap:7px;margin-top:7px;}
-.ar input{flex:1;padding:7px 9px;border:1.5px solid var(--bd);border-radius:7px;font-size:13px;}
+.ar input,.ar select{flex:1;padding:7px 9px;border:1.5px solid var(--bd);border-radius:7px;font-size:13px;}
+
+/* MAESTROS pantalla */
+.maestro-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.maestro-tabs{display:flex;gap:6px;margin-bottom:14px;}
+.tab-btn{padding:7px 16px;border:2px solid var(--bd);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:var(--bl);color:var(--gm);}
+.tab-btn.on{border-color:var(--r);background:var(--rc);color:var(--r);}
 
 /* MISC */
 .vacio{text-align:center;padding:28px 14px;color:var(--gm);}
@@ -179,6 +208,7 @@ input[type=file]{display:none;}
 .alerta-box{padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:12px;}
 .alerta-info{background:var(--azc);color:var(--az);border:1px solid #B5D4F4;}
 .alerta-warn{background:var(--amc);color:var(--am);border:1px solid #FAC775;}
+.alerta-ok{background:var(--vc);color:var(--v);border:1px solid #C0DD97;}
 
 /* SPIN */
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:5px;}
@@ -197,9 +227,7 @@ input[type=file]{display:none;}
   </div>
 </header>
 
-<!-- ============================================================
-     PANTALLA 1: LOGIN
-     ============================================================ -->
+<!-- PANTALLA 1: LOGIN -->
 <div class="scr on" id="s-login">
   <div class="login-wrap">
     <div class="login-logo">
@@ -218,24 +246,18 @@ input[type=file]{display:none;}
         </svg>
         Iniciar sesión con Microsoft
       </button>
-      <div id="login-err" style="color:var(--r);font-size:12px;margin-top:12px;display:none;">
-        ❌ Error al iniciar sesión. Intenta nuevamente.
-      </div>
+      <div id="login-err" style="color:var(--r);font-size:12px;margin-top:12px;display:none;">❌ Error al iniciar sesión. Intenta nuevamente.</div>
       <div class="login-note">Solo usuarios de la organización pueden acceder.</div>
     </div>
   </div>
 </div>
 
-<!-- ============================================================
-     PANTALLA 2: CONFIGURAR TURNO (Sede / Operario / Turno)
-     ============================================================ -->
+<!-- PANTALLA 2: CONFIGURAR TURNO -->
 <div class="scr" id="s-turno">
   <div style="text-align:center;padding:12px 0 6px;">
     <div style="font-size:17px;font-weight:700;">Configurar Turno</div>
     <div style="font-size:12px;color:var(--gm);margin-top:3px;">Selecciona sede, operario y turno de trabajo</div>
   </div>
-
-  <!-- Aviso turno en progreso -->
   <div id="turno-en-progreso" style="display:none;" class="alerta-box alerta-warn">
     <div style="font-weight:700;margin-bottom:6px;">⚠ Turno en progreso</div>
     <div id="turno-progreso-info" style="font-size:13px;margin-bottom:10px;"></div>
@@ -244,7 +266,6 @@ input[type=file]{display:none;}
       <button class="btn btn-s" onclick="cerrarTurnoForzado()">Cerrar turno</button>
     </div>
   </div>
-
   <div id="form-turno">
     <div class="card"><div class="card-t">🏢 Sede</div><div class="sel-grid" id="sel-sede"></div></div>
     <div class="card"><div class="card-t">👤 Operario</div><div class="sel-grid" id="sel-op"></div></div>
@@ -257,22 +278,13 @@ input[type=file]{display:none;}
     </div>
     <button class="btn btn-r" id="btn-abrir-turno" disabled onclick="abrirTurno()">Abrir Turno →</button>
   </div>
-
-  <!-- Panel diagnóstico oculto -->
   <div id="diag-panel" style="display:none;background:#1e1e2e;color:#a6e3a1;border-radius:8px;padding:12px;font-size:11px;font-family:monospace;margin-top:10px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;"></div>
 </div>
 
-<!-- ============================================================
-     PANTALLA 3: MÓDULOS (dentro del turno)
-     ============================================================ -->
+<!-- PANTALLA 3: MÓDULOS -->
 <div class="scr" id="s-mod">
-  <!-- Info del turno activo -->
   <div class="turno-activo" id="mod-turno-bar"></div>
-
-  <div style="font-size:13px;color:var(--gm);text-align:center;margin-bottom:10px;">
-    ¿Qué evento deseas registrar?
-  </div>
-
+  <div style="font-size:13px;color:var(--gm);text-align:center;margin-bottom:10px;">¿Qué evento deseas registrar?</div>
   <div class="mod-grid">
     <button class="mod-btn" onclick="irRegistro('recorrido')">
       <div class="mod-ico">🚶</div>
@@ -282,12 +294,12 @@ input[type=file]{display:none;}
         <span class="mod-badge mb-ok">Disponible</span>
       </div>
     </button>
-    <button class="mod-btn" disabled>
+    <button class="mod-btn" onclick="irRegistro('vehiculo')">
       <div class="mod-ico">🚗</div>
       <div>
         <div class="mod-nom">Control Vehicular</div>
         <div class="mod-desc">Ingreso y salida de vehículos</div>
-        <span class="mod-badge mb-prox">Próximamente</span>
+        <span class="mod-badge mb-ok">Disponible</span>
       </div>
     </button>
     <button class="mod-btn" disabled>
@@ -299,10 +311,7 @@ input[type=file]{display:none;}
       </div>
     </button>
   </div>
-
   <div class="sep"></div>
-
-  <!-- Resumen eventos del turno -->
   <div class="card">
     <div class="card-t" style="display:flex;justify-content:space-between;align-items:center;">
       <span>📋 Eventos del turno</span>
@@ -314,15 +323,12 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<!-- ============================================================
-     PANTALLA 4: REGISTRO RECORRIDO
-     ============================================================ -->
+<!-- PANTALLA 4: REGISTRO RECORRIDO -->
 <div class="scr" id="s-recorrido">
   <div style="text-align:center;padding:10px 0 5px;">
     <div style="font-size:16px;font-weight:700;">🚶 Recorrido de Instalaciones</div>
     <div style="font-size:12px;color:var(--gm);margin-top:2px;">Registra la ronda y adjunta fotos</div>
   </div>
-
   <div class="card">
     <div class="fld"><label>Hora del evento</label><input type="time" id="r-hora"></div>
     <div class="fld">
@@ -346,9 +352,68 @@ input[type=file]{display:none;}
   <button class="btn btn-s" onclick="irA('s-mod')">← Volver a módulos</button>
 </div>
 
-<!-- ============================================================
-     PANTALLA 5: PREVISUALIZACIÓN
-     ============================================================ -->
+<!-- PANTALLA 5: CONTROL VEHICULAR -->
+<div class="scr" id="s-vehiculo">
+  <div style="text-align:center;padding:10px 0 5px;">
+    <div style="font-size:16px;font-weight:700;">🚗 Control Vehicular</div>
+    <div style="font-size:12px;color:var(--gm);margin-top:2px;">Registra el ingreso o salida de un vehículo</div>
+  </div>
+  <div class="card">
+    <!-- Tipo movimiento -->
+    <div class="fld">
+      <label>Tipo de movimiento</label>
+      <div class="sel-grid">
+        <button class="sel-btn" id="vbtn-entrada" onclick="selVehTipo('ENTRADA',this)"><span class="sel-ico">🟢</span>ENTRADA</button>
+        <button class="sel-btn" id="vbtn-salida" onclick="selVehTipo('SALIDA',this)"><span class="sel-ico">🔴</span>SALIDA</button>
+      </div>
+    </div>
+    <!-- Alerta estado vehículo -->
+    <div id="veh-estado-alerta" style="display:none;" class="alerta-box alerta-warn" id="veh-alerta-estado"></div>
+
+    <div class="fld"><label>Hora del evento</label><input type="time" id="v-hora"></div>
+
+    <div class="g2">
+      <div class="fld">
+        <label>Placa del vehículo</label>
+        <div class="ac-wrap">
+          <input type="text" id="v-placa" placeholder="ABC-123" maxlength="10" autocomplete="off"
+            oninput="this.value=this.value.toUpperCase();acBuscar('placa',this.value)"
+            onfocus="acBuscar('placa',this.value)" onblur="setTimeout(()=>acCerrar('placa'),200)">
+          <div class="ac-list" id="ac-placa" style="display:none;"></div>
+        </div>
+      </div>
+      <div class="fld"><label>Kilometraje</label><input type="number" id="v-km" placeholder="00000" min="0"></div>
+    </div>
+
+    <div class="fld">
+      <label>Conductor</label>
+      <div class="ac-wrap">
+        <input type="text" id="v-conductor" placeholder="Nombre del conductor" autocomplete="off"
+          oninput="acBuscar('conductor',this.value)"
+          onfocus="acBuscar('conductor',this.value)" onblur="setTimeout(()=>acCerrar('conductor'),200)">
+        <div class="ac-list" id="ac-conductor" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="fld"><label id="lbl-v-destino">Destino</label><input type="text" id="v-destino" placeholder="Lugar de destino o procedencia"></div>
+
+    <div class="fld">
+      <label>Detalle / Ítems</label>
+      <textarea id="v-detalle" placeholder="Descripción de items, herramientas, materiales o carga..." style="min-height:68px;"></textarea>
+    </div>
+
+    <div class="fld">
+      <label>Fotos del vehículo</label>
+      <input type="file" id="inp-v" multiple accept="image/*" onchange="procesarFotos(this,'v')">
+      <label for="inp-v" class="upa"><span class="upa-ico">📷</span>Tomar foto o elegir desde galería</label>
+      <div class="fp" id="fp-v"></div>
+    </div>
+    <button class="btn btn-r" id="btn-guardar-v" onclick="guardarEventoVehiculo()">✅ Guardar Evento</button>
+  </div>
+  <button class="btn btn-s" onclick="irA('s-mod')">← Volver a módulos</button>
+</div>
+
+<!-- PANTALLA 6: PREVISUALIZACIÓN -->
 <div class="scr" id="s-prev">
   <div class="alerta-box alerta-info">📄 Revisa el informe completo antes de generar el PDF.</div>
   <div id="prev-cont"></div>
@@ -358,9 +423,7 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<!-- ============================================================
-     PANTALLA 6: ADMIN
-     ============================================================ -->
+<!-- PANTALLA 7: ADMIN -->
 <div class="scr" id="s-adm">
   <div class="card">
     <div class="card-t">⚙️ Administración</div>
@@ -390,6 +453,13 @@ input[type=file]{display:none;}
       </div>
     </div>
     <div class="adm-s">
+      <h3>🚗 Maestros de Vehículos y Personas</h3>
+      <div class="g2">
+        <button class="btn btn-s" onclick="abrirMaestros('placas')">🚗 Gestionar Placas</button>
+        <button class="btn btn-s" onclick="abrirMaestros('personas')">👤 Gestionar Personas</button>
+      </div>
+    </div>
+    <div class="adm-s">
       <h3>📄 Informe</h3>
       <div class="fld"><label>Título</label><input type="text" id="adm-tit" placeholder="INFORME - SEGURIDAD"></div>
       <div class="fld"><label>Versión</label><input type="text" id="adm-ver" placeholder="1.0"></div>
@@ -403,9 +473,61 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<!-- ============================================================
-     MODAL: CLAVE ADMIN
-     ============================================================ -->
+<!-- PANTALLA 8: MAESTROS (Placas / Personas) -->
+<div class="scr" id="s-maestros">
+  <div class="card">
+    <div class="maestro-header">
+      <div style="font-size:16px;font-weight:700;" id="maestros-titulo">📋 Maestros</div>
+      <button class="btn-hdr" style="background:var(--r);border-color:var(--r);font-size:12px;" onclick="irA('s-adm')">← Volver</button>
+    </div>
+    <div class="maestro-tabs">
+      <button class="tab-btn on" id="tab-placas" onclick="switchMaestro('placas')">🚗 Placas</button>
+      <button class="tab-btn" id="tab-personas" onclick="switchMaestro('personas')">👤 Personas</button>
+    </div>
+    <!-- Sección Placas -->
+    <div id="sec-placas">
+      <ul class="le" id="maestro-lista-placas"></ul>
+      <div style="margin-top:10px;border-top:1px solid var(--bd);padding-top:10px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gm);margin-bottom:8px;">AGREGAR / EDITAR PLACA</div>
+        <div class="g2">
+          <div class="fld"><label>Placa</label><input type="text" id="mp-placa" maxlength="10" placeholder="ABC-123" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="fld">
+            <label>Tipo de vehículo</label>
+            <select id="mp-tipo">
+              <option value="">Seleccionar...</option>
+              <option value="Auto">Auto</option>
+              <option value="Camioneta">Camioneta</option>
+              <option value="Moto">Moto</option>
+              <option value="Equipo Pesado">Equipo Pesado</option>
+            </select>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="fld"><label>Marca</label><input type="text" id="mp-marca" placeholder="Toyota"></div>
+          <div class="fld"><label>Modelo</label><input type="text" id="mp-modelo" placeholder="Hilux"></div>
+        </div>
+        <div class="fld"><label>Color</label><input type="text" id="mp-color" placeholder="Blanco"></div>
+        <button class="btn btn-r" onclick="maestroGuardarPlaca()">💾 Guardar Placa</button>
+      </div>
+    </div>
+    <!-- Sección Personas -->
+    <div id="sec-personas" style="display:none;">
+      <ul class="le" id="maestro-lista-personas"></ul>
+      <div style="margin-top:10px;border-top:1px solid var(--bd);padding-top:10px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gm);margin-bottom:8px;">AGREGAR / EDITAR PERSONA</div>
+        <div class="fld"><label>Nombre completo</label><input type="text" id="mp-nombre" placeholder="Juan Pérez López"></div>
+        <div class="g2">
+          <div class="fld"><label>DNI</label><input type="text" id="mp-dni" placeholder="12345678" maxlength="8"></div>
+          <div class="fld"><label>Empresa</label><input type="text" id="mp-empresa" placeholder="Empresa S.A."></div>
+        </div>
+        <div class="fld"><label>Puesto de trabajo</label><input type="text" id="mp-puesto" placeholder="Conductor"></div>
+        <button class="btn btn-r" onclick="maestroGuardarPersona()">💾 Guardar Persona</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CLAVE ADMIN -->
 <div class="mov" id="m-clave">
   <div class="modal" style="border-radius:16px;max-width:360px;margin:auto;">
     <div class="modal-t">🔐 Admin<button class="bx" onclick="cerrarMov('m-clave')">✕</button></div>
@@ -415,9 +537,7 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<!-- ============================================================
-     MODAL: EDITAR EVENTO
-     ============================================================ -->
+<!-- MODAL: EDITAR EVENTO -->
 <div class="mov" id="m-editar">
   <div class="modal">
     <div class="modal-t">✏️ Editar Evento<button class="bx" onclick="cerrarMov('m-editar')">✕</button></div>
@@ -457,51 +577,123 @@ let cfg = {
 try{ const c=localStorage.getItem('vig_cfg'); if(c) cfg={...cfg,...JSON.parse(c)}; }catch(e){}
 
 // ============================================================
-// ESTADO DEL TURNO (persiste en localStorage)
+// CACHÉ DE MAESTROS (Placas / Personas / Estado Vehiculos)
 // ============================================================
-// Estructura del turno:
-// {
-//   abierto: true/false,
-//   sede, operario, turno (DIA/NOCHE),
-//   horaInicio: ISO string,
-//   informeId: string,
-//   eventos: [
-//     { tipo: 'recorrido'|'vehiculo'|'asistencia',
-//       hora, obs, esAlerta, fotos:[{nombre,data}], fotosURLs:[], timestamp }
-//   ]
-// }
+let cachePlacas=[];    // [{placa,tipo,marca,modelo,color,spItemId}]
+let cachePersonas=[];  // [{nombre,empresa,puesto,dni,spItemId}]
+let cacheEstadoVeh={}; // {placa: 'ENTRADA'|'SALIDA'}
 
-let turno = { abierto: false, sede:null, operario:null, turno:null, horaInicio:null, informeId:null, eventos:[] };
-
-function saveTurno(){
+async function cargarCacheMaestros(){
+  const tok=await getToken();
+  if(!tok||!spSiteId){ cargarMaestrosLocal(); return; }
   try{
-    const t = {
-      ...turno,
-      eventos: turno.eventos.map(e=>({...e, fotos:(e.fotos||[]).map(f=>({nombre:f.nombre,data:f.data})), fotosURLs:e.fotosURLs||[]}))
-    };
-    localStorage.setItem('vig_turno', JSON.stringify(t));
-  }catch(err){
-    // Si falla por tamaño (fotos), guardar sin datos de fotos pero mantener metadata
-    const t2 = {
-      ...turno,
-      eventos: turno.eventos.map(e=>({...e, fotos:[], fotosURLs:e.fotosURLs||[]}))
-    };
-    try{ localStorage.setItem('vig_turno', JSON.stringify(t2)); }catch(e2){}
+    // Placas
+    if(spPlacasId){
+      const rp=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spPlacasId}/items?$expand=fields&$top=500`,{headers:{Authorization:`Bearer ${tok}`}});
+      const dp=await rp.json();
+      if(dp.value){
+        cachePlacas=dp.value.map(i=>({
+          placa:(i.fields.Placa||i.fields.Title||'').toUpperCase(),
+          tipo:i.fields.TipoVehiculo||'',
+          marca:i.fields.Marca||'',
+          modelo:i.fields.Modelo||'',
+          color:i.fields.Color||'',
+          spItemId:i.id
+        }));
+      }
+    }
+    // Personas
+    if(spPersonasId){
+      const rpe=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spPersonasId}/items?$expand=fields&$top=500`,{headers:{Authorization:`Bearer ${tok}`}});
+      const dpe=await rpe.json();
+      if(dpe.value){
+        cachePersonas=dpe.value.map(i=>({
+          nombre:i.fields.NombreCompleto||i.fields.Title||'',
+          empresa:i.fields.Empresa||'',
+          puesto:i.fields.Puesto||'',
+          dni:i.fields.DNI||'',
+          spItemId:i.id
+        }));
+      }
+    }
+    // Estado vehículos
+    if(spEstadoVehId){
+      const rev=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spEstadoVehId}/items?$expand=fields&$top=500`,{headers:{Authorization:`Bearer ${tok}`}});
+      const dev=await rev.json();
+      if(dev.value){
+        cacheEstadoVeh={};
+        dev.value.forEach(i=>{
+          const placa=(i.fields.Placa||i.fields.Title||'').toUpperCase();
+          if(placa) cacheEstadoVeh[placa]=i.fields.UltimoMovimiento||'';
+        });
+      }
+    }
+    // Guardar en localStorage como respaldo
+    localStorage.setItem('vig_cache_placas',JSON.stringify(cachePlacas));
+    localStorage.setItem('vig_cache_personas',JSON.stringify(cachePersonas));
+    localStorage.setItem('vig_cache_estado_veh',JSON.stringify(cacheEstadoVeh));
+    console.log('Cache maestros cargado — Placas:',cachePlacas.length,'Personas:',cachePersonas.length,'EstadoVeh:',Object.keys(cacheEstadoVeh).length);
+  }catch(e){
+    console.error('cargarCacheMaestros:',e);
+    cargarMaestrosLocal();
   }
 }
 
-function loadTurno(){
+function cargarMaestrosLocal(){
   try{
-    const raw = localStorage.getItem('vig_turno');
-    if(!raw) return null;
-    return JSON.parse(raw);
-  }catch(e){ return null; }
+    const cp=localStorage.getItem('vig_cache_placas'); if(cp) cachePlacas=JSON.parse(cp);
+    const cpe=localStorage.getItem('vig_cache_personas'); if(cpe) cachePersonas=JSON.parse(cpe);
+    const cev=localStorage.getItem('vig_cache_estado_veh'); if(cev) cacheEstadoVeh=JSON.parse(cev);
+  }catch(e){}
 }
 
+async function spActualizarEstadoVeh(placa,movimiento){
+  const tok=await getToken();
+  if(!tok||!spSiteId||!spEstadoVehId) return;
+  placa=placa.toUpperCase();
+  try{
+    // Buscar si existe el item
+    const res=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spEstadoVehId}/items?$expand=fields&$filter=fields/Title eq '${encodeURIComponent(placa)}'`,
+      {headers:{Authorization:`Bearer ${tok}`}}
+    );
+    const d=await res.json();
+    const existe=d.value&&d.value.length>0;
+    if(existe){
+      const itemId=d.value[0].id;
+      await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spEstadoVehId}/items/${itemId}/fields`,
+        {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+         body:JSON.stringify({UltimoMovimiento:movimiento,FechaMovimiento:new Date().toISOString()})});
+    }else{
+      await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spEstadoVehId}/items`,
+        {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+         body:JSON.stringify({fields:{Title:placa,Placa:placa,UltimoMovimiento:movimiento,FechaMovimiento:new Date().toISOString()}})});
+    }
+    cacheEstadoVeh[placa]=movimiento;
+    localStorage.setItem('vig_cache_estado_veh',JSON.stringify(cacheEstadoVeh));
+  }catch(e){ console.error('spActualizarEstadoVeh:',e); }
+}
+
+// ============================================================
+// ESTADO DEL TURNO
+// ============================================================
+let turno = { abierto:false, sede:null, operario:null, turno:null, horaInicio:null, informeId:null, eventos:[] };
+
+function saveTurno(){
+  try{
+    const t={...turno,eventos:turno.eventos.map(e=>({...e,fotos:(e.fotos||[]).map(f=>({nombre:f.nombre,data:f.data})),fotosURLs:e.fotosURLs||[]}))};
+    localStorage.setItem('vig_turno',JSON.stringify(t));
+  }catch(err){
+    const t2={...turno,eventos:turno.eventos.map(e=>({...e,fotos:[],fotosURLs:e.fotosURLs||[]}))};
+    try{ localStorage.setItem('vig_turno',JSON.stringify(t2)); }catch(e2){}
+  }
+}
+function loadTurno(){
+  try{ const raw=localStorage.getItem('vig_turno'); if(!raw) return null; return JSON.parse(raw); }catch(e){ return null; }
+}
 function clearTurno(){ localStorage.removeItem('vig_turno'); }
 
-// Fotos temporales para formularios
-let fotR=[], fotE=[], idxEditar=null;
+let fotR=[],fotE=[],fotV=[],idxEditar=null;
 
 // ============================================================
 // NAVEGACIÓN
@@ -513,65 +705,98 @@ function irA(id){
 }
 
 // ============================================================
-// PANTALLA 2: CONFIGURAR TURNO
+// PANTALLA 2: TURNO
 // ============================================================
 function mostrarPantallaTurno(){
   buildSelectores();
-  const t = loadTurno();
-  if(t && t.abierto){
-    // Hay turno activo — mostrar aviso
-    document.getElementById('turno-en-progreso').style.display='block';
-    document.getElementById('form-turno').style.display='none';
-    const inicio = new Date(t.horaInicio);
-    document.getElementById('turno-progreso-info').textContent =
-      `${t.sede} · ${t.operario} · Turno ${t.turno} · Iniciado a las ${fmtH(inicio)} · ${t.eventos.length} evento${t.eventos.length!==1?'s':''}`;
-  }else{
-    document.getElementById('turno-en-progreso').style.display='none';
-    document.getElementById('form-turno').style.display='block';
-  }
   irA('s-turno');
+  const dp=document.getElementById('diag-panel');
+  if(dp){ dp.textContent=''; dp.style.display='block'; }
+
+  const tLocal=loadTurno();
+  diag('Local turno: '+(tLocal?`abierto=${tLocal.abierto} id=${tLocal.informeId} eventos=${tLocal.eventos?.length}`:'ninguno'));
+
+  notifSilencioso('🔄 Verificando turno activo...');
+
+  (async()=>{
+    let tSP=null;
+    try{ tSP=await spBuscarTurnoAbierto(); diag('SP turno: '+(tSP?`id=${tSP.informeId}`:'ninguno')); }
+    catch(e){ diag('ERROR buscando turno: '+e.message); }
+
+    if(tLocal&&tLocal.abierto&&!tSP){
+      clearTurno();
+      Object.assign(turno,{abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[]});
+      document.getElementById('turno-en-progreso').style.display='none';
+      document.getElementById('form-turno').style.display='block';
+      notifSilencioso(''); return;
+    }
+
+    if(tSP&&tSP.informeId){
+      document.getElementById('turno-en-progreso').style.display='block';
+      document.getElementById('form-turno').style.display='none';
+      if(!tLocal||tLocal.informeId!==tSP.informeId||(tLocal.eventos||[]).length===0){
+        notifSilencioso('🔄 Sincronizando eventos...');
+        let eventos=[];
+        try{ eventos=await spCargarEventosTurno(tSP.informeId); diag('Eventos cargados: '+eventos.length); }
+        catch(e){ diag('ERROR cargando eventos: '+e.message); }
+        Object.assign(turno,{abierto:true,sede:tSP.sede,operario:tSP.operario,turno:tSP.turno,horaInicio:tSP.horaInicio,informeId:tSP.informeId,eventos:eventos});
+        cargarFotosDesdeURLs(turno.eventos).then(()=>{ saveTurno(); renderEventosResumen&&renderEventosResumen(); });
+        saveTurno();
+        document.getElementById('turno-progreso-info').textContent=`${tSP.sede} · ${tSP.operario} · Turno ${tSP.turno} · ${eventos.length} evento${eventos.length!==1?'s':''} · sincronizado desde SharePoint`;
+      }else{
+        let eventosSP=[];
+        try{ eventosSP=await spCargarEventosTurno(tSP.informeId); }catch(e){}
+        if(eventosSP.length>tLocal.eventos.length){
+          const fusionados=eventosSP.map(evSP=>{
+            const evLocal=tLocal.eventos.find(el=>el.hora===evSP.hora&&el.tipo===evSP.tipo);
+            return (evLocal&&evLocal.fotos?.length>0)?{...evSP,fotos:evLocal.fotos}:evSP;
+          });
+          Object.assign(turno,{...tLocal,eventos:fusionados});
+          cargarFotosDesdeURLs(turno.eventos).then(()=>{ saveTurno(); renderEventosResumen&&renderEventosResumen(); });
+          saveTurno();
+          document.getElementById('turno-progreso-info').textContent=`${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${fusionados.length} evento${fusionados.length!==1?'s':''} · actualizado desde SharePoint`;
+        }else{
+          Object.assign(turno,tLocal);
+          document.getElementById('turno-progreso-info').textContent=`${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''}`;
+        }
+      }
+      notifSilencioso('✅ Turno activo encontrado');
+    }else if(tLocal&&tLocal.abierto){
+      document.getElementById('turno-en-progreso').style.display='block';
+      document.getElementById('form-turno').style.display='none';
+      Object.assign(turno,tLocal);
+      document.getElementById('turno-progreso-info').textContent=`${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''} · guardado localmente`;
+      notifSilencioso('⚠ Turno local (sin SP)');
+    }else{
+      document.getElementById('turno-en-progreso').style.display='none';
+      document.getElementById('form-turno').style.display='block';
+      notifSilencioso('');
+    }
+  })();
 }
 
 function continuarTurno(){
-  const t = loadTurno();
-  if(!t) return;
-  Object.assign(turno, t);
-  actualizarBarMod();
-  renderEventosResumen();
+  const t=loadTurno(); if(!t) return;
+  Object.assign(turno,t);
+  actualizarBarMod(); renderEventosResumen();
   document.getElementById('hdr-t').textContent=`${turno.sede} · ${turno.turno}`;
-  irA('s-mod');
-  notif('✅ Turno restaurado');
+  irA('s-mod'); notif('✅ Turno restaurado');
 }
 
 async function cerrarTurnoForzado(){
   if(!confirm('¿Seguro que deseas cerrar el turno en progreso? Se perderán los eventos no guardados.')) return;
-  await spCerrarTurno();
-  clearTurno();
-  turno = { abierto:false, sede:null, operario:null, turno:null, horaInicio:null, informeId:null, eventos:[] };
+  await spCerrarTurno(); clearTurno();
+  turno={abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[]};
   document.getElementById('turno-en-progreso').style.display='none';
   document.getElementById('form-turno').style.display='block';
-  buildSelectores();
-  notif('Turno cerrado');
+  buildSelectores(); notif('Turno cerrado');
 }
 
 function buildSelectores(){
-  // Sede
   const cS=document.getElementById('sel-sede'); cS.innerHTML='';
-  cfg.sedes.forEach(s=>{
-    const b=document.createElement('button');
-    b.className='sel-btn'; b.innerHTML=`<span class="sel-ico">🏢</span>${s}`;
-    b.addEventListener('click',()=>selVal('sede',s,b));
-    cS.appendChild(b);
-  });
-  // Operario
+  cfg.sedes.forEach(s=>{ const b=document.createElement('button'); b.className='sel-btn'; b.innerHTML=`<span class="sel-ico">🏢</span>${s}`; b.addEventListener('click',()=>selVal('sede',s,b)); cS.appendChild(b); });
   const cO=document.getElementById('sel-op'); cO.innerHTML='';
-  cfg.operarios.forEach(op=>{
-    const b=document.createElement('button');
-    b.className='sel-btn'; b.innerHTML=`<span class="sel-ico">👤</span>${op}`;
-    b.addEventListener('click',()=>selVal('operario',op,b));
-    cO.appendChild(b);
-  });
-  // Reset turno
+  cfg.operarios.forEach(op=>{ const b=document.createElement('button'); b.className='sel-btn'; b.innerHTML=`<span class="sel-ico">👤</span>${op}`; b.addEventListener('click',()=>selVal('operario',op,b)); cO.appendChild(b); });
   document.getElementById('btn-dia').classList.remove('on');
   document.getElementById('btn-noche').classList.remove('on');
   turno.sede=null; turno.operario=null; turno.turno=null;
@@ -580,39 +805,25 @@ function buildSelectores(){
 
 function selVal(tipo,val,btn){
   btn.parentElement.querySelectorAll('.sel-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  turno[tipo]=val;
+  btn.classList.add('on'); turno[tipo]=val;
   document.getElementById('btn-abrir-turno').disabled=!(turno.sede&&turno.operario&&turno.turno);
 }
 
 function generarUUID(){
-  // Genera un ID único tipo UUID v4
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
-    const r=Math.random()*16|0;
-    return (c==='x'?r:(r&0x3|0x8)).toString(16);
-  });
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{ const r=Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16); });
 }
 
 async function abrirTurno(){
   const btn=document.getElementById('btn-abrir-turno');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Abriendo turno...';
-
-  turno.abierto = true;
-  turno.horaInicio = new Date().toISOString();
-  turno.eventos = [];
-  turno.informeId = generarUUID();
+  turno.abierto=true; turno.horaInicio=new Date().toISOString(); turno.eventos=[]; turno.informeId=generarUUID();
   saveTurno();
-
+  // Cargar caché maestros al abrir turno
+  await cargarCacheMaestros();
   const tok=await getToken();
-  if(tok&&spSiteId&&spTurnosId){
-    await spCrearTurno();
-    notif('✅ Turno abierto y sincronizado con SharePoint');
-  }else{
-    notif('✅ Turno abierto (guardado localmente)');
-  }
-
-  actualizarBarMod();
-  renderEventosResumen();
+  if(tok&&spSiteId&&spTurnosId){ await spCrearTurno(); notif('✅ Turno abierto y sincronizado con SharePoint'); }
+  else{ notif('✅ Turno abierto (guardado localmente)'); }
+  actualizarBarMod(); renderEventosResumen();
   document.getElementById('hdr-t').textContent=`${turno.sede} · ${turno.turno}`;
   btn.disabled=false; btn.innerHTML='Abrir Turno →';
   irA('s-mod');
@@ -632,21 +843,11 @@ function actualizarBarMod(){
     <div><div class="inf-d">Inicio</div><div class="inf-v">${fmtH(h)}</div></div>
     <div><div class="inf-d">Eventos</div><div class="inf-v">${turno.eventos.length}</div></div>
     ${al>0?`<div><div class="inf-d" style="color:var(--r)">Alertas</div><div class="inf-v" style="color:var(--r)">${al}</div></div>`:''}`;
-
-  const cnt=document.getElementById('contador-eventos');
-  cnt.textContent=`${turno.eventos.length} evento${turno.eventos.length!==1?'s':''}`;
+  document.getElementById('contador-eventos').textContent=`${turno.eventos.length} evento${turno.eventos.length!==1?'s':''}`;
 }
 
-// Ordenamiento cronológico por timestamp completo (fecha+hora)
 function sortEventos(eventos){
-  return [...eventos].sort((a,b)=>{
-    const ta=a.timestamp||0;
-    const tb=b.timestamp||0;
-    // Si tienen timestamp usar ese (fecha+hora exacta)
-    if(ta&&tb) return ta-tb;
-    // Fallback: ordenar por hora string
-    return (a.hora||'').localeCompare(b.hora||'');
-  });
+  return [...eventos].sort((a,b)=>{ const ta=a.timestamp||0,tb=b.timestamp||0; if(ta&&tb) return ta-tb; return (a.hora||'').localeCompare(b.hora||''); });
 }
 
 function renderEventosResumen(){
@@ -655,20 +856,36 @@ function renderEventosResumen(){
     cont.innerHTML=`<div class="vacio"><span class="vic">📋</span>Sin eventos registrados aún<br><small>Selecciona un módulo para registrar</small></div>`;
     return;
   }
-  // Ordenar por timestamp completo (fecha+hora)
   const evOrdenados=sortEventos(turno.eventos);
-  cont.innerHTML=evOrdenados.map((ev,i)=>{
+  cont.innerHTML=evOrdenados.map((ev)=>{
     const idx=turno.eventos.indexOf(ev);
-    const al=ev.esAlerta;
-    const badge=al?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`;
+    const esVeh=ev.tipo==='vehiculo';
+    // Header color
+    const hClass=esVeh?'hv':ev.esAlerta?'ha':'hn';
+    const horaClass=esVeh?'hv':ev.esAlerta?'ha':'hn';
+    // Badges
     const tipoBadge=ev.tipo==='recorrido'?`<span class="badge b-recorrido">🚶 Recorrido</span>`:
-                    ev.tipo==='vehiculo'?`<span class="badge b-vehiculo">🚗 Vehículo</span>`:
+                    esVeh?`<span class="badge b-vehiculo">🚗 Vehículo</span>`:
                     `<span class="badge b-asistencia">📋 Asistencia</span>`;
+    const estadoBadge=esVeh
+      ?`<span class="badge ${ev.veh?.movimiento==='ENTRADA'?'b-entrada':'b-salida'}">${ev.veh?.movimiento||''}</span>`
+      :(ev.esAlerta?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`);
+    // Ficha vehicular mini
+    const fichaVeh=esVeh&&ev.veh?`
+      <div class="veh-mini">
+        <div class="veh-mini-placa">${ev.veh.placa||''}</div>
+        ${ev.veh.tipo?`<div class="veh-mini-campo"><b>Tipo:</b> ${ev.veh.tipo}</div>`:''}
+        ${ev.veh.conductor?`<div class="veh-mini-campo"><b>Conductor:</b> ${ev.veh.conductor}</div>`:''}
+        ${ev.veh.km?`<div class="veh-mini-campo"><b>KM:</b> ${Number(ev.veh.km).toLocaleString()}</div>`:''}
+        ${ev.veh.destino?`<div class="veh-mini-campo"><b>Destino:</b> ${ev.veh.destino}</div>`:''}
+      </div>
+      ${ev.veh.detalle?`<div class="veh-items-box"><b>Detalle:</b> ${ev.veh.detalle}</div>`:''}
+    `:'';
     return `<div class="ev">
-      <div class="ev-h ${al?'ha':'hn'}">
+      <div class="ev-h ${hClass}">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          ${tipoBadge}${badge}
-          <span class="ev-hora ${al?'ha':'hn'}">${ev.hora}</span>
+          ${tipoBadge}${estadoBadge}
+          <span class="ev-hora ${horaClass}">${ev.hora}</span>
         </div>
         <div class="ev-acts">
           <button class="btn btn-s btn-sm" onclick="abrirEditar(${idx})">✏️</button>
@@ -676,7 +893,8 @@ function renderEventosResumen(){
         </div>
       </div>
       <div class="ev-body">
-        <div class="ev-obs">${ev.obs||''}</div>
+        ${fichaVeh}
+        ${ev.obs&&!esVeh?`<div class="ev-obs">${ev.obs}</div>`:''}
         ${renderFotoEvento(ev)}
       </div>
     </div>`;
@@ -685,38 +903,22 @@ function renderEventosResumen(){
 }
 
 function renderFotoEvento(ev){
-  // Si tiene fotos en base64 (local) → usar base64
-  // Si solo tiene URLs de SP → mostrar con tag img apuntando a SP
   if(ev.fotos&&ev.fotos.length>0){
-    return `
-      <div class="ev-fotos">
-        ${ev.fotos.slice(0,4).map(f=>`<img class="thumb" src="${f.data}">`).join('')}
-        ${ev.fotos.length>4?`<div style="width:50px;height:50px;background:var(--gc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gm);">+${ev.fotos.length-4}</div>`:''}
-      </div>
-      <div style="font-size:11px;color:var(--gm);margin-top:4px;">📷 ${ev.fotos.length} foto${ev.fotos.length>1?'s':''}</div>`;
+    return `<div class="ev-fotos">${ev.fotos.slice(0,4).map(f=>`<img class="thumb" src="${f.data}">`).join('')}
+      ${ev.fotos.length>4?`<div style="width:50px;height:50px;background:var(--gc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gm);">+${ev.fotos.length-4}</div>`:''}
+    </div><div style="font-size:11px;color:var(--gm);margin-top:4px;">📷 ${ev.fotos.length} foto${ev.fotos.length>1?'s':''}</div>`;
   }else if(ev.fotosURLs&&ev.fotosURLs.length>0){
-    // Fotos desde SharePoint — mostrar directamente con la URL
-    // SharePoint permite acceso autenticado via cookie de sesión Microsoft
-    return `
-      <div class="ev-fotos">
-        ${ev.fotosURLs.slice(0,4).map(url=>`<img class="thumb" src="${url}" onerror="this.style.display='none'">`).join('')}
-        ${ev.fotosURLs.length>4?`<div style="width:50px;height:50px;background:var(--gc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gm);">+${ev.fotosURLs.length-4}</div>`:''}
-      </div>
-      <div style="font-size:11px;color:var(--gm);margin-top:4px;">📷 ${ev.fotosURLs.length} foto${ev.fotosURLs.length>1?'s':''} (SP)</div>`;
-  }else{
-    return `<div style="font-size:12px;color:var(--gm);margin-top:4px;">Sin fotos</div>`;
+    return `<div class="ev-fotos">${ev.fotosURLs.slice(0,4).map(url=>`<img class="thumb" src="${url}" onerror="this.style.display='none'">`).join('')}
+      ${ev.fotosURLs.length>4?`<div style="width:50px;height:50px;background:var(--gc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gm);">+${ev.fotosURLs.length-4}</div>`:''}
+    </div><div style="font-size:11px;color:var(--gm);margin-top:4px;">📷 ${ev.fotosURLs.length} foto${ev.fotosURLs.length>1?'s':''} (SP)</div>`;
   }
+  return `<div style="font-size:12px;color:var(--gm);margin-top:4px;">Sin fotos</div>`;
 }
 
-function elimEvento(idx){
-  if(!confirm('¿Eliminar este evento?')) return;
-  turno.eventos.splice(idx,1);
-  saveTurno();
-  renderEventosResumen();
-}
+function elimEvento(idx){ if(!confirm('¿Eliminar este evento?')) return; turno.eventos.splice(idx,1); saveTurno(); renderEventosResumen(); }
 
 // ============================================================
-// PANTALLA 4: REGISTRO DE EVENTOS
+// PANTALLA 4: RECORRIDO
 // ============================================================
 function irRegistro(tipo){
   if(tipo==='recorrido'){
@@ -728,6 +930,22 @@ function irRegistro(tipo){
     document.getElementById('btn-guardar-r').disabled=false;
     document.getElementById('btn-guardar-r').textContent='✅ Guardar Evento';
     irA('s-recorrido');
+  }else if(tipo==='vehiculo'){
+    fotV=[];
+    document.getElementById('v-hora').value=fmtHI(new Date());
+    document.getElementById('v-placa').value='';
+    document.getElementById('v-conductor').value='';
+    document.getElementById('v-km').value='';
+    document.getElementById('v-destino').value='';
+    document.getElementById('v-detalle').value='';
+    document.getElementById('fp-v').innerHTML='';
+    document.getElementById('btn-guardar-v').disabled=false;
+    document.getElementById('btn-guardar-v').textContent='✅ Guardar Evento';
+    document.getElementById('vbtn-entrada').classList.remove('on');
+    document.getElementById('vbtn-salida').classList.remove('on');
+    document.getElementById('veh-estado-alerta').style.display='none';
+    selVehTipoActual=null;
+    irA('s-vehiculo');
   }
 }
 
@@ -737,20 +955,12 @@ async function guardarEvento(tipo){
   const esAlerta=document.getElementById('tog-r').checked;
   if(!hora){alert('Indica la hora.');return;}
   if(!obs){alert('Ingresa una observación.');return;}
-
   const btn=document.getElementById('btn-guardar-r');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Guardando...';
-
-  const evento={tipo, hora, obs, esAlerta, fotos:[...fotR], fotosURLs:[], timestamp:Date.now()};
-
-  // SharePoint
+  const evento={tipo,hora,obs,esAlerta,fotos:[...fotR],fotosURLs:[],timestamp:Date.now()};
   const tok=await getToken();
-  console.log('guardarEvento — token:', tok?'OK':'NULL', 'spSiteId:', spSiteId, 'spListId:', spListId);
-  console.log('turno.informeId:', turno.informeId);
-
   if(tok&&spSiteId&&spListId){
     try{
-      // Normalizar sede para carpeta (sin tildes ni caracteres especiales)
       const sedeNorm=turno.sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
       const carp=`${sedeNorm}/${turno.informeId}`;
       for(let i=0;i<evento.fotos.length;i++){
@@ -758,28 +968,158 @@ async function guardarEvento(tipo){
         if(url) evento.fotosURLs.push(url);
       }
       const ok=await spSaveEv(evento);
-      console.log('spSaveEv resultado:', ok);
-      if(ok){
-        notif('✅ Guardado en SharePoint');
-      }else{
-        notif('⚠ Error al guardar en SharePoint — solo local');
-        console.error('spSaveEv retornó false');
-      }
-    }catch(e){
-      console.error('SP guardarEvento error:',e);
-      notif('⚠ Error SP: '+e.message);
-    }
+      notif(ok?'✅ Guardado en SharePoint':'⚠ Error al guardar en SharePoint — solo local');
+    }catch(e){ console.error('SP guardarEvento:',e); notif('⚠ Error SP: '+e.message); }
+  }else{ notif('💾 Guardado localmente'); }
+  turno.eventos.push(evento); saveTurno(); renderEventosResumen();
+  irA('s-mod'); btn.disabled=false; btn.innerHTML='✅ Guardar Evento';
+}
+
+// ============================================================
+// PANTALLA 5: CONTROL VEHICULAR
+// ============================================================
+let selVehTipoActual=null;
+
+function selVehTipo(val,btn){
+  document.querySelectorAll('#s-vehiculo .sel-grid .sel-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  selVehTipoActual=val;
+  document.getElementById('lbl-v-destino').textContent=val==='ENTRADA'?'Procedencia (¿de dónde viene?)':'Destino (¿a dónde va?)';
+  // Validar estado si ya hay placa ingresada
+  const placa=document.getElementById('v-placa').value.trim();
+  if(placa) validarEstadoVehiculo(placa,val);
+}
+
+function validarEstadoVehiculo(placa,movimiento){
+  if(!placa||!movimiento) return;
+  const estadoActual=cacheEstadoVeh[placa.toUpperCase()];
+  const alertaEl=document.getElementById('veh-estado-alerta');
+  // Detectar inconsistencia: mismo movimiento consecutivo
+  if(estadoActual&&estadoActual===movimiento){
+    alertaEl.style.display='block';
+    alertaEl.innerHTML=`⚠ <b>Atención:</b> El último movimiento registrado para la placa <b>${placa}</b> también fue <b>${movimiento}</b>. ¿Deseas continuar de todas formas?`;
   }else{
-    const razon=!tok?'sin token':!spSiteId?'sin siteId':'sin listId';
-    console.warn('Sin SP:', razon);
-    notif('💾 Guardado localmente ('+razon+')');
+    alertaEl.style.display='none';
+  }
+}
+
+async function guardarEventoVehiculo(){
+  const hora=document.getElementById('v-hora').value;
+  const placa=document.getElementById('v-placa').value.trim().toUpperCase();
+  const conductor=document.getElementById('v-conductor').value.trim();
+  const km=document.getElementById('v-km').value;
+  const destino=document.getElementById('v-destino').value.trim();
+  const detalle=document.getElementById('v-detalle').value.trim();
+
+  if(!selVehTipoActual){alert('Selecciona ENTRADA o SALIDA.');return;}
+  if(!hora){alert('Indica la hora.');return;}
+  if(!placa){alert('Ingresa la placa del vehículo.');return;}
+  if(!conductor){alert('Ingresa el nombre del conductor.');return;}
+
+  // Validar estado y pedir confirmación si hay inconsistencia
+  const estadoActual=cacheEstadoVeh[placa];
+  if(estadoActual&&estadoActual===selVehTipoActual){
+    const ok=confirm(`⚠ El último movimiento de ${placa} fue ${selVehTipoActual}.\n¿Deseas registrar otra ${selVehTipoActual} de todas formas?`);
+    if(!ok) return;
   }
 
-  turno.eventos.push(evento);
-  saveTurno();
-  renderEventosResumen();
-  irA('s-mod');
-  btn.disabled=false; btn.innerHTML='✅ Guardar Evento';
+  // Obtener datos complementarios de la placa desde caché
+  const datosPlaca=cachePlacas.find(p=>p.placa===placa)||{};
+
+  const btn=document.getElementById('btn-guardar-v');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Guardando...';
+
+  const evento={
+    tipo:'vehiculo', hora,
+    obs:`${selVehTipoActual} — ${placa}${conductor?' — '+conductor:''}`,
+    esAlerta:false,
+    fotos:[...fotV], fotosURLs:[], timestamp:Date.now(),
+    veh:{
+      movimiento:selVehTipoActual,
+      placa, conductor,
+      tipo:datosPlaca.tipo||'',
+      marca:datosPlaca.marca||'',
+      modelo:datosPlaca.modelo||'',
+      color:datosPlaca.color||'',
+      km, destino, detalle
+    }
+  };
+
+  const tok=await getToken();
+  if(tok&&spSiteId&&spVehId){
+    try{
+      const sedeNorm=turno.sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+      const carp=`${sedeNorm}/${turno.informeId}`;
+      for(let i=0;i<evento.fotos.length;i++){
+        const url=await spUpFoto(evento.fotos[i].data,`veh_${placa}_${hora.replace(':','-')}_f${i+1}.jpg`,carp);
+        if(url) evento.fotosURLs.push(url);
+      }
+      const ok=await spSaveEvVehiculo(evento);
+      if(ok){
+        // Actualizar estado vehículo en background
+        spActualizarEstadoVeh(placa,selVehTipoActual);
+        notif('✅ Guardado en SharePoint');
+      }else{ notif('⚠ Error al guardar en SharePoint — solo local'); }
+    }catch(e){ console.error('SP vehiculo:',e); notif('⚠ Error SP: '+e.message); }
+  }else{
+    // Sin SP: actualizar estado en caché local
+    cacheEstadoVeh[placa]=selVehTipoActual;
+    localStorage.setItem('vig_cache_estado_veh',JSON.stringify(cacheEstadoVeh));
+    notif('💾 Guardado localmente');
+  }
+
+  turno.eventos.push(evento); saveTurno(); renderEventosResumen();
+  irA('s-mod'); btn.disabled=false; btn.innerHTML='✅ Guardar Evento';
+}
+
+// ============================================================
+// AUTOCOMPLETADO
+// ============================================================
+function acBuscar(tipo,val){
+  const listId=tipo==='placa'?'ac-placa':'ac-conductor';
+  const list=document.getElementById(listId);
+  if(!val||val.length<1){ list.style.display='none'; return; }
+  const q=val.toUpperCase();
+  let items=[];
+  if(tipo==='placa'){
+    items=cachePlacas.filter(p=>p.placa.includes(q)||p.marca.toUpperCase().includes(q)||p.modelo.toUpperCase().includes(q));
+    list.innerHTML=items.slice(0,8).map(p=>`
+      <div class="ac-item" onmousedown="acSeleccionar('placa','${p.placa.replace(/'/g,"\\'")}')">
+        <b>${resaltarMatch(p.placa,q)}</b>
+        <div class="ac-sub">${[p.tipo,p.marca,p.modelo,p.color].filter(Boolean).join(' · ')}</div>
+      </div>`).join('');
+  }else{
+    items=cachePersonas.filter(p=>p.nombre.toUpperCase().includes(q)||p.dni.includes(val)||p.empresa.toUpperCase().includes(q));
+    list.innerHTML=items.slice(0,8).map(p=>`
+      <div class="ac-item" onmousedown="acSeleccionar('conductor','${p.nombre.replace(/'/g,"\\'")}')">
+        <b>${resaltarMatch(p.nombre,q)}</b>
+        <div class="ac-sub">${[p.empresa,p.puesto,p.dni].filter(Boolean).join(' · ')}</div>
+      </div>`).join('');
+  }
+  list.style.display=items.length?'block':'none';
+}
+
+function resaltarMatch(texto,q){
+  const idx=texto.toUpperCase().indexOf(q);
+  if(idx===-1) return texto;
+  return texto.slice(0,idx)+'<b style="color:var(--r)">'+texto.slice(idx,idx+q.length)+'</b>'+texto.slice(idx+q.length);
+}
+
+function acSeleccionar(tipo,val){
+  if(tipo==='placa'){
+    document.getElementById('v-placa').value=val;
+    document.getElementById('ac-placa').style.display='none';
+    // Validar estado con el tipo de movimiento actual
+    if(selVehTipoActual) validarEstadoVehiculo(val,selVehTipoActual);
+    // Completar datos del vehículo en el fondo (solo info, no campos del form)
+  }else{
+    document.getElementById('v-conductor').value=val;
+    document.getElementById('ac-conductor').style.display='none';
+  }
+}
+
+function acCerrar(tipo){
+  document.getElementById(tipo==='placa'?'ac-placa':'ac-conductor').style.display='none';
 }
 
 // ============================================================
@@ -803,9 +1143,7 @@ function guardarEdicion(){
   const esAlerta=document.getElementById('tog-e').checked;
   if(!hora||!obs){alert('Completa todos los campos.');return;}
   turno.eventos[idxEditar]={...turno.eventos[idxEditar],hora,obs,esAlerta,fotos:[...fotE],timestamp:Date.now()};
-  saveTurno();
-  renderEventosResumen();
-  cerrarMov('m-editar');
+  saveTurno(); renderEventosResumen(); cerrarMov('m-editar');
 }
 
 // ============================================================
@@ -814,31 +1152,27 @@ function guardarEdicion(){
 function pedirCerrarTurno(){
   if(!turno.eventos.length){alert('No hay eventos registrados en el turno.');return;}
   if(!confirm('¿Cerrar turno y preparar el informe final?')) return;
-  renderPreview();
-  irA('s-prev');
+  renderPreview(); irA('s-prev');
 }
 
 // ============================================================
 // TOGGLE
 // ============================================================
 function setTog(modo){
-  const chk=document.getElementById(`tog-${modo}`);
-  const txt=document.getElementById(`tog-txt-${modo}`);
-  txt.textContent=chk.checked?'ALERTA':'NORMAL';
-  txt.className='tog-txt'+(chk.checked?' on':'');
+  const chk=document.getElementById(`tog-${modo}`),txt=document.getElementById(`tog-txt-${modo}`);
+  txt.textContent=chk.checked?'ALERTA':'NORMAL'; txt.className='tog-txt'+(chk.checked?' on':'');
 }
 function resetTog(modo){
   document.getElementById(`tog-${modo}`).checked=false;
-  const txt=document.getElementById(`tog-txt-${modo}`);
-  txt.textContent='NORMAL'; txt.className='tog-txt';
+  const txt=document.getElementById(`tog-txt-${modo}`); txt.textContent='NORMAL'; txt.className='tog-txt';
 }
 
 // ============================================================
 // FOTOS
 // ============================================================
 function procesarFotos(input,modo){
-  const arr=modo==='r'?fotR:fotE;
-  const pid=modo==='r'?'fp-r':'fp-e';
+  const arr=modo==='r'?fotR:modo==='v'?fotV:fotE;
+  const pid=modo==='r'?'fp-r':modo==='v'?'fp-v':'fp-e';
   Array.from(input.files).forEach(f=>{
     const rd=new FileReader();
     rd.onload=e=>{ arr.push({nombre:f.name,data:e.target.result}); renderFP(pid,arr,modo); };
@@ -851,9 +1185,9 @@ function renderFP(pid,arr,modo){
     <div class="fw"><img src="${f.data}"><button class="fdel" onclick="delFoto('${modo}',${i})">✕</button></div>`).join('');
 }
 function delFoto(modo,i){
-  const arr=modo==='r'?fotR:fotE;
+  const arr=modo==='r'?fotR:modo==='v'?fotV:fotE;
   arr.splice(i,1);
-  renderFP(modo==='r'?'fp-r':'fp-e',arr,modo);
+  renderFP(modo==='r'?'fp-r':modo==='v'?'fp-v':'fp-e',arr,modo);
 }
 
 // ============================================================
@@ -861,9 +1195,11 @@ function delFoto(modo,i){
 // ============================================================
 function renderPreview(){
   const fecha=fmtF(new Date());
-  const evOrd=sortEventos(turno.eventos);
-  const al=evOrd.filter(e=>e.esAlerta).length;
-  const tF=evOrd.reduce((a,e)=>a+(e.fotos?e.fotos.length:0),0);
+  const todosEv=sortEventos(turno.eventos);
+  const evRec=todosEv.filter(e=>e.tipo==='recorrido');
+  const evVeh=todosEv.filter(e=>e.tipo==='vehiculo');
+  const al=todosEv.filter(e=>e.esAlerta).length;
+  const tF=todosEv.reduce((a,e)=>a+(e.fotos?e.fotos.length:0),0);
 
   let h=`<div class="card">
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bd);">
@@ -871,30 +1207,56 @@ function renderPreview(){
       <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Operario</div><div style="font-weight:700;">${turno.operario}</div></div>
       <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Turno</div><span class="badge ${turno.turno==='DIA'?'b-dia':'b-noche'}">${turno.turno}</span></div>
       <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Fecha</div><div style="font-weight:700;">${fecha}</div></div>
-      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Eventos</div><div style="font-weight:700;">${evOrd.length}</div></div>
+      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Recorridos</div><div style="font-weight:700;">${evRec.length}</div></div>
+      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Vehiculares</div><div style="font-weight:700;">${evVeh.length}</div></div>
       <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Fotos</div><div style="font-weight:700;">${tF}</div></div>
       ${al>0?`<div><div style="font-size:11px;color:var(--r);text-transform:uppercase;">Alertas</div><div style="font-weight:700;color:var(--r);">${al}</div></div>`:''}
     </div>`;
 
-  evOrd.forEach((ev,i)=>{
-    const al2=ev.esAlerta;
-    const badge=al2?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`;
-    const tipoBadge=ev.tipo==='recorrido'?`<span class="badge b-recorrido">🚶 Recorrido</span>`:
-                    ev.tipo==='vehiculo'?`<span class="badge b-vehiculo">🚗 Vehículo</span>`:
-                    `<span class="badge b-asistencia">📋 Asistencia</span>`;
-    h+=`<div class="pev">
-      <div class="pev-h ${al2?'pa':'pn'}">
-        ${tipoBadge}${badge}
-        <span class="pev-hora" style="color:${al2?'var(--r)':'var(--v)'};">${ev.hora}</span>
-      </div>
-      <div class="pev-obs">${ev.obs||''}</div>
-      ${ev.fotos&&ev.fotos.length>0
-        ?`<div class="pev-fotos">${ev.fotos.map(f=>`<img class="pthumb" src="${f.data}">`).join('')}</div>`
-        :ev.fotosURLs&&ev.fotosURLs.length>0
-          ?`<div class="pev-fotos">${ev.fotosURLs.map(url=>`<img class="pthumb" src="${url}" onerror="this.style.display='none'">`).join('')}</div>`
-          :''}
-    </div>`;
-  });
+  // Sección recorridos
+  if(evRec.length>0){
+    h+=`<div style="font-size:12px;font-weight:700;color:var(--az);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">🚶 Recorridos de Instalaciones</div>`;
+    evRec.forEach(ev=>{
+      const al2=ev.esAlerta;
+      h+=`<div class="pev">
+        <div class="pev-h ${al2?'pa':'pn'}">
+          <span class="badge b-recorrido">🚶 Recorrido</span>
+          ${al2?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`}
+          <span class="pev-hora" style="color:${al2?'var(--r)':'var(--v)'};">${ev.hora}</span>
+        </div>
+        <div class="pev-obs">${ev.obs||''}</div>
+        ${ev.fotos&&ev.fotos.length>0?`<div class="pev-fotos">${ev.fotos.map(f=>`<img class="pthumb" src="${f.data}">`).join('')}</div>`:
+          ev.fotosURLs&&ev.fotosURLs.length>0?`<div class="pev-fotos">${ev.fotosURLs.map(url=>`<img class="pthumb" src="${url}" onerror="this.style.display='none'">`).join('')}</div>`:''}
+      </div>`;
+    });
+  }
+
+  // Sección vehicular
+  if(evVeh.length>0){
+    h+=`<div style="font-size:12px;font-weight:700;color:var(--am);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px;">🚗 Control Vehicular</div>`;
+    evVeh.forEach(ev=>{
+      const movBadge=ev.veh?.movimiento==='ENTRADA'?`<span class="badge b-entrada">ENTRADA</span>`:`<span class="badge b-salida">SALIDA</span>`;
+      h+=`<div class="pev">
+        <div class="pev-h pv">
+          ${movBadge}
+          <span style="font-size:15px;font-weight:700;color:var(--go);letter-spacing:1px;">${ev.veh?.placa||''}</span>
+          <span class="pev-hora" style="color:var(--am);">${ev.hora}</span>
+        </div>
+        <div style="padding:7px 11px;">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
+            ${ev.veh?.tipo?`<span style="font-size:12px;color:var(--gm);"><b>Tipo:</b> ${ev.veh.tipo}</span>`:''}
+            ${ev.veh?.conductor?`<span style="font-size:12px;color:var(--gm);"><b>Conductor:</b> ${ev.veh.conductor}</span>`:''}
+            ${ev.veh?.km?`<span style="font-size:12px;color:var(--gm);"><b>KM:</b> ${Number(ev.veh.km).toLocaleString()}</span>`:''}
+            ${ev.veh?.destino?`<span style="font-size:12px;color:var(--gm);"><b>Destino:</b> ${ev.veh.destino}</span>`:''}
+          </div>
+          ${ev.veh?.detalle?`<div style="font-size:12px;color:var(--gm);background:var(--gc);border-radius:5px;padding:5px 8px;">${ev.veh.detalle}</div>`:''}
+        </div>
+        ${ev.fotos&&ev.fotos.length>0?`<div class="pev-fotos">${ev.fotos.map(f=>`<img class="pthumb" src="${f.data}">`).join('')}</div>`:
+          ev.fotosURLs&&ev.fotosURLs.length>0?`<div class="pev-fotos">${ev.fotosURLs.map(url=>`<img class="pthumb" src="${url}" onerror="this.style.display='none'">`).join('')}</div>`:''}
+      </div>`;
+    });
+  }
+
   h+='</div>';
   document.getElementById('prev-cont').innerHTML=h;
 }
@@ -906,40 +1268,28 @@ async function generarPDF(){
   const btn=document.getElementById('btn-pdf');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Preparando fotos...';
 
-  // PASO PREVIO: descargar fotos desde SP para eventos que solo tienen URLs
+  // Descargar fotos desde SP para eventos que solo tienen URLs
   const tok=await getToken();
   if(tok&&spSiteId){
     btn.innerHTML='<span class="spin"></span>Descargando fotos...';
     for(const ev of turno.eventos){
-      if((!ev.fotos||ev.fotos.length===0) && ev.fotosURLs&&ev.fotosURLs.length>0){
+      if((!ev.fotos||ev.fotos.length===0)&&ev.fotosURLs&&ev.fotosURLs.length>0){
         ev.fotos=[];
         for(const url of ev.fotosURLs){
           try{
             const decoded=decodeURIComponent(new URL(url).pathname);
             const marker='Fotos_Vigilancia/';
             const markerIdx=decoded.indexOf(marker);
-            if(markerIdx===-1){ console.warn('No se encontró Fotos_Vigilancia en:', decoded); continue; }
+            if(markerIdx===-1){ continue; }
             const rutaDesdeLib=decoded.substring(markerIdx);
             const rutaEncoded=rutaDesdeLib.split('/').map(s=>encodeURIComponent(s)).join('/');
-            console.log('Descargando foto:', rutaDesdeLib);
-            const driveRes=await fetch(
-              `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`,
-              {headers:{Authorization:`Bearer ${tok}`}}
-            );
+            const driveRes=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`,{headers:{Authorization:`Bearer ${tok}`}});
             if(driveRes.ok){
               const blob=await driveRes.blob();
-              const b64=await new Promise(r=>{
-                const rd=new FileReader();
-                rd.onload=e=>r(e.target.result);
-                rd.readAsDataURL(blob);
-              });
+              const b64=await new Promise(r=>{ const rd=new FileReader(); rd.onload=e=>r(e.target.result); rd.readAsDataURL(blob); });
               ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
-              console.log('✅ Foto descargada OK:', rutaRelativa);
-            }else{
-              const err=await driveRes.json();
-              console.error('❌ Error foto:', driveRes.status, err?.error?.message, rutaRelativa);
-            }
-          }catch(e){ console.warn('Error foto:', e.message); }
+            }else{ const err=await driveRes.json(); console.error('❌ Error foto:',driveRes.status,err?.error?.message); }
+          }catch(e){ console.warn('Error foto:',e.message); }
         }
       }
     }
@@ -952,7 +1302,9 @@ async function generarPDF(){
     const pW=210,pH=297,mg=15,cW=pW-mg*2;
     let y=mg,pag=1;
     const fecha=fmtF(new Date());
-    const evOrd=sortEventos(turno.eventos);
+    const todosEv=sortEventos(turno.eventos);
+    const evRec=todosEv.filter(e=>e.tipo==='recorrido');
+    const evVeh=todosEv.filter(e=>e.tipo==='vehiculo');
 
     function cab(n){
       doc.setDrawColor(180,180,180); doc.setLineWidth(0.4); doc.rect(mg,y,cW,22);
@@ -964,15 +1316,12 @@ async function generarPDF(){
       doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(11);
       doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+38+(cW-38-50)/2,y+13,{align:'center'});
       doc.setDrawColor(180,180,180);
-      doc.line(pW-mg-50,y,pW-mg-50,y+22);
-      doc.line(pW-mg-50,y+8,pW-mg,y+8);
-      doc.line(pW-mg-50,y+15,pW-mg,y+15);
+      doc.line(pW-mg-50,y,pW-mg-50,y+22); doc.line(pW-mg-50,y+8,pW-mg,y+8); doc.line(pW-mg-50,y+15,pW-mg,y+15);
       doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(30,30,30);
       doc.text('Version: '+cfg.version,pW-mg-25,y+5.5,{align:'center'});
       doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
       doc.text('Elaborado por: '+turno.operario,pW-mg-25,y+12.5,{align:'center'});
-      doc.text('Fecha:',pW-mg-41,y+19.5);
-      doc.text(fecha,pW-mg-2,y+19.5,{align:'right'});
+      doc.text('Fecha:',pW-mg-41,y+19.5); doc.text(fecha,pW-mg-2,y+19.5,{align:'right'});
       y+=26;
       doc.setFontSize(7); doc.setTextColor(120,120,120); doc.setFont('helvetica','normal');
       doc.text(`Pagina ${n}`,pW-mg,y,{align:'right'});
@@ -984,16 +1333,16 @@ async function generarPDF(){
     cab(1);
 
     // Resumen
-    const tF=evOrd.reduce((a,e)=>a+(e.fotos?e.fotos.length:0),0);
-    const tA=evOrd.filter(e=>e.esAlerta).length;
+    const tF=todosEv.reduce((a,e)=>a+(e.fotos?e.fotos.length:0),0);
+    const tA=todosEv.filter(e=>e.esAlerta).length;
     doc.setFillColor(248,232,230); doc.roundedRect(mg,y,cW,18,2,2,'F');
     doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(192,57,43);
     doc.text('RESUMEN DEL TURNO',mg+5,y+7);
     doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
     doc.text(`Operario: ${turno.operario}`,mg+5,y+13);
-    doc.text(`Eventos: ${evOrd.length}`,mg+80,y+13);
-    doc.text(`Fotos: ${tF}`,mg+118,y+13);
-    doc.text(`Alertas: ${tA}`,mg+148,y+13);
+    doc.text(`Recorridos: ${evRec.length}`,mg+75,y+13);
+    doc.text(`Vehiculares: ${evVeh.length}`,mg+113,y+13);
+    doc.text(`Fotos: ${tF}`,mg+153,y+13);
     y+=22;
 
     if(tA>0){
@@ -1003,61 +1352,166 @@ async function generarPDF(){
       y+=12;
     }
 
-    // Eventos
-    for(let i=0;i<evOrd.length;i++){
-      const ev=evOrd[i];
-      if(y+32>pH-20) newPag();
-      const al=ev.esAlerta||false;
-      const cf=al?[248,232,230]:[234,243,222];
-      const cc=al?[192,57,43]:[59,109,17];
-      const tipoLabel=ev.tipo==='recorrido'?'RECORRIDO':ev.tipo==='vehiculo'?'VEHICULO':'ASISTENCIA';
-
-      doc.setFillColor(...cf); doc.roundedRect(mg,y,cW,10,1.5,1.5,'F');
-      doc.setFillColor(...cc); doc.rect(mg,y,3,10,'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...cc);
-      doc.text(`${tipoLabel} - Evento ${i+1}`,mg+7,y+7);
-      doc.setFillColor(...cc); doc.roundedRect(mg+80,y+1.5,al?24:22,7,1.5,1.5,'F');
-      doc.setFontSize(7); doc.setTextColor(255,255,255);
-      doc.text(al?'! ALERTA':'NORMAL',mg+(al?92:91),y+6.5,{align:'center'});
-      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(80,80,80);
-      doc.text('Hora:',pW-mg-30,y+7);
-      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...cc);
-      doc.text(ev.hora,pW-mg-4,y+7,{align:'right'});
+    // ---- SECCIÓN RECORRIDOS ----
+    if(evRec.length>0){
+      if(y+12>pH-20) newPag();
+      doc.setFillColor(24,95,165); doc.roundedRect(mg,y,cW,9,1.5,1.5,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
+      doc.text('RECORRIDOS DE INSTALACIONES',pW/2,y+6.3,{align:'center'});
       y+=13;
 
-      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
-      const lns=doc.splitTextToSize(ev.obs||'',cW-4);
-      const aO=lns.length*5+4;
-      if(y+aO>pH-20) newPag();
-      doc.text(lns,mg+2,y+4); y+=aO+4;
+      evRec.forEach((ev,i)=>{
+        if(y+32>pH-20) newPag();
+        const al=ev.esAlerta||false;
+        const cf=al?[248,232,230]:[234,243,222];
+        const cc=al?[192,57,43]:[59,109,17];
 
-      if(ev.fotos&&ev.fotos.length>0){
-        const fpF=3,fW=(cW-(fpF-1)*3)/fpF,fH=fW*0.7;
-        const fils=Math.ceil(ev.fotos.length/fpF);
-        for(let fi=0;fi<fils;fi++){
-          if(y+fH+2>pH-20) newPag();
-          for(let fc=0;fc<fpF;fc++){
-            const ix=fi*fpF+fc; if(ix>=ev.fotos.length) break;
-            const ft=ev.fotos[ix]; const x=mg+fc*(fW+3);
-            try{
-              const fmt=ft.data.startsWith('data:image/png')?'PNG':'JPEG';
-              doc.addImage(ft.data,fmt,x,y,fW,fH);
-              doc.setDrawColor(200,200,200); doc.rect(x,y,fW,fH);
-            }catch(e){
-              doc.setFillColor(240,240,240); doc.rect(x,y,fW,fH,'F');
-              doc.setFontSize(7); doc.setTextColor(150,150,150);
-              doc.text('Sin imagen',x+fW/2,y+fH/2,{align:'center'});
+        doc.setFillColor(...cf); doc.roundedRect(mg,y,cW,10,1.5,1.5,'F');
+        doc.setFillColor(...cc); doc.rect(mg,y,3,10,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...cc);
+        doc.text(`Recorrido ${i+1}`,mg+7,y+7);
+        doc.setFillColor(...cc); doc.roundedRect(mg+55,y+1.5,al?24:22,7,1.5,1.5,'F');
+        doc.setFontSize(7); doc.setTextColor(255,255,255);
+        doc.text(al?'! ALERTA':'NORMAL',mg+(al?67:66),y+6.5,{align:'center'});
+        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(80,80,80);
+        doc.text('Hora:',pW-mg-30,y+7);
+        doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...cc);
+        doc.text(ev.hora,pW-mg-4,y+7,{align:'right'});
+        y+=13;
+
+        doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+        const lns=doc.splitTextToSize(ev.obs||'',cW-4);
+        const aO=lns.length*5+4;
+        if(y+aO>pH-20) newPag();
+        doc.text(lns,mg+2,y+4); y+=aO+4;
+
+        if(ev.fotos&&ev.fotos.length>0){
+          const fpF=3,fW=(cW-(fpF-1)*3)/fpF,fH=fW*0.7;
+          const fils=Math.ceil(ev.fotos.length/fpF);
+          for(let fi=0;fi<fils;fi++){
+            if(y+fH+2>pH-20) newPag();
+            for(let fc=0;fc<fpF;fc++){
+              const ix=fi*fpF+fc; if(ix>=ev.fotos.length) break;
+              const ft=ev.fotos[ix]; const x=mg+fc*(fW+3);
+              try{ doc.addImage(ft.data,ft.data.startsWith('data:image/png')?'PNG':'JPEG',x,y,fW,fH); doc.setDrawColor(200,200,200); doc.rect(x,y,fW,fH); }
+              catch(e){ doc.setFillColor(240,240,240); doc.rect(x,y,fW,fH,'F'); doc.setFontSize(7); doc.setTextColor(150,150,150); doc.text('Sin imagen',x+fW/2,y+fH/2,{align:'center'}); }
             }
+            y+=fH+3;
           }
-          y+=fH+3;
+          doc.setFontSize(7); doc.setTextColor(120,120,120); doc.text(`Fotos: ${ev.fotos.length}`,mg+2,y); y+=5;
+        }else{
+          doc.setFontSize(8); doc.setTextColor(150,150,150); doc.setFont('helvetica','italic');
+          doc.text('Sin fotos registradas',mg+2,y); doc.setFont('helvetica','normal'); y+=6;
         }
-        doc.setFontSize(7); doc.setTextColor(120,120,120);
-        doc.text(`Fotos: ${ev.fotos.length}`,mg+2,y); y+=5;
-      }else{
-        doc.setFontSize(8); doc.setTextColor(150,150,150); doc.setFont('helvetica','italic');
-        doc.text('Sin fotos registradas',mg+2,y); doc.setFont('helvetica','normal'); y+=6;
-      }
-      doc.setDrawColor(220,220,220); doc.line(mg,y,pW-mg,y); y+=6;
+        doc.setDrawColor(220,220,220); doc.line(mg,y,pW-mg,y); y+=6;
+      });
+    }
+
+    // ---- SECCIÓN CONTROL VEHICULAR ----
+    if(evVeh.length>0){
+      if(y+12>pH-20) newPag();
+      doc.setFillColor(186,117,23); doc.roundedRect(mg,y,cW,9,1.5,1.5,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
+      doc.text('CONTROL VEHICULAR',pW/2,y+6.3,{align:'center'});
+      y+=13;
+
+      evVeh.forEach((ev,i)=>{
+        if(y+32>pH-20) newPag();
+        const veh=ev.veh||{};
+        const esEntrada=veh.movimiento==='ENTRADA';
+        // Color movimiento
+        const ccMov=esEntrada?[59,109,17]:[163,45,45];
+
+        // Cabecera: franja ámbar con ENTRADA/SALIDA en verde/rojo y placa
+        doc.setFillColor(250,238,218); doc.roundedRect(mg,y,cW,11,1.5,1.5,'F');
+        doc.setFillColor(186,117,23); doc.rect(mg,y,3,11,'F');
+        // Badge ENTRADA/SALIDA
+        doc.setFillColor(...ccMov); doc.roundedRect(mg+6,y+1.5,22,8,1.5,1.5,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
+        doc.text(veh.movimiento||'',mg+17,y+6.5,{align:'center'});
+        // Placa grande
+        doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(30,30,30);
+        doc.text(veh.placa||'',mg+33,y+8);
+        // Hora
+        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,100);
+        doc.text('Hora:',pW-mg-30,y+8);
+        doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(186,117,23);
+        doc.text(ev.hora,pW-mg-4,y+8,{align:'right'});
+        y+=14;
+
+        // Ficha datos vehículo
+        if(y+16>pH-20) newPag();
+        doc.setFillColor(245,245,240); doc.roundedRect(mg,y,cW,14,1,1,'F');
+        doc.setDrawColor(215,205,190); doc.roundedRect(mg,y,cW,14,1,1);
+
+        // Conductor
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+        doc.text('CONDUCTOR',mg+3,y+5);
+        doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+        doc.text(veh.conductor||'—',mg+3,y+11);
+
+        // Tipo vehículo
+        if(veh.tipo){
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+          doc.text('TIPO',mg+70,y+5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+          doc.text(veh.tipo,mg+70,y+11);
+        }
+
+        // KM
+        if(veh.km){
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+          doc.text('KM',mg+105,y+5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+          doc.text(String(Number(veh.km).toLocaleString()),mg+105,y+11);
+        }
+
+        // Destino/Procedencia
+        if(veh.destino){
+          const lbl=esEntrada?'PROCEDENCIA':'DESTINO';
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+          doc.text(lbl,mg+130,y+5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+          const dt=doc.splitTextToSize(veh.destino,cW-133);
+          doc.text(dt[0]||'',mg+130,y+11);
+        }
+        y+=17;
+
+        // Detalle/Ítems
+        if(veh.detalle&&veh.detalle.trim()){
+          const lnsD=doc.splitTextToSize(veh.detalle,cW-10);
+          const aD=lnsD.length*4.5+7;
+          if(y+aD>pH-20) newPag();
+          doc.setFillColor(255,250,240); doc.roundedRect(mg,y,cW,aD,1,1,'F');
+          doc.setFillColor(186,117,23); doc.rect(mg,y,3,aD,'F');
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(186,117,23);
+          doc.text('DETALLE / ITEMS',mg+6,y+5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+          doc.text(lnsD,mg+6,y+9.5);
+          y+=aD+3;
+        }
+
+        // Fotos
+        if(ev.fotos&&ev.fotos.length>0){
+          const fpF=3,fW=(cW-(fpF-1)*3)/fpF,fH=fW*0.7;
+          const fils=Math.ceil(ev.fotos.length/fpF);
+          for(let fi=0;fi<fils;fi++){
+            if(y+fH+2>pH-20) newPag();
+            for(let fc=0;fc<fpF;fc++){
+              const ix=fi*fpF+fc; if(ix>=ev.fotos.length) break;
+              const ft=ev.fotos[ix]; const x=mg+fc*(fW+3);
+              try{ doc.addImage(ft.data,ft.data.startsWith('data:image/png')?'PNG':'JPEG',x,y,fW,fH); doc.setDrawColor(200,200,200); doc.rect(x,y,fW,fH); }
+              catch(e){ doc.setFillColor(240,240,240); doc.rect(x,y,fW,fH,'F'); doc.setFontSize(7); doc.setTextColor(150,150,150); doc.text('Sin imagen',x+fW/2,y+fH/2,{align:'center'}); }
+            }
+            y+=fH+3;
+          }
+          doc.setFontSize(7); doc.setTextColor(120,120,120); doc.text(`Fotos: ${ev.fotos.length}`,mg+2,y); y+=5;
+        }else{
+          doc.setFontSize(8); doc.setTextColor(150,150,150); doc.setFont('helvetica','italic');
+          doc.text('Sin fotos registradas',mg+2,y); doc.setFont('helvetica','normal'); y+=6;
+        }
+        doc.setDrawColor(220,220,220); doc.line(mg,y,pW-mg,y); y+=6;
+      });
     }
 
     // Firma
@@ -1078,26 +1532,22 @@ async function generarPDF(){
     doc.save(nom);
     notif('✅ PDF descargado');
 
-    const tok=await getToken();
-    if(tok&&spSiteId){
-      // Guardar en SharePoint
+    const tok2=await getToken();
+    if(tok2&&spSiteId){
       btn.innerHTML='<span class="spin"></span>Guardando en SharePoint...';
       try{
         const pb=doc.output('blob');
-        await fetch(
-          `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/Fotos_Vigilancia/Informes/${sedeNorm}/${nom}:/content`,
-          {method:'PUT',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/pdf'},body:pb}
-        );
+        await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/Fotos_Vigilancia/Informes/${sedeNorm}/${nom}:/content`,
+          {method:'PUT',headers:{Authorization:`Bearer ${tok2}`,'Content-Type':'application/pdf'},body:pb});
         notif('✅ PDF guardado en SharePoint');
-      }catch(e){console.error('SP PDF:',e);}
+      }catch(e){ console.error('SP PDF:',e); }
 
-      // Enviar correo
       btn.innerHTML='<span class="spin"></span>Enviando correo...';
       try{
         const pb64=doc.output('datauristring').split(',')[1];
         const res=await fetch('https://graph.microsoft.com/v1.0/me/sendMail',{
           method:'POST',
-          headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+          headers:{Authorization:`Bearer ${tok2}`,'Content-Type':'application/json'},
           body:JSON.stringify({
             message:{
               subject:`Informe Turno ${turno.turno} - ${turno.sede} - ${fecha} - ${turno.operario}`,
@@ -1107,44 +1557,27 @@ async function generarPDF(){
                 <ul>
                   <li><strong>Operario:</strong> ${turno.operario}</li>
                   <li><strong>Fecha:</strong> ${fecha}</li>
-                  <li><strong>Total eventos:</strong> ${evOrd.length}</li>
+                  <li><strong>Recorridos:</strong> ${evRec.length}</li>
+                  <li><strong>Vehiculares:</strong> ${evVeh.length}</li>
                   <li><strong>Alertas:</strong> ${tA}</li>
                 </ul>
                 <p>Saludos,<br>Sistema de Vigilancia - Rentadores de Equipos</p>`},
               toRecipients:cfg.correos.map(c=>({emailAddress:{address:c}})),
               attachments:[{'@odata.type':'#microsoft.graph.fileAttachment',name:nom,contentType:'application/pdf',contentBytes:pb64}]
-            },
-            saveToSentItems:true
+            },saveToSentItems:true
           })
         });
-        if(res.ok){
-          notif(`✅ Correo enviado a ${cfg.correos.length} destinatario${cfg.correos.length>1?'s':''}`);
-        }else{
-          const err=await res.json();
-          console.error('Mail:',err);
-          alert(`Error correo:\n${err?.error?.code}: ${err?.error?.message}`);
-        }
-      }catch(e){console.error('Mail:',e);notif('⚠ Error al enviar correo');}
-    }else{
-      notif('⚠ Sin conexión Microsoft - solo descarga local');
-    }
+        if(res.ok){ notif(`✅ Correo enviado a ${cfg.correos.length} destinatario${cfg.correos.length>1?'s':''}`); }
+        else{ const err=await res.json(); console.error('Mail:',err); alert(`Error correo:\n${err?.error?.code}: ${err?.error?.message}`); }
+      }catch(e){ console.error('Mail:',e); notif('⚠ Error al enviar correo'); }
+    }else{ notif('⚠ Sin conexión Microsoft - solo descarga local'); }
 
-    // Limpiar turno
-    await spCerrarTurno();
-    clearTurno();
+    await spCerrarTurno(); clearTurno();
     turno={abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[]};
     btn.innerHTML='✅ Completado';
-    setTimeout(()=>{
-      btn.innerHTML='📥 Generar PDF y Enviar'; btn.disabled=false;
-      document.getElementById('hdr-t').textContent='Sistema de Vigilancia';
-      mostrarPantallaTurno();
-    },3000);
+    setTimeout(()=>{ btn.innerHTML='📥 Generar PDF y Enviar'; btn.disabled=false; document.getElementById('hdr-t').textContent='Sistema de Vigilancia'; mostrarPantallaTurno(); },3000);
 
-  }catch(err){
-    console.error(err);
-    btn.innerHTML='❌ Error - Reintentar'; btn.disabled=false;
-    alert('Error PDF:\n'+err.message);
-  }
+  }catch(err){ console.error(err); btn.innerHTML='❌ Error - Reintentar'; btn.disabled=false; alert('Error PDF:\n'+err.message); }
 }
 
 // ============================================================
@@ -1156,9 +1589,8 @@ function abrirAdmin(){
   abrirMov('m-clave');
 }
 function chkClave(){
-  if(document.getElementById('inp-clave').value===cfg.clave){
-    cerrarMov('m-clave'); cargarAdmin(); irA('s-adm');
-  }else{ document.getElementById('clave-err').style.display='block'; }
+  if(document.getElementById('inp-clave').value===cfg.clave){ cerrarMov('m-clave'); cargarAdmin(); irA('s-adm'); }
+  else{ document.getElementById('clave-err').style.display='block'; }
 }
 function cargarAdmin(){
   document.getElementById('adm-tit').value=cfg.titulo;
@@ -1181,19 +1613,10 @@ function adm_addCorreo(){
   const v=document.getElementById('adm-cemail').value.trim();
   if(!v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){alert('Correo inválido.');return;}
   if(cfg.correos.includes(v)){alert('Ya existe.');return;}
-  cfg.correos.push(v); document.getElementById('adm-cemail').value='';
-  adm_rl('adm-correos',cfg.correos,'correos');
+  cfg.correos.push(v); document.getElementById('adm-cemail').value=''; adm_rl('adm-correos',cfg.correos,'correos');
 }
-function adm_addOp(){
-  const v=document.getElementById('adm-opnew').value.trim(); if(!v) return;
-  cfg.operarios.push(v); document.getElementById('adm-opnew').value='';
-  adm_rl('adm-ops',cfg.operarios,'operarios');
-}
-function adm_addSede(){
-  const v=document.getElementById('adm-sednew').value.trim(); if(!v) return;
-  cfg.sedes.push(v); document.getElementById('adm-sednew').value='';
-  adm_rl('adm-sedes',cfg.sedes,'sedes');
-}
+function adm_addOp(){ const v=document.getElementById('adm-opnew').value.trim(); if(!v) return; cfg.operarios.push(v); document.getElementById('adm-opnew').value=''; adm_rl('adm-ops',cfg.operarios,'operarios'); }
+function adm_addSede(){ const v=document.getElementById('adm-sednew').value.trim(); if(!v) return; cfg.sedes.push(v); document.getElementById('adm-sednew').value=''; adm_rl('adm-sedes',cfg.sedes,'sedes'); }
 function adm_guardar(){
   cfg.titulo=document.getElementById('adm-tit').value||'INFORME - SEGURIDAD';
   cfg.version=document.getElementById('adm-ver').value||'1.0';
@@ -1202,9 +1625,141 @@ function adm_guardar(){
   notif('✅ Configuración guardada');
   setTimeout(()=>cerrarAdmin(),800);
 }
-function cerrarAdmin(){
-  if(turno.abierto) irA('s-mod');
-  else irA('s-turno');
+function cerrarAdmin(){ if(turno.abierto) irA('s-mod'); else irA('s-turno'); }
+
+// ============================================================
+// MAESTROS (Placas y Personas)
+// ============================================================
+let maestroActual='placas';
+
+function abrirMaestros(tipo){
+  maestroActual=tipo;
+  switchMaestro(tipo);
+  cargarListaMaestros();
+  irA('s-maestros');
+}
+
+function switchMaestro(tipo){
+  maestroActual=tipo;
+  document.getElementById('tab-placas').className='tab-btn'+(tipo==='placas'?' on':'');
+  document.getElementById('tab-personas').className='tab-btn'+(tipo==='personas'?' on':'');
+  document.getElementById('sec-placas').style.display=tipo==='placas'?'block':'none';
+  document.getElementById('sec-personas').style.display=tipo==='personas'?'block':'none';
+}
+
+function cargarListaMaestros(){
+  // Placas
+  const ulP=document.getElementById('maestro-lista-placas');
+  ulP.innerHTML=cachePlacas.length?cachePlacas.map((p,i)=>`
+    <li>
+      <div>
+        <div><b>${p.placa}</b> — ${p.tipo||''} ${p.marca||''} ${p.modelo||''}</div>
+        <div class="det">${p.color||''}</div>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="maestroEliminar('placa',${i})">🗑</button>
+    </li>`).join(''):`<li style="color:var(--gm);font-size:13px;">Sin placas registradas</li>`;
+  // Personas
+  const ulPe=document.getElementById('maestro-lista-personas');
+  ulPe.innerHTML=cachePersonas.length?cachePersonas.map((p,i)=>`
+    <li>
+      <div>
+        <div><b>${p.nombre}</b></div>
+        <div class="det">${[p.empresa,p.puesto,p.dni].filter(Boolean).join(' · ')}</div>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="maestroEliminar('persona',${i})">🗑</button>
+    </li>`).join(''):`<li style="color:var(--gm);font-size:13px;">Sin personas registradas</li>`;
+}
+
+async function maestroGuardarPlaca(){
+  const placa=document.getElementById('mp-placa').value.trim().toUpperCase();
+  const tipo=document.getElementById('mp-tipo').value;
+  const marca=document.getElementById('mp-marca').value.trim();
+  const modelo=document.getElementById('mp-modelo').value.trim();
+  const color=document.getElementById('mp-color').value.trim();
+  if(!placa){alert('La placa es obligatoria.');return;}
+
+  const item={placa,tipo,marca,modelo,color};
+  const existe=cachePlacas.findIndex(p=>p.placa===placa);
+  if(existe>=0) cachePlacas[existe]={...cachePlacas[existe],...item};
+  else cachePlacas.push(item);
+  localStorage.setItem('vig_cache_placas',JSON.stringify(cachePlacas));
+
+  const tok=await getToken();
+  if(tok&&spSiteId&&spPlacasId){
+    try{
+      const body={fields:{Title:placa,Placa:placa,TipoVehiculo:tipo,Marca:marca,Modelo:modelo,Color:color}};
+      if(existe>=0&&cachePlacas[existe].spItemId){
+        await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spPlacasId}/items/${cachePlacas[existe].spItemId}/fields`,
+          {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body.fields)});
+      }else{
+        const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spPlacasId}/items`,
+          {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+        if(res.ok){ const d=await res.json(); if(existe>=0) cachePlacas[existe].spItemId=d.id; else cachePlacas[cachePlacas.length-1].spItemId=d.id; }
+      }
+      notif('✅ Placa guardada en SharePoint');
+    }catch(e){ console.error('maestroGuardarPlaca:',e); notif('💾 Placa guardada localmente'); }
+  }else{ notif('💾 Placa guardada localmente'); }
+
+  ['mp-placa','mp-marca','mp-modelo','mp-color'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mp-tipo').value='';
+  cargarListaMaestros();
+}
+
+async function maestroGuardarPersona(){
+  const nombre=document.getElementById('mp-nombre').value.trim();
+  const dni=document.getElementById('mp-dni').value.trim();
+  const empresa=document.getElementById('mp-empresa').value.trim();
+  const puesto=document.getElementById('mp-puesto').value.trim();
+  if(!nombre){alert('El nombre es obligatorio.');return;}
+
+  const item={nombre,dni,empresa,puesto};
+  const existe=cachePersonas.findIndex(p=>p.nombre===nombre||p.dni===dni);
+  if(existe>=0) cachePersonas[existe]={...cachePersonas[existe],...item};
+  else cachePersonas.push(item);
+  localStorage.setItem('vig_cache_personas',JSON.stringify(cachePersonas));
+
+  const tok=await getToken();
+  if(tok&&spSiteId&&spPersonasId){
+    try{
+      const body={fields:{Title:nombre,NombreCompleto:nombre,DNI:dni,Empresa:empresa,Puesto:puesto}};
+      if(existe>=0&&cachePersonas[existe].spItemId){
+        await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spPersonasId}/items/${cachePersonas[existe].spItemId}/fields`,
+          {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body.fields)});
+      }else{
+        const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spPersonasId}/items`,
+          {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+        if(res.ok){ const d=await res.json(); if(existe>=0) cachePersonas[existe].spItemId=d.id; else cachePersonas[cachePersonas.length-1].spItemId=d.id; }
+      }
+      notif('✅ Persona guardada en SharePoint');
+    }catch(e){ console.error('maestroGuardarPersona:',e); notif('💾 Persona guardada localmente'); }
+  }else{ notif('💾 Persona guardada localmente'); }
+
+  ['mp-nombre','mp-dni','mp-empresa','mp-puesto'].forEach(id=>document.getElementById(id).value='');
+  cargarListaMaestros();
+}
+
+async function maestroEliminar(tipo,idx){
+  if(!confirm('¿Eliminar este registro?')) return;
+  const tok=await getToken();
+  if(tipo==='placa'){
+    const item=cachePlacas[idx];
+    if(tok&&spSiteId&&spPlacasId&&item.spItemId){
+      try{ await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spPlacasId}/items/${item.spItemId}`,{method:'DELETE',headers:{Authorization:`Bearer ${tok}`}}); }
+      catch(e){ console.error('eliminarPlaca:',e); }
+    }
+    cachePlacas.splice(idx,1);
+    localStorage.setItem('vig_cache_placas',JSON.stringify(cachePlacas));
+  }else{
+    const item=cachePersonas[idx];
+    if(tok&&spSiteId&&spPersonasId&&item.spItemId){
+      try{ await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spPersonasId}/items/${item.spItemId}`,{method:'DELETE',headers:{Authorization:`Bearer ${tok}`}}); }
+      catch(e){ console.error('eliminarPersona:',e); }
+    }
+    cachePersonas.splice(idx,1);
+    localStorage.setItem('vig_cache_personas',JSON.stringify(cachePersonas));
+  }
+  cargarListaMaestros();
+  notif('✅ Registro eliminado');
 }
 
 // ============================================================
@@ -1222,6 +1777,11 @@ const AZ={
   scopes:['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/Files.ReadWrite.All','https://graph.microsoft.com/Mail.Send','https://graph.microsoft.com/User.Read']
 };
 let msalApp=null, spSiteId=null, spListId=null, spFotosLibId=null, spFotosDriveId=null;
+let spTurnosId=null, spTurnoItemId=null;
+let spVehId=null;       // Lista Eventos_Vehicular
+let spPlacasId=null;    // Lista Maestro_Placas
+let spPersonasId=null;  // Lista Maestro_Personas
+let spEstadoVehId=null; // Lista Estado_Vehiculos
 
 async function initMS(){
   try{
@@ -1237,9 +1797,9 @@ async function initMS(){
       setSpUI(true);
       document.getElementById('hdr-t').textContent=accounts[0].name.split(' ')[0];
       await spGetIds(r.accessToken);
-      await mostrarPantallaTurno();
+      cargarMaestrosLocal(); // Cargar desde local mientras
+      mostrarPantallaTurno();
     }
-    // Sin sesión → se queda en s-login
   }catch(e){ console.warn('MSAL:',e.message); }
 }
 
@@ -1253,7 +1813,8 @@ async function loginMS(){
     document.getElementById('hdr-t').textContent=r.account.name.split(' ')[0];
     notif('✅ Bienvenido '+r.account.name.split(' ')[0]);
     await spGetIds(r.accessToken);
-    await mostrarPantallaTurno();
+    cargarMaestrosLocal();
+    mostrarPantallaTurno();
   }catch(e){
     console.error('Login:',e);
     document.getElementById('login-err').style.display='block';
@@ -1265,200 +1826,125 @@ async function loginMS(){
 
 async function getToken(){
   if(!msalApp) return null;
-  const a=msalApp.getAllAccounts();
-  if(!a.length) return null;
+  const a=msalApp.getAllAccounts(); if(!a.length) return null;
   try{ const r=await msalApp.acquireTokenSilent({scopes:AZ.scopes,account:a[0]}); return r.accessToken; }
   catch(e){ return null; }
 }
 
-function setSpUI(ok){
-  document.getElementById('sp-dot').className='sp-dot '+(ok?'ok':'no');
-}
+function setSpUI(ok){ document.getElementById('sp-dot').className='sp-dot '+(ok?'ok':'no'); }
 
 async function spGetIds(tok){
-  if(!tok) tok=await getToken();
-  if(!tok) return;
+  if(!tok) tok=await getToken(); if(!tok) return;
   try{
     const sr=await fetch('https://graph.microsoft.com/v1.0/sites/obrainsape.sharepoint.com:/sites/Vigilancia-Rentadores',{headers:{Authorization:`Bearer ${tok}`}});
     const sd=await sr.json(); spSiteId=sd.id;
     const lr=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists`,{headers:{Authorization:`Bearer ${tok}`}});
     const ld=await lr.json();
-    const li=ld.value.find(l=>l.displayName==='Eventos_Vigilancia'||l.name==='Eventos_Vigilancia');
-    if(li) spListId=li.id;
-    const lt=ld.value.find(l=>l.displayName==='Turnos_Activos'||l.name==='Turnos_Activos');
-    if(lt) spTurnosId=lt.id;
-
-    // Obtener driveId de la biblioteca Fotos_Vigilancia para descargas correctas
-    const libFotos=ld.value.find(l=>l.displayName==='Fotos_Vigilancia'||l.name==='Fotos_Vigilancia');
+    const find=(n1,n2)=>ld.value.find(l=>l.displayName===n1||l.name===n1||l.displayName===n2||l.name===n2);
+    const li=find('Eventos_Vigilancia'); if(li) spListId=li.id;
+    const lt=find('Turnos_Activos'); if(lt) spTurnosId=lt.id;
+    const lv=find('Eventos_Vehicular'); if(lv) spVehId=lv.id;
+    const lp=find('Maestro_Placas'); if(lp) spPlacasId=lp.id;
+    const lpe=find('Maestro_Personas'); if(lpe) spPersonasId=lpe.id;
+    const lev=find('Estado_Vehiculos'); if(lev) spEstadoVehId=lev.id;
+    const libFotos=find('Fotos_Vigilancia');
     if(libFotos){
       spFotosLibId=libFotos.id;
-      // Obtener el driveId real de la biblioteca
-      const driveRes=await fetch(
-        `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${libFotos.id}/drive`,
-        {headers:{Authorization:`Bearer ${tok}`}}
-      );
-      const driveData=await driveRes.json();
-      spFotosDriveId=driveData.id;
-      console.log('Fotos drive ID:', spFotosDriveId);
+      const driveRes=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${libFotos.id}/drive`,{headers:{Authorization:`Bearer ${tok}`}});
+      const driveData=await driveRes.json(); spFotosDriveId=driveData.id;
     }
-    console.log('SP listo — site:',spSiteId,'eventos:',spListId,'turnos:',spTurnosId,'fotosDrive:',spFotosDriveId);
+    console.log('SP listo — site:',spSiteId,'eventos:',spListId,'veh:',spVehId,'placas:',spPlacasId,'personas:',spPersonasId,'estadoVeh:',spEstadoVehId);
   }catch(e){ console.error('spGetIds:',e); }
 }
 
 // ============================================================
-// SP: TURNO ACTIVO
+// SP: TURNO
 // ============================================================
-let spTurnosId=null;
-let spTurnoItemId=null; // ID del item en Turnos_Activos
-
 async function spCrearTurno(){
-  const tok=await getToken();
-  if(!tok||!spSiteId||!spTurnosId) return;
+  const tok=await getToken(); if(!tok||!spSiteId||!spTurnosId) return;
   try{
-    const res=await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items`,
+    const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items`,
       {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
-       body:JSON.stringify({fields:{
-         Title: turno.informeId,
-         Sede: turno.sede,
-         Operario: turno.operario,
-         Turno: turno.turno,
-         HoraInicio: turno.horaInicio,
-         Estado: 'Abierto'
-       }})}
-    );
-    if(res.ok){
-      const d=await res.json();
-      spTurnoItemId=d.id;
-      // Guardar ID en localStorage para referencia
-      localStorage.setItem('vig_turno_spid', spTurnoItemId);
-      console.log('Turno creado en SP, item ID:', spTurnoItemId);
-    }
+       body:JSON.stringify({fields:{Title:turno.informeId,Sede:turno.sede,Operario:turno.operario,Turno:turno.turno,HoraInicio:turno.horaInicio,Estado:'Abierto'}})});
+    if(res.ok){ const d=await res.json(); spTurnoItemId=d.id; localStorage.setItem('vig_turno_spid',spTurnoItemId); }
   }catch(e){ console.error('spCrearTurno:',e); }
 }
 
 async function spCerrarTurno(){
-  const tok=await getToken();
-  if(!tok||!spSiteId||!spTurnosId) return;
-  // Recuperar ID si no está en memoria
+  const tok=await getToken(); if(!tok||!spSiteId||!spTurnosId) return;
   if(!spTurnoItemId) spTurnoItemId=localStorage.getItem('vig_turno_spid');
   if(!spTurnoItemId) return;
   try{
-    await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items/${spTurnoItemId}/fields`,
-      {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
-       body:JSON.stringify({Estado:'Cerrado'})}
-    );
-    localStorage.removeItem('vig_turno_spid');
-    spTurnoItemId=null;
-    console.log('Turno cerrado en SP');
+    await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items/${spTurnoItemId}/fields`,
+      {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify({Estado:'Cerrado'})});
+    localStorage.removeItem('vig_turno_spid'); spTurnoItemId=null;
   }catch(e){ console.error('spCerrarTurno:',e); }
 }
 
 async function spBuscarTurnoAbierto(){
-  const tok=await getToken();
-  if(!tok||!spSiteId||!spTurnosId) return null;
+  const tok=await getToken(); if(!tok||!spSiteId||!spTurnosId) return null;
   try{
-    const res=await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items?$expand=fields&$top=50&$orderby=createdDateTime desc`,
-      {headers:{Authorization:`Bearer ${tok}`}}
-    );
-    const d=await res.json();
-    if(!d.value||!d.value.length) return null;
-
-    // Buscar el primero con Estado = Abierto
-    const item=d.value.find(i=>{
-      const f=i.fields||{};
-      const estado=(f.Estado||'').toString().trim();
-      return estado==='Abierto';
-    });
-
+    const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items?$expand=fields&$top=50&$orderby=createdDateTime desc`,{headers:{Authorization:`Bearer ${tok}`}});
+    const d=await res.json(); if(!d.value||!d.value.length) return null;
+    const item=d.value.find(i=>(i.fields?.Estado||'').toString().trim()==='Abierto');
     if(!item) return null;
-
-    spTurnoItemId=item.id;
-    localStorage.setItem('vig_turno_spid', spTurnoItemId);
+    spTurnoItemId=item.id; localStorage.setItem('vig_turno_spid',spTurnoItemId);
     const f=item.fields||{};
-    console.log('Turno abierto encontrado en SP:', f);
-    console.log('InformeID (UUID):', f.Title);
-
-    return {
-      spItemId: item.id,
-      informeId: f.Title||'', // El UUID está guardado en Title
-      sede: f.Sede||'',
-      operario: f.Operario||'',
-      turno: f.Turno||'',
-      horaInicio: f.HoraInicio||item.createdDateTime,
-    };
-  }catch(e){
-    console.error('spBuscarTurnoAbierto:',e);
-    return null;
-  }
+    return {spItemId:item.id,informeId:f.Title||'',sede:f.Sede||'',operario:f.Operario||'',turno:f.Turno||'',horaInicio:f.HoraInicio||item.createdDateTime};
+  }catch(e){ console.error('spBuscarTurnoAbierto:',e); return null; }
 }
 
 async function spCargarEventosTurno(informeId){
-  const tok=await getToken();
-  if(!tok||!spSiteId||!spListId) return [];
-  try{
-    const res=await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spListId}/items?$expand=fields&$top=200&$orderby=createdDateTime asc`,
-      {headers:{Authorization:`Bearer ${tok}`}}
-    );
-    const d=await res.json();
-    if(!d.value) return [];
-
-    // Log de diagnóstico — ver todos los InformeID disponibles
-    diag('=== Items en Eventos_Vigilancia ===');
-    diag('UUID buscado: '+informeId);
-    diag('Total items: '+d.value.length);
-    d.value.slice(0,10).forEach((i,n)=>{
-      const f=i.fields||{};
-      diag(`[${n}] InformeID="${f.InformeID}" Title="${f.Title}"`);
-    });
-
-    // Filtro estricto por UUID
-    const items=d.value.filter(i=>{
-      const f=i.fields||{};
-      const idEvento=(f.InformeID||'').toString().trim();
-      const coincide=idEvento===informeId;
-      if(!coincide && idEvento) console.log(`No coincide: "${idEvento}" vs "${informeId}"`);
-      return coincide;
-    });
-
-    console.log('Coincidencias exactas:', items.length);
-    diag('Coincidencias exactas: '+items.length);
-
-    // Si no hay coincidencias, intentar buscar por Title también
-    let itemsFinal=items;
-    if(items.length===0){
-      diag('Intentando por Title...');
-      itemsFinal=d.value.filter(i=>{
-        const f=i.fields||{};
-        return (f.Title||'').toString().trim()===informeId;
-      });
-      diag('Por Title: '+itemsFinal.length);
-    }
-
-    return itemsFinal.map(item=>{
-      const f=item.fields||{};
-      // Usar FechaTurno como timestamp para orden cronológico correcto entre días
-      const ts=f.FechaTurno ? new Date(f.FechaTurno).getTime() : Date.now();
-      return {
-        tipo: f.TipoEvento||'recorrido',
-        hora: f.HoraEvento||'',
-        obs: f.Observacion||f.observacion||'',
-        esAlerta: f.EsAlerta||false,
-        fotos: [],
-        fotosURLs: (()=>{ try{ return JSON.parse(f.FotosURLs||'[]'); }catch(e){ return []; } })(),
-        timestamp: ts,
-        spItemId: item.id
-      };
-    });
-  }catch(e){ console.error('spCargarEventos error:',e); return []; }
+  const tok=await getToken(); if(!tok||!spSiteId) return [];
+  let items=[];
+  // Cargar recorridos desde Eventos_Vigilancia
+  if(spListId){
+    try{
+      const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spListId}/items?$expand=fields&$top=200&$orderby=createdDateTime asc`,{headers:{Authorization:`Bearer ${tok}`}});
+      const d=await res.json();
+      if(d.value){
+        diag('Items Eventos_Vigilancia: '+d.value.length);
+        const filtered=d.value.filter(i=>{ const f=i.fields||{}; return (f.InformeID||f.Title||'').toString().trim()===informeId; });
+        filtered.forEach(item=>{
+          const f=item.fields||{};
+          const ts=f.FechaTurno?new Date(f.FechaTurno).getTime():Date.now();
+          items.push({tipo:f.TipoEvento||'recorrido',hora:f.HoraEvento||'',obs:f.Observacion||'',esAlerta:f.EsAlerta||false,fotos:[],fotosURLs:(()=>{try{return JSON.parse(f.FotosURLs||'[]');}catch(e){return[];}})(),timestamp:ts,spItemId:item.id});
+        });
+      }
+    }catch(e){ console.error('spCargarEventos recorridos:',e); }
+  }
+  // Cargar vehiculares desde Eventos_Vehicular
+  if(spVehId){
+    try{
+      const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVehId}/items?$expand=fields&$top=200&$orderby=createdDateTime asc`,{headers:{Authorization:`Bearer ${tok}`}});
+      const d=await res.json();
+      if(d.value){
+        diag('Items Eventos_Vehicular: '+d.value.length);
+        const filtered=d.value.filter(i=>{ const f=i.fields||{}; return (f.InformeID||f.Title||'').toString().trim()===informeId; });
+        filtered.forEach(item=>{
+          const f=item.fields||{};
+          const ts=f.FechaTurno?new Date(f.FechaTurno).getTime():Date.now();
+          items.push({
+            tipo:'vehiculo',
+            hora:f.HoraEvento||'',
+            obs:f.Observacion||'',
+            esAlerta:false,
+            fotos:[],
+            fotosURLs:(()=>{try{return JSON.parse(f.FotosURLs||'[]');}catch(e){return[];}})(),
+            timestamp:ts,
+            spItemId:item.id,
+            veh:{movimiento:f.VehMovimiento||'',placa:f.VehPlaca||'',conductor:f.VehConductor||'',tipo:f.VehTipo||'',marca:f.VehMarca||'',modelo:f.VehModelo||'',color:f.VehColor||'',km:f.VehKm||'',destino:f.VehDestino||'',detalle:f.VehDetalle||''}
+          });
+        });
+      }
+    }catch(e){ console.error('spCargarEventos vehiculares:',e); }
+  }
+  diag('Total eventos cargados: '+items.length);
+  return items;
 }
 
 async function cargarFotosDesdeURLs(eventos){
-  const tok=await getToken();
-  if(!tok||!spFotosDriveId) return eventos;
+  const tok=await getToken(); if(!tok||!spFotosDriveId) return eventos;
   for(const ev of eventos){
     if((!ev.fotos||ev.fotos.length===0)&&ev.fotosURLs&&ev.fotosURLs.length>0){
       ev.fotos=[];
@@ -1467,158 +1953,60 @@ async function cargarFotosDesdeURLs(eventos){
           const decoded=decodeURIComponent(new URL(url).pathname);
           const marker='Fotos_Vigilancia/';
           const markerIdx=decoded.indexOf(marker);
-          if(markerIdx===-1){ console.warn('No se encontró Fotos_Vigilancia en:', decoded); continue; }
+          if(markerIdx===-1){ continue; }
           const rutaDesdeLib=decoded.substring(markerIdx);
           const rutaEncoded=rutaDesdeLib.split('/').map(s=>encodeURIComponent(s)).join('/');
-          const apiUrl=`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`;
-          const res=await fetch(apiUrl,{headers:{Authorization:`Bearer ${tok}`}});
+          const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`,{headers:{Authorization:`Bearer ${tok}`}});
           if(res.ok){
             const blob=await res.blob();
-            const b64=await new Promise(r=>{
-              const rd=new FileReader();
-              rd.onload=e=>r(e.target.result);
-              rd.readAsDataURL(blob);
-            });
+            const b64=await new Promise(r=>{ const rd=new FileReader(); rd.onload=e=>r(e.target.result); rd.readAsDataURL(blob); });
             ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
-            console.log('✅ Foto cargada OK');
-          }else{
-            const err=await res.json().catch(()=>({}));
-            console.error('❌ Error foto:', res.status, err?.error?.message, 'ruta:', rutaRelativa);
-          }
+          }else{ const err=await res.json().catch(()=>({})); console.error('❌ Error foto:',res.status,err?.error?.message); }
         }catch(e){ console.warn('cargarFotosDesdeURLs:',e.message); }
       }
     }
   }
   return eventos;
 }
-function diag(msg){
-  // Diagnóstico solo en consola, no en pantalla
-  console.log('[DIAG]', msg);
-}
 
-async function mostrarPantallaTurno(){
-  buildSelectores();
-  irA('s-turno');
-  // Limpiar panel diagnóstico
-  const dp=document.getElementById('diag-panel');
-  if(dp){ dp.textContent=''; dp.style.display='block'; }
-
-  const tLocal=loadTurno();
-  diag('Local turno: '+(tLocal?`abierto=${tLocal.abierto} id=${tLocal.informeId} eventos=${tLocal.eventos?.length}`:'ninguno'));
-
-  notifSilencioso('🔄 Verificando turno activo...');
-  diag('Buscando turno en SharePoint...');
-  diag('spSiteId='+spSiteId);
-  diag('spTurnosId='+spTurnosId);
-  diag('spListId='+spListId);
-
-  let tSP=null;
+// ============================================================
+// SP: GUARDAR EVENTO RECORRIDO
+// ============================================================
+async function spSaveEv(ev){
+  const tok=await getToken(); if(!tok||!spSiteId||!spListId) return false;
   try{
-    tSP=await spBuscarTurnoAbierto();
-    diag('SP turno: '+(tSP?`id=${tSP.informeId} sede=${tSP.sede}`:'ninguno'));
-  }catch(e){
-    diag('ERROR buscando turno: '+e.message);
-  }
-
-  // Si hay turno local pero SP no tiene ninguno abierto → el turno fue cerrado desde otro dispositivo
-  if(tLocal&&tLocal.abierto&&!tSP){
-    diag('Turno local existe pero SP no tiene ninguno abierto → fue cerrado desde otro dispositivo');
-    clearTurno();
-    Object.assign(turno,{abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[]});
-    document.getElementById('turno-en-progreso').style.display='none';
-    document.getElementById('form-turno').style.display='block';
-    notifSilencioso('');
-    return; // Salir — mostrar pantalla de nuevo turno
-  }
-
-  if(tSP && tSP.informeId){
-    document.getElementById('turno-en-progreso').style.display='block';
-    document.getElementById('form-turno').style.display='none';
-
-    if(!tLocal || tLocal.informeId!==tSP.informeId || (tLocal.eventos||[]).length===0){
-      // UUID diferente o local vacío → sincronizar desde SP
-      notifSilencioso('🔄 Sincronizando eventos...');
-      diag('Cargando eventos para UUID: '+tSP.informeId);
-      let eventos=[];
-      try{
-        eventos=await spCargarEventosTurno(tSP.informeId);
-        diag('Eventos cargados: '+eventos.length);
-        eventos.forEach((e,i)=>diag(`  ev${i}: hora=${e.hora} obs=${e.obs?.substring(0,30)}`));
-      }catch(e){
-        diag('ERROR cargando eventos: '+e.message);
-      }
-      Object.assign(turno,{
-        abierto:true, sede:tSP.sede, operario:tSP.operario,
-        turno:tSP.turno, horaInicio:tSP.horaInicio,
-        informeId:tSP.informeId, eventos:eventos
-      });
-      // Cargar fotos desde URLs de SP en background
-      cargarFotosDesdeURLs(turno.eventos).then(()=>{ saveTurno(); renderEventosResumen&&renderEventosResumen(); });
-      saveTurno();
-      document.getElementById('turno-progreso-info').textContent=
-        `${tSP.sede} · ${tSP.operario} · Turno ${tSP.turno} · ${eventos.length} evento${eventos.length!==1?'s':''} · sincronizado desde SharePoint`;
-    }else{
-      // UUID coincide y local tiene eventos — verificar si SP tiene más
-      diag('UUID coincide, local='+tLocal.eventos.length+' eventos, consultando SP...');
-      let eventosSP=[];
-      try{
-        eventosSP=await spCargarEventosTurno(tSP.informeId);
-        diag('SP tiene '+eventosSP.length+' eventos');
-      }catch(e){ diag('Error SP: '+e.message); }
-
-      if(eventosSP.length > tLocal.eventos.length){
-        // SP tiene más → combinar, conservando fotos del local
-        diag('SP tiene más eventos, fusionando...');
-        const fusionados=eventosSP.map(evSP=>{
-          const evLocal=tLocal.eventos.find(el=>el.hora===evSP.hora&&el.tipo===evSP.tipo);
-          return (evLocal&&evLocal.fotos?.length>0)?{...evSP,fotos:evLocal.fotos}:evSP;
-        });
-        Object.assign(turno,{...tLocal, eventos:fusionados});
-        // Cargar fotos SP en background para eventos sin fotos locales
-        cargarFotosDesdeURLs(turno.eventos).then(()=>{ saveTurno(); renderEventosResumen&&renderEventosResumen(); });
-        saveTurno();
-        document.getElementById('turno-progreso-info').textContent=
-          `${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${fusionados.length} evento${fusionados.length!==1?'s':''} · actualizado desde SharePoint`;
-      }else{
-        // Local al día
-        Object.assign(turno, tLocal);
-        diag('Local al día con SP ('+tLocal.eventos.length+' eventos)');
-        document.getElementById('turno-progreso-info').textContent=
-          `${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''}`;
-      }
-    }
-    notifSilencioso('✅ Turno activo encontrado');
-
-  }else if(tLocal && tLocal.abierto){
-    document.getElementById('turno-en-progreso').style.display='block';
-    document.getElementById('form-turno').style.display='none';
-    Object.assign(turno, tLocal);
-    diag('Usando solo turno local');
-    document.getElementById('turno-progreso-info').textContent=
-      `${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''} · guardado localmente`;
-    notifSilencioso('⚠ Turno local (sin SP)');
-
-  }else{
-    document.getElementById('turno-en-progreso').style.display='none';
-    document.getElementById('form-turno').style.display='block';
-    diag('Sin turno activo');
-    notifSilencioso('');
-  }
+    const body={fields:{Title:turno.informeId,Sede:turno.sede,Operario:turno.operario,Turno:turno.turno,TipoEvento:ev.tipo||'recorrido',HoraEvento:ev.hora,Observacion:ev.obs||'',EsAlerta:ev.esAlerta||false,FotosURLs:JSON.stringify(ev.fotosURLs||[]),InformeID:turno.informeId,FechaTurno:new Date().toISOString()}};
+    const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spListId}/items`,
+      {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){ const err=await res.json(); console.error('spSaveEv error:',res.status,err); return false; }
+    return true;
+  }catch(e){ console.error('spSaveEv:',e); return false; }
 }
 
-function notifSilencioso(msg){
-  // Notificación pequeña no intrusiva
-  let el=document.getElementById('notif-sync');
-  if(!el){
-    el=document.createElement('div');
-    el.id='notif-sync';
-    el.style.cssText='position:fixed;top:58px;right:10px;background:var(--azc);color:var(--az);padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;z-index:999;border:1px solid #B5D4F4;';
-    document.body.appendChild(el);
-  }
-  el.textContent=msg;
-  el.style.display='block';
-  clearTimeout(el._t);
-  el._t=setTimeout(()=>{el.style.display='none';},3000);
+// ============================================================
+// SP: GUARDAR EVENTO VEHICULAR
+// ============================================================
+async function spSaveEvVehiculo(ev){
+  const tok=await getToken(); if(!tok||!spSiteId||!spVehId) return false;
+  try{
+    const veh=ev.veh||{};
+    const body={fields:{
+      Title:turno.informeId, InformeID:turno.informeId,
+      Sede:turno.sede, Operario:turno.operario, Turno:turno.turno,
+      HoraEvento:ev.hora, Observacion:ev.obs||'',
+      FotosURLs:JSON.stringify(ev.fotosURLs||[]),
+      FechaTurno:new Date().toISOString(),
+      VehMovimiento:veh.movimiento||'', VehPlaca:veh.placa||'',
+      VehConductor:veh.conductor||'', VehTipo:veh.tipo||'',
+      VehMarca:veh.marca||'', VehModelo:veh.modelo||'',
+      VehColor:veh.color||'', VehKm:veh.km?String(veh.km):'',
+      VehDestino:veh.destino||'', VehDetalle:veh.detalle||''
+    }};
+    const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVehId}/items`,
+      {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){ const err=await res.json(); console.error('spSaveEvVehiculo error:',res.status,err); return false; }
+    return true;
+  }catch(e){ console.error('spSaveEvVehiculo:',e); return false; }
 }
 
 // ============================================================
@@ -1631,48 +2019,10 @@ async function spUpFoto(dataUrl,nombre,carpeta){
     const by=atob(b64); const arr=new Uint8Array(by.length);
     for(let i=0;i<by.length;i++) arr[i]=by.charCodeAt(i);
     const blob=new Blob([arr],{type:'image/jpeg'});
-    const res=await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/Fotos_Vigilancia/${carpeta}/${nombre}:/content`,
-      {method:'PUT',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'image/jpeg'},body:blob}
-    );
+    const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/Fotos_Vigilancia/${carpeta}/${nombre}:/content`,
+      {method:'PUT',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'image/jpeg'},body:blob});
     const d=await res.json(); return d.webUrl||null;
   }catch(e){ console.error('spUpFoto:',e); return null; }
-}
-
-// ============================================================
-// SP: GUARDAR EVENTO
-// ============================================================
-async function spSaveEv(ev){
-  const tok=await getToken(); if(!tok||!spSiteId||!spListId) return false;
-  try{
-    const body={fields:{
-      Title: turno.informeId,
-      Sede: turno.sede,
-      Operario: turno.operario,
-      Turno: turno.turno,
-      TipoEvento: ev.tipo||'recorrido',
-      HoraEvento: ev.hora,
-      Observacion: ev.obs||'',
-      EsAlerta: ev.esAlerta||false,
-      FotosURLs: JSON.stringify(ev.fotosURLs||[]),
-      InformeID: turno.informeId,
-      FechaTurno: new Date().toISOString()
-    }};
-    console.log('spSaveEv body:', JSON.stringify(body));
-    const res=await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spListId}/items`,
-      {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
-       body:JSON.stringify(body)}
-    );
-    if(!res.ok){
-      const err=await res.json();
-      console.error('spSaveEv HTTP error:', res.status, JSON.stringify(err));
-      return false;
-    }
-    const data=await res.json();
-    console.log('spSaveEv OK, item id:', data.id);
-    return true;
-  }catch(e){ console.error('spSaveEv exception:',e); return false; }
 }
 
 // ============================================================
@@ -1686,6 +2036,13 @@ function notif(msg){
   n.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--go);color:white;padding:9px 18px;border-radius:22px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,.3);animation:fadeUp .3s ease;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;';
   n.textContent=msg; document.body.appendChild(n); setTimeout(()=>n.remove(),3500);
 }
+function notifSilencioso(msg){
+  let el=document.getElementById('notif-sync');
+  if(!el){ el=document.createElement('div'); el.id='notif-sync'; el.style.cssText='position:fixed;top:58px;right:10px;background:var(--azc);color:var(--az);padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600;z-index:999;border:1px solid #B5D4F4;'; document.body.appendChild(el); }
+  el.textContent=msg; el.style.display='block';
+  clearTimeout(el._t); el._t=setTimeout(()=>{ el.style.display='none'; },3000);
+}
+function diag(msg){ console.log('[DIAG]',msg); }
 
 // ============================================================
 // INIT
