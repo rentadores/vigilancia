@@ -907,24 +907,42 @@ async function generarPDF(){
 
   // PASO PREVIO: descargar fotos desde SP para eventos que solo tienen URLs
   const tok=await getToken();
-  if(tok){
+  if(tok&&spSiteId){
+    btn.innerHTML='<span class="spin"></span>Descargando fotos...';
     for(const ev of turno.eventos){
       if((!ev.fotos||ev.fotos.length===0) && ev.fotosURLs&&ev.fotosURLs.length>0){
         ev.fotos=[];
         for(const url of ev.fotosURLs){
           try{
-            // Usar Graph API para descargar — más confiable que URL directa
-            const res=await fetch(url,{headers:{Authorization:`Bearer ${tok}`}});
-            if(res.ok){
-              const blob=await res.blob();
+            // Construir ruta relativa dentro de la biblioteca
+            // URL ejemplo: https://obrainsape.sharepoint.com/sites/Vigilancia-Rentadores/Documentos%20compartidos/Fotos_Vigilancia/Campiña/UUID/archivo.jpg
+            // Extraer la ruta relativa desde /sites/...
+            const urlObj=new URL(url);
+            const pathParts=decodeURIComponent(urlObj.pathname);
+            // Obtener solo la parte después de /sites/Vigilancia-Rentadores/
+            const match=pathParts.match(/\/sites\/[^/]+\/(.+)/);
+            if(!match){ console.warn('No se pudo extraer ruta de:', url); continue; }
+            const rutaRelativa=match[1]; // Ej: Documentos compartidos/Fotos_Vigilancia/...
+
+            // Usar Graph API drive para descargar
+            const driveRes=await fetch(
+              `https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaRelativa}:/content`,
+              {headers:{Authorization:`Bearer ${tok}`}}
+            );
+            if(driveRes.ok){
+              const blob=await driveRes.blob();
               const b64=await new Promise(r=>{
                 const rd=new FileReader();
                 rd.onload=e=>r(e.target.result);
                 rd.readAsDataURL(blob);
               });
               ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
+              console.log('Foto descargada OK:', rutaRelativa);
+            }else{
+              const err=await driveRes.json();
+              console.error('Error descargando foto:', driveRes.status, err?.error?.message);
             }
-          }catch(e){ console.warn('No se pudo descargar foto:',url,e); }
+          }catch(e){ console.warn('Error foto:', url, e.message); }
         }
       }
     }
