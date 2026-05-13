@@ -2238,14 +2238,18 @@ function irAsistencia(){
 }
 
 function initAsistencia(){
-  // Si no hay registros aún, inicializar con el personal del maestro
-  if(!turno.asistencia||turno.asistencia.length===0){
-    turno.asistencia=[
-      ...cachePersonas
-        .slice()
-        .sort((a,b)=>a.nombre.localeCompare(b.nombre))
-        .map(p=>({nombre:p.nombre,puesto:p.puesto||'',esManual:false,horaIngreso:'',horaSalida:'',eventos:[]}))
-    ];
+  if(!turno.asistencia) turno.asistencia=[];
+  // Agregar personas del maestro que aún no estén en la lista
+  const nombresActuales=turno.asistencia.map(p=>p.nombre);
+  const faltantes=cachePersonas
+    .filter(p=>!nombresActuales.includes(p.nombre))
+    .sort((a,b)=>a.nombre.localeCompare(b.nombre))
+    .map(p=>({nombre:p.nombre,puesto:p.puesto||'',esManual:false,horaIngreso:'',horaSalida:'',eventos:[]}));
+  if(faltantes.length>0){
+    // Insertar maestros al inicio (antes de manuales), ordenados
+    const maestros=turno.asistencia.filter(p=>!p.esManual);
+    const manuales=turno.asistencia.filter(p=>p.esManual);
+    turno.asistencia=[...[...maestros,...faltantes].sort((a,b)=>a.nombre.localeCompare(b.nombre)),...manuales];
     saveTurno();
   }
 }
