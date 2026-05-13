@@ -2092,6 +2092,35 @@ async function spCargarEventosTurno(informeId){
       }
     }catch(e){ console.error('spCargarEventos vehiculares:',e); }
   }
+  // Cargar asistencia desde Asistencia_Turno
+  if(spAsistenciaId){
+    try{
+      const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spAsistenciaId}/items?$expand=fields&$top=500&$orderby=createdDateTime asc`,{headers:{Authorization:`Bearer ${tok}`}});
+      const d=await res.json();
+      if(d.value){
+        const filtered=d.value.filter(i=>(i.fields?.InformeID||'').toString().trim()===informeId);
+        if(filtered.length>0){
+          const asistSP=filtered.map(i=>{
+            const f=i.fields||{};
+            let eventos=[];
+            try{ eventos=JSON.parse(f.Eventos||'[]'); }catch(e){}
+            return {
+              nombre:f.NombrePersonal||'',
+              puesto:f.Puesto||'',
+              esManual:f.EsManual==='true',
+              horaIngreso:f.HoraIngreso||'',
+              horaSalida:f.HoraSalida||'',
+              eventos:eventos
+            };
+          });
+          // Guardar en turno.asistencia — se aplica después de retornar items
+          turno.asistencia=asistSP;
+          saveTurno();
+          diag('Asistencia cargada desde SP: '+asistSP.length+' registros');
+        }
+      }
+    }catch(e){ console.error('spCargarEventos asistencia:',e); }
+  }
   diag('Total eventos cargados: '+items.length);
   return items;
 }
