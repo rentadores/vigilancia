@@ -1351,7 +1351,7 @@ function renderPreview(){
         <th style="padding:6px 8px;text-align:center;border:1px solid var(--bd);">Ing.Ref</th>
         <th style="padding:6px 8px;text-align:center;border:1px solid var(--bd);">Salida</th>
       </tr></thead><tbody>`;
-    asist.forEach(p=>{
+    asist.filter(p=>p.horaIngreso||p.horaSalida||(p.eventos&&p.eventos.length>0)).forEach(p=>{
       const salRef=(p.eventos||[]).find(e=>e.motivo==='Salida Refrigerio');
       const ingRef=(p.eventos||[]).find(e=>e.motivo==='Entrada Refrigerio');
       h+=`<tr>
@@ -1645,7 +1645,7 @@ async function generarPDF(){
       hdrs.forEach((h2,i)=>{ doc.text(h2,cx+cols[i]/2,y+5.5,{align:'center'}); cx+=cols[i]; });
       y+=cH;
 
-      asist.forEach((p,ri)=>{
+      asist.filter(p=>p.horaIngreso||p.horaSalida||(p.eventos&&p.eventos.length>0)).forEach((p,ri)=>{
         if(y+cH>pH-20) newPag();
         const salRef=(p.eventos||[]).find(e=>e.motivo==='Salida Refrigerio');
         const ingRef=(p.eventos||[]).find(e=>e.motivo==='Entrada Refrigerio');
