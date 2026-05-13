@@ -1632,11 +1632,16 @@ function cerrarAdmin(){ if(turno.abierto) irA('s-mod'); else irA('s-turno'); }
 // ============================================================
 let maestroActual='placas';
 
-function abrirMaestros(tipo){
+async function abrirMaestros(tipo){
   maestroActual=tipo;
   switchMaestro(tipo);
-  cargarListaMaestros();
   irA('s-maestros');
+  // Mostrar estado de carga
+  document.getElementById('maestro-lista-placas').innerHTML='<li style="color:var(--gm);font-size:13px;"><span class="spin" style="border-top-color:var(--r);border-color:rgba(0,0,0,.1);"></span> Cargando desde SharePoint...</li>';
+  document.getElementById('maestro-lista-personas').innerHTML='<li style="color:var(--gm);font-size:13px;">Cargando...</li>';
+  // Recargar siempre desde SP al abrir maestros
+  await cargarCacheMaestros();
+  cargarListaMaestros();
 }
 
 function switchMaestro(tipo){
