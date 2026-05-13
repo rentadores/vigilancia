@@ -2223,7 +2223,9 @@ let asPersonaActual=null; // índice del personal al que se le abre modal evento
 
 async function sincronizarAsistencia(){
   notif('🔄 Sincronizando...');
+  turno.asistencia=[];
   await spCargarEventosTurno(turno.informeId);
+  if(!turno.asistencia||turno.asistencia.length===0) initAsistencia();
   saveTurno();
   renderAsistencia();
   notif('✅ Asistencia sincronizada');
