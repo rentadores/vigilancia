@@ -213,6 +213,23 @@ input[type=file]{display:none;}
 /* SPIN */
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:5px;}
 @keyframes sp{to{transform:rotate(360deg);}}
+/* ASISTENCIA */
+.as-item{border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--bl);}
+.as-item.as-manual{background:#FFFDF5;border-color:#E8D89A;}
+.as-nombre{font-size:14px;font-weight:700;color:var(--go);}
+.as-puesto{font-size:11px;color:var(--gm);margin-top:1px;}
+.as-btns{display:flex;gap:6px;margin-top:8px;align-items:flex-start;flex-wrap:wrap;}
+.as-btn-ing{background:#3B6D11;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:background .2s;}
+.as-btn-sal{background:#A32D2D;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:background .2s;}
+.as-btn-ev{background:var(--am);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:background .2s;}
+.as-btn-used{background:#999!important;color:white!important;cursor:pointer!important;}
+.as-hora-wrap{display:flex;flex-direction:column;gap:2px;}
+.as-hora-lbl{font-size:10px;color:var(--gm);font-weight:700;text-transform:uppercase;}
+.as-hora-inp{border:1.5px solid var(--bd);border-radius:5px;padding:3px 6px;font-size:12px;width:72px;color:var(--go);}
+.as-refri{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px dashed var(--bd);}
+.as-refri-item{font-size:11px;color:var(--gm);display:flex;align-items:center;gap:4px;}
+.as-refri-del{background:none;border:none;color:var(--r);cursor:pointer;font-size:12px;padding:0;}
+.as-sep{border:none;border-top:2px dashed var(--am);margin:12px 0 8px;opacity:.5;}
 @keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 </style>
 </head>
@@ -302,12 +319,12 @@ input[type=file]{display:none;}
         <span class="mod-badge mb-ok">Disponible</span>
       </div>
     </button>
-    <button class="mod-btn" disabled>
+    <button class="mod-btn" onclick="irAsistencia()">
       <div class="mod-ico">📋</div>
       <div>
         <div class="mod-nom">Toma de Asistencia</div>
         <div class="mod-desc">Registro de personal por turno</div>
-        <span class="mod-badge mb-prox">Próximamente</span>
+        <span class="mod-badge mb-ok">Disponible</span>
       </div>
     </button>
   </div>
@@ -527,6 +544,63 @@ input[type=file]{display:none;}
   </div>
 </div>
 
+<!-- PANTALLA 9: ASISTENCIA -->
+<div class="scr" id="s-asistencia">
+  <div style="text-align:center;padding:10px 0 8px;">
+    <div style="font-size:16px;font-weight:700;">📋 Control de Asistencia</div>
+    <div id="as-subtitulo" style="font-size:12px;color:var(--gm);margin-top:3px;"></div>
+  </div>
+  <button class="btn btn-a" style="margin-bottom:12px;" onclick="abrirMov('m-asistencia-manual')">➕ Registro Manual</button>
+  <div id="lista-asistencia"></div>
+  <div class="sep"></div>
+  <button class="btn btn-s" onclick="irA('s-mod')">← Volver a módulos</button>
+</div>
+
+<!-- MODAL: REGISTRO MANUAL ASISTENCIA -->
+<div class="mov" id="m-asistencia-manual">
+  <div class="modal" style="border-radius:16px;max-width:420px;margin:auto;">
+    <div class="modal-t">➕ Registro Manual<button class="bx" onclick="cerrarMov('m-asistencia-manual')">✕</button></div>
+    <div class="fld"><label>Nombre completo</label><input type="text" id="am-nombre" placeholder="Juan Pérez López"></div>
+    <div class="fld">
+      <label>Evento</label>
+      <div class="sel-grid">
+        <button class="sel-btn" id="am-btn-ing" onclick="selManualEvento('INGRESO',this)"><span class="sel-ico">🟢</span>INGRESO</button>
+        <button class="sel-btn" id="am-btn-sal" onclick="selManualEvento('SALIDA',this)"><span class="sel-ico">🔴</span>SALIDA</button>
+      </div>
+    </div>
+    <div class="fld"><label>Hora</label><input type="time" id="am-hora"></div>
+    <button class="btn btn-r" onclick="guardarManualAsistencia()">✅ Agregar</button>
+  </div>
+</div>
+
+<!-- MODAL: EVENTOS PERSONAL ASISTENCIA -->
+<div class="mov" id="m-as-eventos">
+  <div class="modal" style="border-radius:16px;max-width:420px;margin:auto;">
+    <div class="modal-t">📅 Eventos<button class="bx" onclick="cerrarMov('m-as-eventos')">✕</button></div>
+    <div style="font-size:13px;font-weight:700;color:var(--go);margin-bottom:10px;" id="m-as-eventos-nombre"></div>
+    <div class="fld">
+      <label>Tipo de evento</label>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--go);cursor:pointer;">
+          <input type="radio" name="as-ev-tipo" value="Entrada" style="width:auto;"> Entrada
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--go);cursor:pointer;">
+          <input type="radio" name="as-ev-tipo" value="Salida" style="width:auto;"> Salida
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--go);cursor:pointer;">
+          <input type="radio" name="as-ev-tipo" value="Salida Refrigerio" style="width:auto;"> Salida Refrigerio
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--go);cursor:pointer;">
+          <input type="radio" name="as-ev-tipo" value="Entrada Refrigerio" style="width:auto;"> Entrada Refrigerio
+        </label>
+      </div>
+    </div>
+    <div class="fld"><label>Hora</label><input type="time" id="as-ev-hora"></div>
+    <button class="btn btn-a" onclick="agregarEventoPersonal()">➕ Agregar Evento</button>
+  </div>
+</div>
+
+
 <!-- MODAL: CLAVE ADMIN -->
 <div class="mov" id="m-clave">
   <div class="modal" style="border-radius:16px;max-width:360px;margin:auto;">
@@ -677,7 +751,7 @@ async function spActualizarEstadoVeh(placa,movimiento){
 // ============================================================
 // ESTADO DEL TURNO
 // ============================================================
-let turno = { abierto:false, sede:null, operario:null, turno:null, horaInicio:null, informeId:null, eventos:[] };
+let turno = { abierto:false, sede:null, operario:null, turno:null, horaInicio:null, informeId:null, eventos:[], asistencia:[] };
 
 function saveTurno(){
   try{
@@ -786,7 +860,7 @@ function continuarTurno(){
 async function cerrarTurnoForzado(){
   if(!confirm('¿Seguro que deseas cerrar el turno en progreso? Se perderán los eventos no guardados.')) return;
   await spCerrarTurno(); clearTurno();
-  turno={abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[]};
+  turno={abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[],asistencia:[]};
   document.getElementById('turno-en-progreso').style.display='none';
   document.getElementById('form-turno').style.display='block';
   buildSelectores(); notif('Turno cerrado');
@@ -1257,6 +1331,34 @@ function renderPreview(){
     });
   }
 
+// Sección Asistencia
+  const asist=turno.asistencia||[];
+  if(asist.length>0){
+    h+=`<div style="font-size:12px;font-weight:700;color:var(--v);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px;">📋 Control de Asistencia</div>`;
+    h+=`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:var(--vc);">
+        <th style="padding:6px 8px;text-align:left;border:1px solid var(--bd);">Nombre</th>
+        <th style="padding:6px 8px;text-align:left;border:1px solid var(--bd);">Puesto</th>
+        <th style="padding:6px 8px;text-align:center;border:1px solid var(--bd);">Entrada</th>
+        <th style="padding:6px 8px;text-align:center;border:1px solid var(--bd);">Sal.Ref</th>
+        <th style="padding:6px 8px;text-align:center;border:1px solid var(--bd);">Ing.Ref</th>
+        <th style="padding:6px 8px;text-align:center;border:1px solid var(--bd);">Salida</th>
+      </tr></thead><tbody>`;
+    asist.forEach(p=>{
+      const salRef=(p.eventos||[]).find(e=>e.motivo==='Salida Refrigerio');
+      const ingRef=(p.eventos||[]).find(e=>e.motivo==='Entrada Refrigerio');
+      h+=`<tr>
+        <td style="padding:5px 8px;border:1px solid var(--bd);font-weight:700;">${p.nombre}</td>
+        <td style="padding:5px 8px;border:1px solid var(--bd);color:var(--gm);">${p.puesto||''}</td>
+        <td style="padding:5px 8px;border:1px solid var(--bd);text-align:center;">${p.horaIngreso||'—'}</td>
+        <td style="padding:5px 8px;border:1px solid var(--bd);text-align:center;">${salRef?salRef.hora:'—'}</td>
+        <td style="padding:5px 8px;border:1px solid var(--bd);text-align:center;">${ingRef?ingRef.hora:'—'}</td>
+        <td style="padding:5px 8px;border:1px solid var(--bd);text-align:center;">${p.horaSalida||'—'}</td>
+      </tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  }
+
   h+='</div>';
   document.getElementById('prev-cont').innerHTML=h;
 }
@@ -1514,6 +1616,49 @@ async function generarPDF(){
       });
     }
 
+    // ---- SECCIÓN ASISTENCIA ----
+    const asist=turno.asistencia||[];
+    if(asist.length>0){
+      if(y+12>pH-20) newPag();
+      doc.setFillColor(59,109,17); doc.roundedRect(mg,y,cW,9,1.5,1.5,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
+      doc.text('CONTROL DE ASISTENCIA',pW/2,y+6.3,{align:'center'});
+      y+=13;
+
+      // Cabeceras tabla
+      const cols=[70,25,20,20,20,20]; // anchos columnas
+      const cH=8;
+      if(y+cH>pH-20) newPag();
+      const hdrs=['Nombre','Puesto','Entrada','Sal.Ref','Ing.Ref','Salida'];
+      let cx=mg;
+      doc.setFillColor(234,243,222);
+      hdrs.forEach((h2,i)=>{ doc.rect(cx,y,cols[i],cH,'F'); doc.setDrawColor(180,180,180); doc.rect(cx,y,cols[i],cH); cx+=cols[i]; });
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(59,109,17);
+      cx=mg;
+      hdrs.forEach((h2,i)=>{ doc.text(h2,cx+cols[i]/2,y+5.5,{align:'center'}); cx+=cols[i]; });
+      y+=cH;
+
+      asist.forEach((p,ri)=>{
+        if(y+cH>pH-20) newPag();
+        const salRef=(p.eventos||[]).find(e=>e.motivo==='Salida Refrigerio');
+        const ingRef=(p.eventos||[]).find(e=>e.motivo==='Entrada Refrigerio');
+        const vals=[p.nombre,p.puesto||'',p.horaIngreso||'—',salRef?salRef.hora:'—',ingRef?ingRef.hora:'—',p.horaSalida||'—'];
+        const bg=ri%2===0?[255,255,255]:[248,248,244];
+        cx=mg;
+        doc.setFillColor(...bg);
+        cols.forEach(w=>{ doc.rect(cx,y,w,cH,'F'); doc.setDrawColor(200,200,200); doc.rect(cx,y,w,cH); cx+=w; });
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(30,30,30);
+        cx=mg;
+        vals.forEach((v,i)=>{
+          const txt=doc.splitTextToSize(String(v),cols[i]-2);
+          doc.text(txt[0]||'',i===0?cx+2:cx+cols[i]/2,y+5.5,{align:i===0?'left':'center'});
+          cx+=cols[i];
+        });
+        y+=cH;
+      });
+      y+=6;
+    }
+
     // Firma
     if(y+22>pH-10) newPag();
     doc.setFillColor(248,232,230); doc.roundedRect(mg,y,cW,20,2,2,'F');
@@ -1573,7 +1718,7 @@ async function generarPDF(){
     }else{ notif('⚠ Sin conexión Microsoft - solo descarga local'); }
 
     await spCerrarTurno(); clearTurno();
-    turno={abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[]};
+    turno={abierto:false,sede:null,operario:null,turno:null,horaInicio:null,informeId:null,eventos:[],asistencia:[]};
     btn.innerHTML='✅ Completado';
     setTimeout(()=>{ btn.innerHTML='📥 Generar PDF y Enviar'; btn.disabled=false; document.getElementById('hdr-t').textContent='Sistema de Vigilancia'; mostrarPantallaTurno(); },3000);
 
@@ -1784,6 +1929,7 @@ const AZ={
 let msalApp=null, spSiteId=null, spListId=null, spFotosLibId=null, spFotosDriveId=null;
 let spTurnosId=null, spTurnoItemId=null;
 let spVehId=null;       // Lista Eventos_Vehicular
+let spAsistenciaId=null; // Lista Asistencia_Turno
 let spPlacasId=null;    // Lista Maestro_Placas
 let spPersonasId=null;  // Lista Maestro_Personas
 let spEstadoVehId=null; // Lista Estado_Vehiculos
@@ -1852,6 +1998,7 @@ async function spGetIds(tok){
     const lp=find('Maestro_Placas'); if(lp) spPlacasId=lp.id;
     const lpe=find('Maestro_Personas'); if(lpe) spPersonasId=lpe.id;
     const lev=find('Estado_Vehiculos'); if(lev) spEstadoVehId=lev.id;
+    const las=find('Asistencia_Turno'); if(las) spAsistenciaId=las.id;
     const libFotos=find('Fotos_Vigilancia');
     if(libFotos){
       spFotosLibId=libFotos.id;
@@ -2028,6 +2175,214 @@ async function spUpFoto(dataUrl,nombre,carpeta){
       {method:'PUT',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'image/jpeg'},body:blob});
     const d=await res.json(); return d.webUrl||null;
   }catch(e){ console.error('spUpFoto:',e); return null; }
+}
+
+// ============================================================
+// ASISTENCIA
+// ============================================================
+let asPersonaActual=null; // índice del personal al que se le abre modal eventos
+
+function irAsistencia(){
+  document.getElementById('as-subtitulo').textContent=`${turno.operario} · ${fmtF(new Date())}`;
+  renderAsistencia();
+  irA('s-asistencia');
+}
+
+function initAsistencia(){
+  // Si no hay registros aún, inicializar con el personal del maestro
+  if(!turno.asistencia||turno.asistencia.length===0){
+    turno.asistencia=[
+      ...cachePersonas
+        .slice()
+        .sort((a,b)=>a.nombre.localeCompare(b.nombre))
+        .map(p=>({nombre:p.nombre,puesto:p.puesto||'',esManual:false,horaIngreso:'',horaSalida:'',eventos:[]}))
+    ];
+    saveTurno();
+  }
+}
+
+function renderAsistencia(){
+  initAsistencia();
+  const cont=document.getElementById('lista-asistencia');
+  const maestros=turno.asistencia.filter(p=>!p.esManual);
+  const manuales=turno.asistencia.filter(p=>p.esManual);
+
+  let html='';
+
+  // Personal maestro
+  maestros.forEach((p,i)=>{
+    const idx=turno.asistencia.indexOf(p);
+    html+=renderItemAsistencia(p,idx);
+  });
+
+  // Separador y manuales
+  if(manuales.length>0){
+    html+=`<hr class="as-sep"><div style="font-size:11px;font-weight:700;color:var(--am);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Registros Manuales</div>`;
+    manuales.forEach((p)=>{
+      const idx=turno.asistencia.indexOf(p);
+      html+=renderItemAsistencia(p,idx);
+    });
+  }
+
+  cont.innerHTML=html||`<div class="vacio"><span class="vic">👥</span>Sin personal en maestro.<br><small>Usa Registro Manual o carga personal en Admin.</small></div>`;
+}
+
+function renderItemAsistencia(p,idx){
+  const tieneIng=!!p.horaIngreso;
+  const tieneSal=!!p.horaSalida;
+
+  // Refrigerios visibles (solo 1er Salida Refrigerio y 1er Entrada Refrigerio)
+  const salRef=(p.eventos||[]).find(e=>e.motivo==='Salida Refrigerio');
+  const ingRef=(p.eventos||[]).find(e=>e.motivo==='Entrada Refrigerio');
+
+  let refriHtml='';
+  if(salRef||ingRef){
+    refriHtml=`<div class="as-refri">`;
+    if(salRef) refriHtml+=`<span class="as-refri-item">🍽 Sal.Ref: <b>${salRef.hora}</b> <button class="as-refri-del" onclick="eliminarEventoPersonal(${idx},'Salida Refrigerio')">🗑</button></span>`;
+    if(ingRef) refriHtml+=`<span class="as-refri-item">↩ Ing.Ref: <b>${ingRef.hora}</b> <button class="as-refri-del" onclick="eliminarEventoPersonal(${idx},'Entrada Refrigerio')">🗑</button></span>`;
+    refriHtml+=`</div>`;
+  }
+
+  const esManualClass=p.esManual?' as-manual':'';
+  const btnEvEntos=p.esManual?'':
+    `<button class="as-btn-ev" onclick="abrirEventosPersonal(${idx})" title="Eventos">📅 Eventos</button>`;
+
+  return `<div class="as-item${esManualClass}">
+    <div class="as-nombre">${p.nombre}</div>
+    ${p.puesto?`<div class="as-puesto">${p.puesto}</div>`:''}
+    <div class="as-btns">
+      <div class="as-hora-wrap">
+        <button class="${tieneIng?'as-btn-ing as-btn-used':'as-btn-ing'}" onclick="toggleAsHora(${idx},'ingreso')">${tieneIng?'✓ INGRESO':'INGRESO'}</button>
+        ${tieneIng?`<div style="margin-top:3px;"><span class="as-hora-lbl">Hora:</span><input class="as-hora-inp" type="time" value="${p.horaIngreso}" onchange="setAsHora(${idx},'ingreso',this.value)"></div>`:''}
+      </div>
+      <div class="as-hora-wrap">
+        <button class="${tieneSal?'as-btn-sal as-btn-used':'as-btn-sal'}" onclick="toggleAsHora(${idx},'salida')">${tieneSal?'✓ SALIDA':'SALIDA'}</button>
+        ${tieneSal?`<div style="margin-top:3px;"><span class="as-hora-lbl">Hora:</span><input class="as-hora-inp" type="time" value="${p.horaSalida}" onchange="setAsHora(${idx},'salida',this.value)"></div>`:''}
+      </div>
+      ${btnEvEntos}
+    </div>
+    ${refriHtml}
+  </div>`;
+}
+
+function toggleAsHora(idx,tipo){
+  const p=turno.asistencia[idx];
+  if(tipo==='ingreso'){
+    p.horaIngreso=p.horaIngreso?'':fmtHI(new Date());
+  }else{
+    p.horaSalida=p.horaSalida?'':fmtHI(new Date());
+  }
+  saveTurno();
+  renderAsistencia();
+  // Guardar en SP en background
+  spSaveAsistencia(p);
+}
+
+function setAsHora(idx,tipo,val){
+  const p=turno.asistencia[idx];
+  if(tipo==='ingreso') p.horaIngreso=val;
+  else p.horaSalida=val;
+  saveTurno();
+  spSaveAsistencia(p);
+}
+
+let amEventoSel=null;
+function selManualEvento(val,btn){
+  document.querySelectorAll('#m-asistencia-manual .sel-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  amEventoSel=val;
+}
+
+function abrirMov_asistenciaManual(){
+  document.getElementById('am-nombre').value='';
+  document.getElementById('am-hora').value=fmtHI(new Date());
+  document.getElementById('am-btn-ing').classList.remove('on');
+  document.getElementById('am-btn-sal').classList.remove('on');
+  amEventoSel=null;
+  abrirMov('m-asistencia-manual');
+}
+
+function guardarManualAsistencia(){
+  const nombre=document.getElementById('am-nombre').value.trim();
+  const hora=document.getElementById('am-hora').value;
+  if(!nombre){alert('Ingresa el nombre.');return;}
+  if(!amEventoSel){alert('Selecciona INGRESO o SALIDA.');return;}
+  if(!hora){alert('Indica la hora.');return;}
+
+  const nuevo={
+    nombre,puesto:'',esManual:true,
+    horaIngreso:amEventoSel==='INGRESO'?hora:'',
+    horaSalida:amEventoSel==='SALIDA'?hora:'',
+    eventos:[]
+  };
+  turno.asistencia.push(nuevo);
+  saveTurno();
+  cerrarMov('m-asistencia-manual');
+  renderAsistencia();
+  spSaveAsistencia(nuevo);
+}
+
+function abrirEventosPersonal(idx){
+  asPersonaActual=idx;
+  const p=turno.asistencia[idx];
+  document.getElementById('m-as-eventos-nombre').textContent=p.nombre;
+  document.getElementById('as-ev-hora').value=fmtHI(new Date());
+  document.querySelectorAll('input[name="as-ev-tipo"]').forEach(r=>r.checked=false);
+  abrirMov('m-as-eventos');
+}
+
+function agregarEventoPersonal(){
+  const tipo=document.querySelector('input[name="as-ev-tipo"]:checked');
+  const hora=document.getElementById('as-ev-hora').value;
+  if(!tipo){alert('Selecciona el tipo de evento.');return;}
+  if(!hora){alert('Indica la hora.');return;}
+  const p=turno.asistencia[asPersonaActual];
+  if(!p.eventos) p.eventos=[];
+  p.eventos.push({hora,motivo:tipo.value});
+  saveTurno();
+  cerrarMov('m-as-eventos');
+  renderAsistencia();
+  spSaveAsistencia(p);
+}
+
+function eliminarEventoPersonal(idx,motivo){
+  if(!confirm(`¿Eliminar evento "${motivo}"?`)) return;
+  const p=turno.asistencia[idx];
+  // Eliminar solo la primera ocurrencia del motivo
+  const i=p.eventos.findIndex(e=>e.motivo===motivo);
+  if(i>=0) p.eventos.splice(i,1);
+  saveTurno();
+  renderAsistencia();
+  spSaveAsistencia(p);
+}
+
+async function spSaveAsistencia(p){
+  const tok=await getToken(); if(!tok||!spSiteId||!spAsistenciaId) return;
+  try{
+    const body={fields:{
+      Title:turno.informeId, InformeID:turno.informeId,
+      Sede:turno.sede, Operario:turno.operario, Turno:turno.turno,
+      FechaTurno:new Date().toISOString(),
+      NombrePersonal:p.nombre, Puesto:p.puesto||'',
+      HoraIngreso:p.horaIngreso||'', HoraSalida:p.horaSalida||'',
+      EsManual:p.esManual?'true':'false',
+      Eventos:JSON.stringify(p.eventos||[])
+    }};
+    // Buscar si ya existe item para este InformeID+NombrePersonal
+    const busq=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spAsistenciaId}/items?$expand=fields&$filter=fields/InformeID eq '${turno.informeId}' and fields/NombrePersonal eq '${encodeURIComponent(p.nombre)}'`,
+      {headers:{Authorization:`Bearer ${tok}`}}
+    );
+    const bd=await busq.json();
+    if(bd.value&&bd.value.length>0){
+      const itemId=bd.value[0].id;
+      await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spAsistenciaId}/items/${itemId}/fields`,
+        {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body.fields)});
+    }else{
+      await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spAsistenciaId}/items`,
+        {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+  }catch(e){ console.error('spSaveAsistencia:',e); }
 }
 
 // ============================================================
