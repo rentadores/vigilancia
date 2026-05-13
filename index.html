@@ -2100,7 +2100,10 @@ async function spCargarEventosTurno(informeId){
       if(d.value){
         const filtered=d.value.filter(i=>(i.fields?.InformeID||'').toString().trim()===informeId);
         if(filtered.length>0){
-          const asistSP=filtered.map(i=>{
+          // Deduplicar: quedarse con el último item por NombrePersonal
+          const mapaPersonas={};
+          filtered.forEach(i=>{ mapaPersonas[i.fields?.NombrePersonal||i.id]=i; });
+          const asistSP=Object.values(mapaPersonas).map(i=>{
             const f=i.fields||{};
             let eventos=[];
             try{ eventos=JSON.parse(f.Eventos||'[]'); }catch(e){}
@@ -2400,12 +2403,14 @@ async function spSaveAsistencia(p){
     }};
     // Buscar si ya existe item para este InformeID+NombrePersonal
     const busq=await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spAsistenciaId}/items?$expand=fields&$filter=fields/InformeID eq '${turno.informeId}' and fields/NombrePersonal eq '${encodeURIComponent(p.nombre)}'`,
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spAsistenciaId}/items?$expand=fields&$filter=fields/InformeID eq '${turno.informeId}'&$top=500`,
       {headers:{Authorization:`Bearer ${tok}`}}
     );
     const bd=await busq.json();
-    if(bd.value&&bd.value.length>0){
-      const itemId=bd.value[0].id;
+
+    const match=bd.value&&bd.value.find(i=>(i.fields?.NombrePersonal||'')=== p.nombre);
+    if(match){
+      const itemId=match.id;
       await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spAsistenciaId}/items/${itemId}/fields`,
         {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body.fields)});
     }else{
