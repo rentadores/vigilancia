@@ -1467,6 +1467,63 @@ function renderPreview(){
     h+=`</tbody></table></div>`;
   }
 
+ // Sección Visitas y Mercadería
+  const accesos    = turno.accesos || [];
+  const visitas    = accesos.filter(e => e.tipo === 'visitas');
+  const mercancias = accesos.filter(e => e.tipo === 'mercaderia');
+
+  if(accesos.length > 0){
+    h+=`<div style="font-size:12px;font-weight:700;color:var(--az);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px;">🚪 Registro de Visitas y Mercadería</div>`;
+
+    if(visitas.length > 0){
+      h+=`<div style="font-size:11px;font-weight:700;color:var(--az);margin-bottom:6px;padding:4px 8px;background:var(--azc);border-radius:6px;">👤 VISITAS</div>`;
+      visitas.forEach(ev=>{
+        h+=`<div class="pev">
+          <div class="pev-h" style="background:var(--azc);border-left:4px solid var(--az);">
+            <span class="badge" style="background:var(--azc);color:var(--az);">👤 Visita</span>
+            <span class="pev-hora" style="color:var(--az);">${ev.hora}</span>
+          </div>
+          <div style="padding:7px 11px;">
+            <div style="font-size:14px;font-weight:700;color:var(--go);margin-bottom:4px;">${ev.nombre}</div>
+            ${ev.empresa  ? `<div style="font-size:12px;color:var(--gm);">🏢 ${ev.empresa}</div>`  : ''}
+            ${ev.contacto ? `<div style="font-size:12px;color:var(--gm);">👁 ${ev.contacto}</div>` : ''}
+            ${ev.placa    ? `<div style="font-size:12px;color:var(--gm);">🚗 ${ev.placa}</div>`    : ''}
+            ${ev.detalle  ? `<div style="font-size:12px;color:var(--gm);margin-top:4px;">${ev.detalle}</div>` : ''}
+          </div>
+          ${ev.fotos&&ev.fotos.length>0
+            ? `<div class="pev-fotos">${ev.fotos.map(f=>`<img class="pthumb" src="${f.data}">`).join('')}</div>`
+            : ev.fotosURLs&&ev.fotosURLs.length>0
+              ? `<div class="pev-fotos">${ev.fotosURLs.map(url=>`<img class="pthumb" src="${url}" onerror="this.style.display='none'">`).join('')}</div>`
+              : ''}
+        </div>`;
+      });
+    }
+
+    if(mercancias.length > 0){
+      h+=`<div style="font-size:11px;font-weight:700;color:var(--am);margin:10px 0 6px;padding:4px 8px;background:var(--amc);border-radius:6px;">🚚 RECEPCIÓN DE MERCADERÍA</div>`;
+      mercancias.forEach(ev=>{
+        h+=`<div class="pev">
+          <div class="pev-h" style="background:var(--amc);border-left:4px solid var(--am);">
+            <span class="badge" style="background:var(--amc);color:var(--am);">🚚 Mercadería</span>
+            <span class="pev-hora" style="color:var(--am);">${ev.hora}</span>
+          </div>
+          <div style="padding:7px 11px;">
+            <div style="font-size:14px;font-weight:700;color:var(--go);margin-bottom:4px;">${ev.nombre}</div>
+            ${ev.empresa  ? `<div style="font-size:12px;color:var(--gm);">🏢 ${ev.empresa}</div>`  : ''}
+            ${ev.contacto ? `<div style="font-size:12px;color:var(--gm);">👁 ${ev.contacto}</div>` : ''}
+            ${ev.placa    ? `<div style="font-size:12px;color:var(--gm);">🚗 ${ev.placa}</div>`    : ''}
+            ${ev.detalle  ? `<div style="font-size:12px;color:var(--gm);margin-top:4px;">${ev.detalle}</div>` : ''}
+          </div>
+          ${ev.fotos&&ev.fotos.length>0
+            ? `<div class="pev-fotos">${ev.fotos.map(f=>`<img class="pthumb" src="${f.data}">`).join('')}</div>`
+            : ev.fotosURLs&&ev.fotosURLs.length>0
+              ? `<div class="pev-fotos">${ev.fotosURLs.map(url=>`<img class="pthumb" src="${url}" onerror="this.style.display='none'">`).join('')}</div>`
+              : ''}
+        </div>`;
+      });
+    }
+  }
+
   h+='</div>';
   document.getElementById('prev-cont').innerHTML=h;
 }
@@ -1500,6 +1557,31 @@ async function generarPDF(){
               ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
             }else{ const err=await driveRes.json(); console.error('❌ Error foto:',driveRes.status,err?.error?.message); }
           }catch(e){ console.warn('Error foto:',e.message); }
+        }
+      }
+    }
+  }
+
+  // Descargar fotos SP para accesos (visitas/mercadería)
+  if(tok&&spSiteId){
+    for(const ev of (turno.accesos||[])){
+      if((!ev.fotos||ev.fotos.length===0)&&ev.fotosURLs&&ev.fotosURLs.length>0){
+        ev.fotos=[];
+        for(const url of ev.fotosURLs){
+          try{
+            const decoded=decodeURIComponent(new URL(url).pathname);
+            const marker='Fotos_Vigilancia/';
+            const markerIdx=decoded.indexOf(marker);
+            if(markerIdx===-1){ continue; }
+            const rutaDesdeLib=decoded.substring(markerIdx);
+            const rutaEncoded=rutaDesdeLib.split('/').map(s=>encodeURIComponent(s)).join('/');
+            const driveRes=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/${rutaEncoded}:/content`,{headers:{Authorization:`Bearer ${tok}`}});
+            if(driveRes.ok){
+              const blob=await driveRes.blob();
+              const b64=await new Promise(r=>{ const rd=new FileReader(); rd.onload=e=>r(e.target.result); rd.readAsDataURL(blob); });
+              ev.fotos.push({nombre:'foto_sp.jpg',data:b64});
+            }else{ const err=await driveRes.json().catch(()=>({})); console.error('❌ Error foto acceso:',driveRes.status,err?.error?.message); }
+          }catch(e){ console.warn('Error foto acceso:',e.message); }
         }
       }
     }
