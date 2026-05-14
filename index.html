@@ -1771,15 +1771,14 @@ async function generarPDF(){
 
         // Detalle/Ítems
         if(veh.detalle&&veh.detalle.trim()){
-          const lnsD=doc.splitTextToSize(veh.detalle,cW-10);
+          const lnsD=doc.splitTextToSize(veh.detalle,cW-4);
           const aD=lnsD.length*4.5+7;
           if(y+aD>pH-20) newPag();
           doc.setFillColor(255,250,240); doc.roundedRect(mg,y,cW,aD,1,1,'F');
-          doc.setFillColor(186,117,23); doc.rect(mg,y,3,aD,'F');
           doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(186,117,23);
-          doc.text('DETALLE / ITEMS',mg+6,y+5);
+          doc.text('DETALLE / ITEMS',mg+3,y+5);
           doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
-          doc.text(lnsD,mg+6,y+9.5);
+          doc.text(lnsD,mg+3,y+9.5);
           y+=aD+3;
         }
 
@@ -1906,15 +1905,14 @@ async function generarPDF(){
           y+=17;
 
           if(ev.detalle){
-            const lnsD=doc.splitTextToSize(ev.detalle,cW-10);
+            const lnsD=doc.splitTextToSize(ev.detalle,cW-4);
             const aD=lnsD.length*4.5+7;
             if(y+aD>pH-20) newPag();
             doc.setFillColor(245,249,255); doc.roundedRect(mg,y,cW,aD,1,1,'F');
-            doc.setFillColor(24,95,165); doc.rect(mg,y,3,aD,'F');
             doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(24,95,165);
-            doc.text('MOTIVO / DETALLE',mg+6,y+5);
+            doc.text('MOTIVO / DETALLE',mg+3,y+5);
             doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
-            doc.text(lnsD,mg+6,y+9.5);
+            doc.text(lnsD,mg+3,y+9.5);
             y+=aD+3;
           }
 
@@ -1980,15 +1978,14 @@ async function generarPDF(){
           y+=17;
 
           if(ev.detalle){
-            const lnsD=doc.splitTextToSize(ev.detalle,cW-10);
+            const lnsD=doc.splitTextToSize(ev.detalle,cW-4);
             const aD=lnsD.length*4.5+7;
             if(y+aD>pH-20) newPag();
             doc.setFillColor(255,250,240); doc.roundedRect(mg,y,cW,aD,1,1,'F');
-            doc.setFillColor(186,117,23); doc.rect(mg,y,3,aD,'F');
             doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(186,117,23);
-            doc.text('DETALLE / MERCADERÍA',mg+6,y+5);
+            doc.text('DETALLE / MERCADERÍA',mg+3,y+5);
             doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
-            doc.text(lnsD,mg+6,y+9.5);
+            doc.text(lnsD,mg+3,y+9.5);
             y+=aD+3;
           }
 
