@@ -1856,7 +1856,7 @@ async function generarPDF(){
       doc.setDrawColor(180,180,180); doc.setLineWidth(0.4); doc.rect(mg,y,cW,22);
       if(logoB64){
         doc.setFillColor(255,255,255); doc.rect(mg,y,38,22,'F');
-        doc.addImage(logoB64,'JPEG',mg+1,y+1,36,20);
+        doc.addImage(logoB64,'JPEG',mg+2,y+2,34,18);
       } else {
         doc.setFillColor(192,57,43); doc.rect(mg,y,38,22,'F');
         doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
