@@ -214,6 +214,67 @@ input[type=file]{display:none;}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:5px;}
 @keyframes sp{to{transform:rotate(360deg);}}
 
+/* DASHBOARD layout */
+@media(min-width:1024px){
+  body{overflow:hidden;}
+  .scr{max-width:none;margin:0;padding:0;}
+  #s-mod{display:none;height:calc(100vh - 52px);}
+  #s-mod.on{display:flex;flex-direction:row;overflow:hidden;}
+  .dash-sidebar{width:240px;flex-shrink:0;background:var(--bl);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow-y:auto;height:100%;}
+  .dash-main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--gc);}
+  .dash-turno{background:var(--bl);border-bottom:1px solid var(--bd);padding:10px 20px;display:flex;gap:28px;flex-shrink:0;}
+  .dash-counters{display:flex;gap:12px;padding:14px 20px 0;flex-shrink:0;}
+  .dash-counter{flex:1;border-radius:10px;padding:13px 15px;border:1px solid var(--bd);background:var(--bl);position:relative;overflow:hidden;}
+  .dash-counter::after{content:'';position:absolute;top:-18px;right:-18px;width:60px;height:60px;border-radius:50%;opacity:.12;}
+  .dash-counter.dc1{background:#EBF5FB;border-color:#AED6F1;}.dash-counter.dc1::after{background:#1A5276;}
+  .dash-counter.dc2{background:#EAFAF1;border-color:#A9DFBF;}.dash-counter.dc2::after{background:#1E8449;}
+  .dash-counter.dc3{background:#FEF9E7;border-color:#F9E79F;}.dash-counter.dc3::after{background:#B7770D;}
+  .dash-counter.dc4{background:#F4ECF7;border-color:#D7BDE2;}.dash-counter.dc4::after{background:#6C3483;}
+  .dc-ico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;overflow:hidden;}
+  .dc-ico img{width:36px;height:36px;object-fit:cover;border-radius:8px;}
+  .dc-num{font-size:28px;font-weight:700;line-height:1;margin-bottom:3px;}
+  .dc-num.n1{color:#1A5276;}.dc-num.n2{color:#1E8449;}.dc-num.n3{color:#B7770D;}.dc-num.n4{color:#6C3483;}
+  .dc-label{font-size:11px;color:var(--gm);font-weight:600;}
+  .dash-content{flex:1;overflow-y:auto;padding:14px 20px;}
+  .dash-bottom{padding:12px 20px;border-top:1px solid var(--bd);background:var(--bl);flex-shrink:0;}
+  .si-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .15s;border-left:3px solid transparent;}
+  .si-item:hover{background:var(--gc);}
+  .si-item.si-on{background:var(--rc);border-left-color:var(--r);}
+  .si-item.si-on .si-nom{color:var(--r);}
+  .si-ico-img{width:34px;height:34px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+  .si-ico-em{width:34px;height:34px;border-radius:8px;background:var(--gc);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .si-nom{font-size:12px;font-weight:700;color:var(--go);}
+  .si-desc{font-size:10px;color:var(--gm);margin-top:1px;}
+  .si-bdg{font-size:9px;padding:2px 6px;border-radius:8px;margin-top:2px;display:inline-block;font-weight:700;}
+  .si-bdg.ok{background:var(--amc);color:var(--am);}
+  .si-bdg.prox{background:var(--gc);color:var(--gm);}
+  .si-divider{height:1px;background:var(--bd);margin:4px 0;}
+  .dash-ev-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--bd);}
+  .dash-ev-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .dash-ev-dot.rec{background:#3498DB;}
+  .dash-ev-dot.veh{background:#2ECC71;}
+  .dash-ev-dot.vis{background:#E67E22;}
+  .dash-ev-dot.asi{background:#8E44AD;}
+  .dash-ev-info{flex:1;}
+  .dash-ev-nom{font-size:12px;font-weight:700;color:var(--go);}
+  .dash-ev-sub{font-size:11px;color:var(--gm);}
+  .dash-ev-hora{font-size:11px;color:var(--gm);flex-shrink:0;}
+}
+@media(max-width:1023px){
+  .dash-sidebar{display:none;}
+  .dash-main{display:contents;}
+  .dash-turno{display:none;}
+  .dash-counters{display:none;}
+  .dash-content{display:contents;}
+  .dash-bottom{display:none;}
+  .btn-hamburger{display:flex;}
+}
+.btn-hamburger{display:none;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:white;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:16px;font-weight:700;}
+.hamburger-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);}
+.hamburger-overlay.on{display:block;}
+.hamburger-menu{position:fixed;top:0;left:0;width:260px;height:100vh;background:var(--bl);z-index:301;overflow-y:auto;box-shadow:4px 0 20px rgba(0,0,0,.2);transform:translateX(-100%);transition:transform .25s;}
+.hamburger-menu.on{transform:translateX(0);}
+
 /* ASISTENCIA */
 .as-item{border:1px solid var(--bd);border-radius:10px;padding:12px 16px;margin-bottom:10px;background:var(--bl);}
 .as-item.as-manual{background:#FFFDF5;border-color:#E8D89A;}
@@ -237,6 +298,7 @@ input[type=file]{display:none;}
 <body>
 
 <header class="hdr">
+  <button class="btn-hamburger" id="btn-hamburger" onclick="toggleHamburger()" style="display:none;">☰</button>
   <img src="https://rentadores.github.io/vigilancia/logo.jpg" alt="Logo" style="height:36px;border-radius:6px;flex-shrink:0;">
   <div class="hdr-t" id="hdr-t">Sistema de Vigilancia</div>
   <div class="hdr-acts">
@@ -245,6 +307,36 @@ input[type=file]{display:none;}
     <button class="btn-hdr" onclick="abrirAdmin()">⚙ Admin</button>
   </div>
 </header>
+
+<!-- Menú hamburguesa para mobile/tablet -->
+<div class="hamburger-overlay" id="hamburger-overlay" onclick="toggleHamburger()"></div>
+<div class="hamburger-menu" id="hamburger-menu">
+  <div style="padding:14px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:13px;font-weight:700;">Módulos</div>
+    <button onclick="toggleHamburger()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--go);">✕</button>
+  </div>
+  <div class="si-item" onclick="irRegistro('recorrido');toggleHamburger()">
+    <img class="si-ico-img" src="https://rentadores.github.io/vigilancia/recorrido.jpg" alt="" onerror="this.style.display='none'">
+    <div><div class="si-nom">Recorrido de Instalaciones</div><span class="si-bdg ok">Disponible</span></div>
+  </div>
+  <div class="si-item" onclick="irRegistro('vehiculo');toggleHamburger()">
+    <img class="si-ico-img" src="https://rentadores.github.io/vigilancia/vehicular.jpg" alt="" onerror="this.style.display='none'">
+    <div><div class="si-nom">Control Vehicular</div><span class="si-bdg ok">Disponible</span></div>
+  </div>
+  <div class="si-item" onclick="irAsistencia();toggleHamburger()">
+    <img class="si-ico-img" src="https://rentadores.github.io/vigilancia/asistencia.jpg" alt="" onerror="this.style.display='none'">
+    <div><div class="si-nom">Toma de Asistencia</div><span class="si-bdg ok">Disponible</span></div>
+  </div>
+  <div class="si-item" onclick="irVisitasMercaderia();toggleHamburger()">
+    <img class="si-ico-img" src="https://rentadores.github.io/vigilancia/visitantes.jpg" alt="" onerror="this.style.display='none'">
+    <div><div class="si-nom">Registro de Visitas / Mercadería</div><span class="si-bdg ok">Disponible</span></div>
+  </div>
+  <div class="si-divider"></div>
+  <div class="si-item" style="opacity:.6;cursor:not-allowed;">
+    <div class="si-ico-em">🚛</div>
+    <div><div class="si-nom">Traslados</div><span class="si-bdg prox">Próximamente</span></div>
+  </div>
+</div>
 
 <!-- PANTALLA 1: LOGIN -->
 <div class="scr on" id="s-login">
@@ -303,51 +395,146 @@ input[type=file]{display:none;}
 
 <!-- PANTALLA 3: MÓDULOS -->
 <div class="scr" id="s-mod">
-  <div class="turno-activo" id="mod-turno-bar"></div>
-  <div style="font-size:13px;color:var(--gm);text-align:center;margin-bottom:10px;">¿Qué evento deseas registrar?</div>
-  <div class="mod-grid">
-    <button class="mod-btn" onclick="irRegistro('recorrido')">
-      <div class="mod-ico">🚶</div>
+
+  <!-- SIDEBAR desktop -->
+  <div class="dash-sidebar">
+    <div class="si-item si-on" id="si-recorrido" onclick="irRegistro('recorrido')">
+      <img class="si-ico-img" src="https://rentadores.github.io/vigilancia/recorrido.jpg" alt="" onerror="this.style.display='none'">
       <div>
-        <div class="mod-nom">Recorrido de Instalaciones</div>
-        <div class="mod-desc">Ronda de seguridad perimetral con fotos</div>
-        <span class="mod-badge mb-ok">Disponible</span>
+        <div class="si-nom">Recorrido de Instalaciones</div>
+        <div class="si-desc">Ronda de seguridad perimetral</div>
+        <span class="si-bdg ok">Disponible</span>
       </div>
-    </button>
-    <button class="mod-btn" onclick="irRegistro('vehiculo')">
-      <div class="mod-ico">🚗</div>
-      <div>
-        <div class="mod-nom">Control Vehicular</div>
-        <div class="mod-desc">Ingreso y salida de vehículos</div>
-        <span class="mod-badge mb-ok">Disponible</span>
-      </div>
-    </button>
-    <button class="mod-btn" onclick="irAsistencia()">
-      <div class="mod-ico">📋</div>
-      <div>
-        <div class="mod-nom">Toma de Asistencia</div>
-        <div class="mod-desc">Registro de personal por turno</div>
-        <span class="mod-badge mb-ok">Disponible</span>
-      </div>
-    </button>
-    <button class="mod-btn" onclick="irVisitasMercaderia()">
-      <div class="mod-ico">🚪</div>
-      <div>
-        <div class="mod-nom">Registro de Visitas / Mercadería</div>
-        <div class="mod-desc">Visitas y recepción de mercadería</div>
-        <span class="mod-badge mb-ok">Disponible</span>
-      </div>
-    </button>
-  </div>
-  <div class="sep"></div>
-  <div class="card">
-    <div class="card-t" style="display:flex;justify-content:space-between;align-items:center;">
-      <span>📋 Eventos del turno</span>
-      <span id="contador-eventos" style="font-size:13px;color:var(--gm);font-weight:400;"></span>
     </div>
-    <div id="lista-eventos-resumen"></div>
+    <div class="si-item" id="si-vehiculo" onclick="irRegistro('vehiculo')">
+      <img class="si-ico-img" src="https://rentadores.github.io/vigilancia/vehicular.jpg" alt="" onerror="this.style.display='none'">
+      <div>
+        <div class="si-nom">Control Vehicular</div>
+        <div class="si-desc">Ingreso y salida de vehículos</div>
+        <span class="si-bdg ok">Disponible</span>
+      </div>
+    </div>
+    <div class="si-item" id="si-asistencia" onclick="irAsistencia()">
+      <img class="si-ico-img" src="https://rentadores.github.io/vigilancia/asistencia.jpg" alt="" onerror="this.style.display='none'">
+      <div>
+        <div class="si-nom">Toma de Asistencia</div>
+        <div class="si-desc">Registro de personal por turno</div>
+        <span class="si-bdg ok">Disponible</span>
+      </div>
+    </div>
+    <div class="si-item" id="si-visitas" onclick="irVisitasMercaderia()">
+      <img class="si-ico-img" src="https://rentadores.github.io/vigilancia/visitantes.jpg" alt="" onerror="this.style.display='none'">
+      <div>
+        <div class="si-nom">Registro de Visitas / Mercadería</div>
+        <div class="si-desc">Visitas y recepción de mercadería</div>
+        <span class="si-bdg ok">Disponible</span>
+      </div>
+    </div>
+    <div class="si-divider"></div>
+    <div class="si-item" id="si-traslados" style="opacity:.6;cursor:not-allowed;">
+      <div class="si-ico-em">🚛</div>
+      <div>
+        <div class="si-nom">Traslados</div>
+        <div class="si-desc">Registro de traslados</div>
+        <span class="si-bdg prox">Próximamente</span>
+      </div>
+    </div>
+    <div class="si-divider"></div>
+    <div class="si-item" id="si-historial">
+      <div class="si-ico-em">📁</div>
+      <div>
+        <div class="si-nom">Ver Historial</div>
+        <div class="si-desc">Informes generados</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL PRINCIPAL desktop -->
+  <div class="dash-main">
+
+    <!-- Barra info turno -->
+    <div class="dash-turno" id="dash-turno-bar">
+      <div><div style="font-size:9px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;">Sede</div><div style="font-size:13px;font-weight:700;" id="dt-sede">—</div></div>
+      <div><div style="font-size:9px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;">Operario</div><div style="font-size:13px;font-weight:700;" id="dt-operario">—</div></div>
+      <div><div style="font-size:9px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;">Turno</div><div style="font-size:13px;font-weight:700;" id="dt-turno">—</div></div>
+      <div><div style="font-size:9px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;">Inicio</div><div style="font-size:13px;font-weight:700;" id="dt-inicio">—</div></div>
+    </div>
+
+    <!-- Contadores -->
+    <div class="dash-counters" id="dash-counters">
+      <div class="dash-counter dc1">
+        <div class="dc-ico"><img src="https://rentadores.github.io/vigilancia/recorrido.jpg" alt="" onerror="this.outerHTML='<div style=\'font-size:22px\'>🚶</div>'"></div>
+        <div class="dc-num n1" id="cnt-recorrido">0</div>
+        <div class="dc-label">Recorridos</div>
+      </div>
+      <div class="dash-counter dc2">
+        <div class="dc-ico"><img src="https://rentadores.github.io/vigilancia/vehicular.jpg" alt="" onerror="this.outerHTML='<div style=\'font-size:22px\'>🚗</div>'"></div>
+        <div class="dc-num n2" id="cnt-vehiculo">0</div>
+        <div class="dc-label">Vehículos</div>
+      </div>
+      <div class="dash-counter dc3">
+        <div class="dc-ico"><img src="https://rentadores.github.io/vigilancia/visitantes.jpg" alt="" onerror="this.outerHTML='<div style=\'font-size:22px\'>🚪</div>'"></div>
+        <div class="dc-num n3" id="cnt-visitas">0</div>
+        <div class="dc-label">Visitas / Merc.</div>
+      </div>
+      <div class="dash-counter dc4">
+        <div class="dc-ico"><div style="font-size:22px;">🚛</div></div>
+        <div class="dc-num n4" id="cnt-traslados">0</div>
+        <div class="dc-label">Traslados</div>
+      </div>
+    </div>
+
+    <!-- Contenido central: historial -->
+    <div class="dash-content">
+
+      <!-- Turno bar MOBILE -->
+      <div class="turno-activo" id="mod-turno-bar"></div>
+
+      <!-- Módulos MOBILE -->
+      <div class="mod-grid" id="mod-grid-mobile">
+        <button class="mod-btn" onclick="irRegistro('recorrido')">
+          <img src="https://rentadores.github.io/vigilancia/recorrido.jpg" style="width:36px;height:36px;border-radius:8px;object-fit:cover;" onerror="this.outerHTML='<div class=\'mod-ico\'>🚶</div>'">
+          <div><div class="mod-nom">Recorrido de Instalaciones</div><div class="mod-desc">Ronda de seguridad perimetral con fotos</div><span class="mod-badge mb-ok">Disponible</span></div>
+        </button>
+        <button class="mod-btn" onclick="irRegistro('vehiculo')">
+          <img src="https://rentadores.github.io/vigilancia/vehicular.jpg" style="width:36px;height:36px;border-radius:8px;object-fit:cover;" onerror="this.outerHTML='<div class=\'mod-ico\'>🚗</div>'">
+          <div><div class="mod-nom">Control Vehicular</div><div class="mod-desc">Ingreso y salida de vehículos</div><span class="mod-badge mb-ok">Disponible</span></div>
+        </button>
+        <button class="mod-btn" onclick="irAsistencia()">
+          <img src="https://rentadores.github.io/vigilancia/asistencia.jpg" style="width:36px;height:36px;border-radius:8px;object-fit:cover;" onerror="this.outerHTML='<div class=\'mod-ico\'>📋</div>'">
+          <div><div class="mod-nom">Toma de Asistencia</div><div class="mod-desc">Registro de personal por turno</div><span class="mod-badge mb-ok">Disponible</span></div>
+        </button>
+        <button class="mod-btn" onclick="irVisitasMercaderia()">
+          <img src="https://rentadores.github.io/vigilancia/visitantes.jpg" style="width:36px;height:36px;border-radius:8px;object-fit:cover;" onerror="this.outerHTML='<div class=\'mod-ico\'>🚪</div>'">
+          <div><div class="mod-nom">Registro de Visitas / Mercadería</div><div class="mod-desc">Visitas y recepción de mercadería</div><span class="mod-badge mb-ok">Disponible</span></div>
+        </button>
+      </div>
+
+      <div class="sep" id="sep-mobile"></div>
+
+      <!-- Historial eventos (compartido desktop/mobile) -->
+      <div class="card" id="card-historial">
+        <div class="card-t" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>📋 Eventos del turno</span>
+          <span id="contador-eventos" style="font-size:13px;color:var(--gm);font-weight:400;"></span>
+        </div>
+        <div id="lista-eventos-resumen"></div>
+      </div>
+    </div>
+
+    <!-- Botón cerrar turno desktop -->
+    <div class="dash-bottom">
+      <button class="btn btn-a" onclick="pedirCerrarTurno()">🔒 Cerrar Turno y Generar Informe</button>
+    </div>
+
+  </div>
+
+  <!-- Botón cerrar turno MOBILE -->
+  <div id="mobile-bottom" style="padding:0 14px 14px;">
     <div class="sep"></div>
     <button class="btn btn-a" onclick="pedirCerrarTurno()">🔒 Cerrar Turno y Generar Informe</button>
+
+
   </div>
 </div>
 
@@ -881,6 +1068,56 @@ let fotR=[],fotE=[],fotV=[],fotAcc=[],idxEditar=null;
 // ============================================================
 // NAVEGACIÓN
 // ============================================================
+function toggleHamburger(){
+  document.getElementById('hamburger-overlay').classList.toggle('on');
+  document.getElementById('hamburger-menu').classList.toggle('on');
+}
+
+function actualizarDashboard(){
+  if(!turno) return;
+  // Info turno
+  const dt = el => document.getElementById(el);
+  if(dt('dt-sede'))    dt('dt-sede').textContent    = turno.sede     || '—';
+  if(dt('dt-operario'))dt('dt-operario').textContent = turno.operario || '—';
+  if(dt('dt-turno'))   dt('dt-turno').textContent   = turno.turno    || '—';
+  if(dt('dt-inicio'))  dt('dt-inicio').textContent  = turno.horaInicio ? fmtHI12(turno.horaInicio) : '—';
+  // Contadores
+  const evs = turno.eventos || [];
+  if(dt('cnt-recorrido')) dt('cnt-recorrido').textContent = evs.filter(e=>e.tipo==='recorrido').length;
+  if(dt('cnt-vehiculo'))  dt('cnt-vehiculo').textContent  = evs.filter(e=>e.tipo==='vehiculo').length;
+  if(dt('cnt-visitas'))   dt('cnt-visitas').textContent   = (turno.accesos||[]).length;
+  if(dt('cnt-traslados')) dt('cnt-traslados').textContent = 0;
+  // Mostrar botón hamburguesa solo si hay turno activo
+  const btnH = document.getElementById('btn-hamburger');
+  if(btnH) btnH.style.display = turno.sede ? 'flex' : 'none';
+}
+
+function fmtHI12(h){
+  if(!h) return '—';
+  const [hh,mm] = h.split(':');
+  const n = parseInt(hh);
+  return `${n>12?n-12:n||12}:${mm} ${n>=12?'p.m.':'a.m.'}`;
+}
+
+function mostrarPantallaTurno(){
+  const t=localStorage.getItem('vig_turno');
+  if(t){
+    try{
+      const td=JSON.parse(t);
+      if(td&&td.sede&&td.operario&&td.turno){
+        turno=td;
+        if(!turno.accesos) turno.accesos=[];
+        actualizarDashboard();
+        renderEventosResumen();
+        irA('s-mod');
+        sincronizarTurnoSP();
+        return;
+      }
+    }catch(e){}
+  }
+  irA('s-turno');
+}
+
 function irA(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
@@ -961,7 +1198,7 @@ function mostrarPantallaTurno(){
 function continuarTurno(){
   const t=loadTurno(); if(!t) return;
   Object.assign(turno,t);
-  actualizarBarMod(); renderEventosResumen();
+  actualizarBarMod(); renderEventosResumen(); actualizarDashboard();
   document.getElementById('hdr-t').textContent=`${turno.sede} · ${turno.turno}`;
   irA('s-mod'); notif('✅ Turno restaurado');
 }
@@ -1006,7 +1243,7 @@ async function abrirTurno(){
   const tok=await getToken();
   if(tok&&spSiteId&&spTurnosId){ await spCrearTurno(); notif('✅ Turno abierto y sincronizado con SharePoint'); }
   else{ notif('✅ Turno abierto (guardado localmente)'); }
-  actualizarBarMod(); renderEventosResumen();
+  actualizarBarMod(); renderEventosResumen(); actualizarDashboard();
   document.getElementById('hdr-t').textContent=`${turno.sede} · ${turno.turno}`;
   btn.disabled=false; btn.innerHTML='Abrir Turno →';
   irA('s-mod');
@@ -1083,6 +1320,7 @@ function renderEventosResumen(){
     </div>`;
   }).join('');
   actualizarBarMod();
+  actualizarDashboard();
 }
 
 function renderFotoEvento(ev){
