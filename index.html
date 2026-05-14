@@ -328,6 +328,14 @@ input[type=file]{display:none;}
         <span class="mod-badge mb-ok">Disponible</span>
       </div>
     </button>
+    <button class="mod-btn" onclick="irVisitasMercaderia()">
+      <div class="mod-ico">🚪</div>
+      <div>
+        <div class="mod-nom">Registro de Visitas / Mercadería</div>
+        <div class="mod-desc">Visitas y recepción de mercadería</div>
+        <span class="mod-badge mb-ok">Disponible</span>
+      </div>
+    </button>
   </div>
   <div class="sep"></div>
   <div class="card">
@@ -563,6 +571,90 @@ input[type=file]{display:none;}
   <button class="btn btn-s" onclick="irA('s-mod')">← Volver a módulos</button>
 </div>
 
+
+<!-- PANTALLA 10: REGISTRO DE VISITAS / MERCADERÍA -->
+<div class="scr" id="s-visitas">
+  <div style="text-align:center;padding:10px 0 8px;">
+    <div style="font-size:16px;font-weight:700;">🚪 Registro de Visitas / Mercadería</div>
+    <div id="vis-subtitulo" style="font-size:12px;color:var(--gm);margin-top:3px;"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:6px;margin-bottom:14px;">
+    <button class="tab-btn on" id="vis-tab-visitas"    onclick="switchVisitaTab('visitas')">👤 Visitas</button>
+    <button class="tab-btn"   id="vis-tab-mercaderia"  onclick="switchVisitaTab('mercaderia')">🚚 Mercadería</button>
+  </div>
+
+  <!-- Formulario -->
+  <div class="card">
+    <!-- Ícono + Evento no editable -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--bd);">
+      <div id="vis-ico" style="font-size:42px;line-height:1;">👤</div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.4px;">Evento</div>
+        <div id="vis-evento-lbl" style="font-size:15px;font-weight:700;color:var(--go);">Visita</div>
+      </div>
+    </div>
+
+    <div class="fld"><label>Hora del evento</label><input type="time" id="vis-hora"></div>
+
+    <div class="fld">
+      <label>Nombre de persona <span style="color:var(--r);">*</span></label>
+      <input type="text" id="vis-nombre" placeholder="Nombre completo" autocomplete="off">
+    </div>
+
+    <div class="fld">
+      <label>Proveedor / Empresa / DNI</label>
+      <input type="text" id="vis-empresa" placeholder="Empresa S.A. o DNI 12345678" autocomplete="off">
+    </div>
+
+    <div class="fld">
+      <label id="vis-contacto-lbl">Contacto (a quien visita)</label>
+      <div class="ac-wrap">
+        <input type="text" id="vis-contacto" placeholder="Nombre del receptor interno" autocomplete="off"
+          oninput="acBuscarContactoVisita(this.value)"
+          onfocus="acBuscarContactoVisita(this.value)"
+          onblur="setTimeout(()=>document.getElementById('ac-vis-contacto').style.display='none',200)">
+        <div class="ac-list" id="ac-vis-contacto" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>Placa auto</label>
+      <input type="text" id="vis-placa" placeholder="ABC-123" maxlength="10" autocomplete="off"
+        oninput="this.value=this.value.toUpperCase()">
+    </div>
+
+    <div class="fld">
+      <label>Motivo / Detalle</label>
+      <textarea id="vis-detalle" placeholder="Motivo de la visita o descripción de la mercadería..." style="min-height:72px;"></textarea>
+    </div>
+
+    <div class="fld">
+      <label>Fotos</label>
+      <input type="file" id="inp-vis" multiple accept="image/*" onchange="procesarFotos(this,'vis')">
+      <label for="inp-vis" class="upa"><span class="upa-ico">📷</span>Tomar foto o elegir desde galería</label>
+      <div class="fp" id="fp-vis"></div>
+    </div>
+
+    <button class="btn btn-r" id="btn-guardar-vis" onclick="guardarEventoVisita()">✅ Guardar Evento</button>
+  </div>
+
+  <!-- Lista eventos registrados -->
+  <div class="card" style="margin-top:4px;">
+    <div class="card-t" style="display:flex;justify-content:space-between;align-items:center;">
+      <span id="vis-lista-titulo">📋 Visitas del turno</span>
+      <span id="vis-contador" style="font-size:13px;color:var(--gm);font-weight:400;"></span>
+    </div>
+    <div id="vis-lista-eventos"></div>
+  </div>
+
+  <div style="margin-top:4px;">
+    <button class="btn btn-s" onclick="irA('s-mod')">← Volver a módulos</button>
+  </div>
+</div>
+
+
 <!-- MODAL: REGISTRO MANUAL ASISTENCIA -->
 <div class="mov" id="m-asistencia-manual">
   <div class="modal" style="border-radius:16px;max-width:420px;margin:auto;">
@@ -762,10 +854,18 @@ let turno = { abierto:false, sede:null, operario:null, turno:null, horaInicio:nu
 
 function saveTurno(){
   try{
-    const t={...turno,eventos:turno.eventos.map(e=>({...e,fotos:(e.fotos||[]).map(f=>({nombre:f.nombre,data:f.data})),fotosURLs:e.fotosURLs||[]}))};
+    const t={
+      ...turno,
+      eventos: turno.eventos.map(e=>({...e,fotos:(e.fotos||[]).map(f=>({nombre:f.nombre,data:f.data})),fotosURLs:e.fotosURLs||[]})),
+      accesos: (turno.accesos||[]).map(e=>({...e,fotos:(e.fotos||[]).map(f=>({nombre:f.nombre,data:f.data})),fotosURLs:e.fotosURLs||[]}))
+    };
     localStorage.setItem('vig_turno',JSON.stringify(t));
   }catch(err){
-    const t2={...turno,eventos:turno.eventos.map(e=>({...e,fotos:[],fotosURLs:e.fotosURLs||[]}))};
+    const t2={
+      ...turno,
+      eventos: turno.eventos.map(e=>({...e,fotos:[],fotosURLs:e.fotosURLs||[]})),
+      accesos: (turno.accesos||[]).map(e=>({...e,fotos:[],fotosURLs:e.fotosURLs||[]}))
+    };
     try{ localStorage.setItem('vig_turno',JSON.stringify(t2)); }catch(e2){}
   }
 }
@@ -774,7 +874,7 @@ function loadTurno(){
 }
 function clearTurno(){ localStorage.removeItem('vig_turno'); }
 
-let fotR=[],fotE=[],fotV=[],idxEditar=null;
+let fotR=[],fotE=[],fotV=[],fotAcc=[],idxEditar=null;
 
 // ============================================================
 // NAVEGACIÓN
@@ -1666,6 +1766,170 @@ async function generarPDF(){
       y+=6;
     }
 
+    // ---- SECCIÓN REGISTRO DE VISITAS Y MERCADERÍA ----
+    const accesos    = turno.accesos || [];
+    const visitas    = accesos.filter(e => e.tipo === 'visitas');
+    const mercancias = accesos.filter(e => e.tipo === 'mercaderia');
+
+    if(accesos.length > 0){
+      if(y+12>pH-20) newPag();
+      // Título principal
+      doc.setFillColor(24,95,165); doc.roundedRect(mg,y,cW,9,1.5,1.5,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
+      doc.text('REGISTRO DE VISITAS Y MERCADERÍA',pW/2,y+6.3,{align:'center'});
+      y+=13;
+
+      // ── VISITAS ──
+      if(visitas.length > 0){
+        if(y+10>pH-20) newPag();
+        doc.setFillColor(230,241,251); doc.roundedRect(mg,y,cW,8,1.5,1.5,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(24,95,165);
+        doc.text('VISITAS',mg+5,y+5.5);
+        y+=12;
+
+        visitas.forEach((ev,i)=>{
+          if(y+28>pH-20) newPag();
+          // Cabecera
+          doc.setFillColor(230,241,251); doc.roundedRect(mg,y,cW,10,1,1,'F');
+          doc.setFillColor(24,95,165); doc.rect(mg,y,3,10,'F');
+          doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(24,95,165);
+          doc.text(`Visita ${i+1} — ${ev.nombre}`,mg+7,y+7);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,100);
+          doc.text('Hora:',pW-mg-22,y+7);
+          doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(24,95,165);
+          doc.text(ev.hora,pW-mg-4,y+7,{align:'right'});
+          y+=13;
+
+          // Datos
+          if(y+14>pH-20) newPag();
+          doc.setFillColor(245,249,255); doc.roundedRect(mg,y,cW,14,1,1,'F');
+          doc.setDrawColor(200,220,240); doc.roundedRect(mg,y,cW,14,1,1);
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+          doc.text('EMPRESA / DNI',mg+3,y+5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+          doc.text(ev.empresa||'—',mg+3,y+11);
+          if(ev.contacto){
+            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+            doc.text('CONTACTO',mg+80,y+5);
+            doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+            doc.text(ev.contacto,mg+80,y+11);
+          }
+          if(ev.placa){
+            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+            doc.text('PLACA',mg+145,y+5);
+            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+            doc.text(ev.placa,mg+145,y+11);
+          }
+          y+=17;
+
+          if(ev.detalle){
+            const lnsD=doc.splitTextToSize(ev.detalle,cW-10);
+            const aD=lnsD.length*4.5+7;
+            if(y+aD>pH-20) newPag();
+            doc.setFillColor(245,249,255); doc.roundedRect(mg,y,cW,aD,1,1,'F');
+            doc.setFillColor(24,95,165); doc.rect(mg,y,3,aD,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(24,95,165);
+            doc.text('MOTIVO / DETALLE',mg+6,y+5);
+            doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+            doc.text(lnsD,mg+6,y+9.5);
+            y+=aD+3;
+          }
+
+          if(ev.fotos&&ev.fotos.length>0){
+            const fpF=3,fW=(cW-(fpF-1)*3)/fpF,fH=fW*0.7;
+            const fils=Math.ceil(ev.fotos.length/fpF);
+            for(let fi=0;fi<fils;fi++){
+              if(y+fH+2>pH-20) newPag();
+              for(let fc=0;fc<fpF;fc++){
+                const ix=fi*fpF+fc; if(ix>=ev.fotos.length) break;
+                const ft=ev.fotos[ix]; const x=mg+fc*(fW+3);
+                try{ doc.addImage(ft.data,ft.data.startsWith('data:image/png')?'PNG':'JPEG',x,y,fW,fH); doc.setDrawColor(200,200,200); doc.rect(x,y,fW,fH); }
+                catch(e){ doc.setFillColor(240,240,240); doc.rect(x,y,fW,fH,'F'); }
+              }
+              y+=fH+3;
+            }
+            doc.setFontSize(7); doc.setTextColor(120,120,120);
+            doc.text(`Fotos: ${ev.fotos.length}`,mg+2,y); y+=5;
+          }
+          doc.setDrawColor(220,220,220); doc.line(mg,y,pW-mg,y); y+=6;
+        });
+      }
+
+      // ── RECEPCIÓN DE MERCADERÍA ──
+      if(mercancias.length > 0){
+        if(y+10>pH-20) newPag();
+        doc.setFillColor(250,238,218); doc.roundedRect(mg,y,cW,8,1.5,1.5,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(186,117,23);
+        doc.text('RECEPCIÓN DE MERCADERÍA',mg+5,y+5.5);
+        y+=12;
+
+        mercancias.forEach((ev,i)=>{
+          if(y+28>pH-20) newPag();
+          doc.setFillColor(250,238,218); doc.roundedRect(mg,y,cW,10,1,1,'F');
+          doc.setFillColor(186,117,23); doc.rect(mg,y,3,10,'F');
+          doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(186,117,23);
+          doc.text(`Entrega ${i+1} — ${ev.nombre}`,mg+7,y+7);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,100);
+          doc.text('Hora:',pW-mg-22,y+7);
+          doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(186,117,23);
+          doc.text(ev.hora,pW-mg-4,y+7,{align:'right'});
+          y+=13;
+
+          if(y+14>pH-20) newPag();
+          doc.setFillColor(255,250,240); doc.roundedRect(mg,y,cW,14,1,1,'F');
+          doc.setDrawColor(230,210,180); doc.roundedRect(mg,y,cW,14,1,1);
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+          doc.text('EMPRESA / DNI',mg+3,y+5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+          doc.text(ev.empresa||'—',mg+3,y+11);
+          if(ev.contacto){
+            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+            doc.text('ENTREGA A',mg+80,y+5);
+            doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+            doc.text(ev.contacto,mg+80,y+11);
+          }
+          if(ev.placa){
+            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+            doc.text('PLACA',mg+145,y+5);
+            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+            doc.text(ev.placa,mg+145,y+11);
+          }
+          y+=17;
+
+          if(ev.detalle){
+            const lnsD=doc.splitTextToSize(ev.detalle,cW-10);
+            const aD=lnsD.length*4.5+7;
+            if(y+aD>pH-20) newPag();
+            doc.setFillColor(255,250,240); doc.roundedRect(mg,y,cW,aD,1,1,'F');
+            doc.setFillColor(186,117,23); doc.rect(mg,y,3,aD,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(186,117,23);
+            doc.text('DETALLE / MERCADERÍA',mg+6,y+5);
+            doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+            doc.text(lnsD,mg+6,y+9.5);
+            y+=aD+3;
+          }
+
+          if(ev.fotos&&ev.fotos.length>0){
+            const fpF=3,fW=(cW-(fpF-1)*3)/fpF,fH=fW*0.7;
+            const fils=Math.ceil(ev.fotos.length/fpF);
+            for(let fi=0;fi<fils;fi++){
+              if(y+fH+2>pH-20) newPag();
+              for(let fc=0;fc<fpF;fc++){
+                const ix=fi*fpF+fc; if(ix>=ev.fotos.length) break;
+                const ft=ev.fotos[ix]; const x=mg+fc*(fW+3);
+                try{ doc.addImage(ft.data,ft.data.startsWith('data:image/png')?'PNG':'JPEG',x,y,fW,fH); doc.setDrawColor(200,200,200); doc.rect(x,y,fW,fH); }
+                catch(e){ doc.setFillColor(240,240,240); doc.rect(x,y,fW,fH,'F'); }
+              }
+              y+=fH+3;
+            }
+            doc.setFontSize(7); doc.setTextColor(120,120,120);
+            doc.text(`Fotos: ${ev.fotos.length}`,mg+2,y); y+=5;
+          }
+          doc.setDrawColor(220,220,220); doc.line(mg,y,pW-mg,y); y+=6;
+        });
+      }
+    }
+    
     // Firma
     if(y+22>pH-10) newPag();
     doc.setFillColor(248,232,230); doc.roundedRect(mg,y,cW,20,2,2,'F');
@@ -1940,6 +2204,7 @@ let spAsistenciaId=null; // Lista Asistencia_Turno
 let spPlacasId=null;    // Lista Maestro_Placas
 let spPersonasId=null;  // Lista Maestro_Personas
 let spEstadoVehId=null; // Lista Estado_Vehiculos
+let spVisitasId=null;   // Lista Control_Visitas_Mercaderia
 
 async function initMS(){
   try{
@@ -2006,6 +2271,7 @@ async function spGetIds(tok){
     const lpe=find('Maestro_Personas'); if(lpe) spPersonasId=lpe.id;
     const lev=find('Estado_Vehiculos'); if(lev) spEstadoVehId=lev.id;
     const las=find('Asistencia_Turno'); if(las) spAsistenciaId=las.id;
+    const lvm=find('Control_Visitas_Mercaderia'); if(lvm) spVisitasId=lvm.id;
     const libFotos=find('Fotos_Vigilancia');
     if(libFotos){
       spFotosLibId=libFotos.id;
@@ -2098,6 +2364,19 @@ async function spCargarEventosTurno(informeId){
       }
     }catch(e){ console.error('spCargarEventos vehiculares:',e); }
   }
+
+  // Cargar visitas/mercadería desde Control_Visitas_Mercaderia
+  if(spVisitasId){
+    try{
+      const accesos = await spCargarVisitasTurno(informeId);
+      if(accesos.length > 0){
+        turno.accesos = accesos;
+        saveTurno();
+        diag('Accesos cargados desde SP: ' + accesos.length);
+      }
+    } catch(e){ console.error('spCargarEventosTurno visitas:', e); }
+  }
+
   // Cargar asistencia desde Asistencia_Turno
   if(spAsistenciaId){
     try{
@@ -2438,6 +2717,243 @@ async function spSaveAsistencia(p){
         {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
     }
   }catch(e){ console.error('spSaveAsistencia:',e); }
+}
+
+// ============================================================
+// REGISTRO DE VISITAS / MERCADERÍA
+// ============================================================
+let visTabActual = 'visitas';
+
+function irVisitasMercaderia(){
+  visTabActual = 'visitas';
+  switchVisitaTab('visitas');
+  document.getElementById('vis-subtitulo').textContent = `${turno.operario} · ${fmtF(new Date())}`;
+  renderVisitasList();
+  irA('s-visitas');
+}
+
+function switchVisitaTab(tab){
+  visTabActual = tab;
+  const esVisita = tab === 'visitas';
+
+  document.getElementById('vis-tab-visitas').className   = 'tab-btn' + (esVisita  ? ' on' : '');
+  document.getElementById('vis-tab-mercaderia').className = 'tab-btn' + (!esVisita ? ' on' : '');
+
+  document.getElementById('vis-ico').textContent          = esVisita ? '👤' : '🚚';
+  document.getElementById('vis-evento-lbl').textContent   = esVisita ? 'Visita' : 'Entrega Mercadería';
+  document.getElementById('vis-contacto-lbl').textContent = esVisita ? 'Contacto (a quien visita)' : 'Contacto (a quien entrega)';
+
+  // Reset formulario
+  fotAcc = [];
+  document.getElementById('vis-hora').value    = fmtHI(new Date());
+  document.getElementById('vis-nombre').value  = '';
+  document.getElementById('vis-empresa').value = '';
+  document.getElementById('vis-contacto').value= '';
+  document.getElementById('vis-placa').value   = '';
+  document.getElementById('vis-detalle').value = '';
+  document.getElementById('fp-vis').innerHTML  = '';
+  document.getElementById('ac-vis-contacto').style.display = 'none';
+  const btn = document.getElementById('btn-guardar-vis');
+  btn.disabled = false;
+  btn.textContent = '✅ Guardar Evento';
+
+  document.getElementById('vis-lista-titulo').textContent = esVisita ? '📋 Visitas del turno' : '📦 Recepciones del turno';
+  renderVisitasList();
+}
+
+// Autocomplete Contacto desde Maestro_Personas (permite texto libre)
+function acBuscarContactoVisita(val){
+  const list = document.getElementById('ac-vis-contacto');
+  if(!val || val.length < 1){ list.style.display = 'none'; return; }
+  const q = val.toUpperCase();
+  const items = cachePersonas.filter(p =>
+    p.nombre.toUpperCase().includes(q) ||
+    (p.puesto||'').toUpperCase().includes(q) ||
+    (p.empresa||'').toUpperCase().includes(q)
+  );
+  if(!items.length){ list.style.display = 'none'; return; }
+  list.innerHTML = items.slice(0,8).map(p => `
+    <div class="ac-item" onmousedown="acSelContacto('${p.nombre.replace(/'/g,"\\'")}')">
+      <b>${resaltarMatch(p.nombre, q)}</b>
+      <div class="ac-sub">${[p.puesto, p.empresa].filter(Boolean).join(' · ')}</div>
+    </div>`).join('');
+  list.style.display = 'block';
+}
+
+function acSelContacto(nombre){
+  document.getElementById('vis-contacto').value = nombre;
+  document.getElementById('ac-vis-contacto').style.display = 'none';
+}
+
+async function guardarEventoVisita(){
+  const hora     = document.getElementById('vis-hora').value;
+  const nombre   = document.getElementById('vis-nombre').value.trim();
+  const empresa  = document.getElementById('vis-empresa').value.trim();
+  const contacto = document.getElementById('vis-contacto').value.trim();
+  const placa    = document.getElementById('vis-placa').value.trim().toUpperCase();
+  const detalle  = document.getElementById('vis-detalle').value.trim();
+  const tipoEv   = visTabActual; // 'visitas' | 'mercaderia'
+  const eventoLabel = visTabActual === 'visitas' ? 'Visita' : 'Entrega Mercadería';
+
+  if(!hora)   { alert('Indica la hora.');                        return; }
+  if(!nombre) { alert('El nombre de la persona es obligatorio.'); return; }
+
+  const btn = document.getElementById('btn-guardar-vis');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Guardando...';
+
+  const evento = {
+    tipo: tipoEv,
+    eventoLabel,
+    hora, nombre, empresa, contacto, placa, detalle,
+    obs: `${eventoLabel} — ${nombre}${empresa ? ' / ' + empresa : ''}`,
+    esAlerta: false,
+    fotos: [...fotAcc],
+    fotosURLs: [],
+    timestamp: Date.now()
+  };
+
+  const tok = await getToken();
+  if(tok && spSiteId && spVisitasId){
+    try{
+      const sedeNorm = turno.sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+      const carp = `${sedeNorm}/${turno.informeId}`;
+      for(let i = 0; i < evento.fotos.length; i++){
+        const url = await spUpFoto(evento.fotos[i].data, `vis_${tipoEv}_${hora.replace(':','-')}_f${i+1}.jpg`, carp);
+        if(url) evento.fotosURLs.push(url);
+      }
+      const ok = await spSaveEvVisita(evento);
+      notif(ok ? '✅ Guardado en SharePoint' : '⚠ Error SP — solo local');
+    } catch(e){ console.error('SP visita:', e); notif('⚠ Error SP: ' + e.message); }
+  } else {
+    notif('💾 Guardado localmente');
+  }
+
+  if(!turno.accesos) turno.accesos = [];
+  turno.accesos.push(evento);
+  saveTurno();
+  renderVisitasList();
+
+  switchVisitaTab(visTabActual);
+  btn.disabled = false;
+  btn.textContent = '✅ Guardar Evento';
+}
+
+function renderVisitasList(){
+  const cont  = document.getElementById('vis-lista-eventos');
+  const lista = (turno.accesos || []).filter(e => e.tipo === visTabActual);
+
+  if(!lista.length){
+    const label = visTabActual === 'visitas' ? 'visitas' : 'recepciones';
+    cont.innerHTML = `<div class="vacio"><span class="vic">${visTabActual === 'visitas' ? '👤' : '🚚'}</span>Sin ${label} registradas aún</div>`;
+    document.getElementById('vis-contador').textContent = '';
+    return;
+  }
+
+  const sorted = [...lista].sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
+  document.getElementById('vis-contador').textContent = `${lista.length} registro${lista.length !== 1 ? 's' : ''}`;
+
+  const colorBg   = visTabActual === 'visitas' ? 'var(--azc)' : 'var(--amc)';
+  const colorTxt  = visTabActual === 'visitas' ? 'var(--az)'  : 'var(--am)';
+  const colorBord = visTabActual === 'visitas' ? 'var(--az)'  : 'var(--am)';
+
+  cont.innerHTML = sorted.map(ev => {
+    const idxGlobal = turno.accesos.indexOf(ev);
+    return `<div class="ev">
+      <div class="ev-h hv" style="background:${colorBg};border-left:4px solid ${colorBord};">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="badge" style="background:${colorBg};color:${colorTxt};">
+            ${ev.tipo === 'visitas' ? '👤 Visita' : '🚚 Mercadería'}
+          </span>
+          <span class="ev-hora" style="color:${colorTxt};">${ev.hora}</span>
+        </div>
+        <div class="ev-acts">
+          <button class="btn btn-p btn-sm" onclick="elimVisita(${idxGlobal})">🗑</button>
+        </div>
+      </div>
+      <div class="ev-body">
+        <div style="font-size:14px;font-weight:700;color:var(--go);margin-bottom:4px;">${ev.nombre}</div>
+        ${ev.empresa  ? `<div style="font-size:12px;color:var(--gm);">🏢 ${ev.empresa}</div>`  : ''}
+        ${ev.contacto ? `<div style="font-size:12px;color:var(--gm);">👁 ${ev.contacto}</div>` : ''}
+        ${ev.placa    ? `<div style="font-size:12px;color:var(--gm);">🚗 ${ev.placa}</div>`    : ''}
+        ${ev.detalle  ? `<div style="font-size:12px;color:var(--gm);margin-top:4px;">${ev.detalle}</div>` : ''}
+        ${renderFotoEvento(ev)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function elimVisita(idx){
+  if(!confirm('¿Eliminar este registro?')) return;
+  turno.accesos.splice(idx, 1);
+  saveTurno();
+  renderVisitasList();
+  notif('Registro eliminado');
+}
+
+// SP: Guardar visita/mercadería
+async function spSaveEvVisita(ev){
+  const tok = await getToken();
+  if(!tok || !spSiteId || !spVisitasId) return false;
+  try{
+    const body = { fields:{
+      Title:         turno.informeId,
+      InformeID:     turno.informeId,
+      Sede:          turno.sede,
+      Operario:      turno.operario,
+      Turno:         turno.turno,
+      FechaTurno:    new Date().toISOString(),
+      TipoAcceso:    ev.tipo,
+      HoraEvento:    ev.hora,
+      NombrePersona: ev.nombre,
+      EmpresaDNI:    ev.empresa   || '',
+      Contacto:      ev.contacto  || '',
+      PlacaAuto:     ev.placa     || '',
+      Detalle:       ev.detalle   || '',
+      FotosURLs:     JSON.stringify(ev.fotosURLs || [])
+    }};
+    const res = await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVisitasId}/items`,
+      { method:'POST', headers:{ Authorization:`Bearer ${tok}`, 'Content-Type':'application/json' }, body: JSON.stringify(body) }
+    );
+    if(!res.ok){ const err = await res.json(); console.error('spSaveEvVisita:', res.status, err); return false; }
+    return true;
+  } catch(e){ console.error('spSaveEvVisita:', e); return false; }
+}
+
+// SP: Cargar visitas/mercadería al restaurar turno
+async function spCargarVisitasTurno(informeId){
+  const tok = await getToken();
+  if(!tok || !spSiteId || !spVisitasId) return [];
+  try{
+    const res = await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVisitasId}/items?$expand=fields&$top=200&$orderby=createdDateTime asc`,
+      { headers:{ Authorization:`Bearer ${tok}` } }
+    );
+    const d = await res.json();
+    if(!d.value) return [];
+    return d.value
+      .filter(i => (i.fields?.InformeID||'').toString().trim() === informeId)
+      .map(i => {
+        const f = i.fields || {};
+        return {
+          tipo:         f.TipoAcceso    || 'visitas',
+          eventoLabel:  f.TipoAcceso === 'mercaderia' ? 'Entrega Mercadería' : 'Visita',
+          hora:         f.HoraEvento    || '',
+          nombre:       f.NombrePersona || '',
+          empresa:      f.EmpresaDNI    || '',
+          contacto:     f.Contacto      || '',
+          placa:        f.PlacaAuto     || '',
+          detalle:      f.Detalle       || '',
+          obs:          f.Detalle       || '',
+          esAlerta:     false,
+          fotos:        [],
+          fotosURLs:    (()=>{ try{ return JSON.parse(f.FotosURLs||'[]'); } catch(e){ return []; } })(),
+          timestamp:    f.FechaTurno ? new Date(f.FechaTurno).getTime() : Date.now(),
+          spItemId:     i.id
+        };
+      });
+  } catch(e){ console.error('spCargarVisitasTurno:', e); return []; }
 }
 
 // ============================================================
