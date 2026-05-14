@@ -418,7 +418,7 @@ input[type=file]{display:none;}
 
   <!-- SIDEBAR desktop -->
   <div class="dash-sidebar">
-    <div class="si-item si-on" id="si-recorrido" onclick="irRegistro('recorrido')">
+    <div class="si-item" id="si-recorrido" onclick="irRegistro('recorrido')">
       <img class="si-ico-img" src="https://rentadores.github.io/vigilancia/recorrido.jpg" alt="" onerror="this.style.display='none'">
       <div>
         <div class="si-nom">Recorrido de Instalaciones</div>
@@ -774,7 +774,10 @@ input[type=file]{display:none;}
       🔄
     </button>
   </div>
-  <button class="btn btn-a" style="margin-bottom:12px;" onclick="abrirMov('m-asistencia-manual')">➕ Registro Manual</button>
+  <div class="g2" style="margin-bottom:12px;">
+    <button class="btn btn-s" onclick="irA('s-mod')">← Volver</button>
+    <button class="btn btn-a" onclick="abrirMov('m-asistencia-manual')">➕ Registro Manual</button>
+  </div>
   <div id="lista-asistencia"></div>
   <div class="sep"></div>
   <button class="btn btn-s" onclick="irA('s-mod')">← Volver a módulos</button>
@@ -1841,13 +1844,26 @@ async function generarPDF(){
     const evRec=todosEv.filter(e=>e.tipo==='recorrido');
     const evVeh=todosEv.filter(e=>e.tipo==='vehiculo');
 
+    // Precargar logo para PDF
+    let logoB64 = null;
+    try {
+      const logoRes = await fetch('https://rentadores.github.io/vigilancia/logo.jpg');
+      const logoBlob = await logoRes.blob();
+      logoB64 = await new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(logoBlob); });
+    } catch(e) { console.warn('Logo PDF no cargado:', e.message); }
+
     function cab(n){
       doc.setDrawColor(180,180,180); doc.setLineWidth(0.4); doc.rect(mg,y,cW,22);
-      doc.setFillColor(192,57,43); doc.rect(mg,y,38,22,'F');
-      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
-      doc.text('RENTADORES',mg+19,y+8,{align:'center'});
-      doc.setFontSize(6); doc.setFont('helvetica','normal');
-      doc.text('DE EQUIPOS',mg+19,y+13,{align:'center'});
+      if(logoB64){
+        doc.setFillColor(255,255,255); doc.rect(mg,y,38,22,'F');
+        doc.addImage(logoB64,'JPEG',mg+1,y+1,36,20);
+      } else {
+        doc.setFillColor(192,57,43); doc.rect(mg,y,38,22,'F');
+        doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+        doc.text('RENTADORES',mg+19,y+8,{align:'center'});
+        doc.setFontSize(6); doc.setFont('helvetica','normal');
+        doc.text('DE EQUIPOS',mg+19,y+13,{align:'center'});
+      }
       doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(11);
       doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+38+(cW-38-50)/2,y+13,{align:'center'});
       doc.setDrawColor(180,180,180);
