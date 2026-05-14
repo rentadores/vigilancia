@@ -1853,10 +1853,10 @@ async function generarPDF(){
     } catch(e) { console.warn('Logo PDF no cargado:', e.message); }
 
     function cab(n){
-      doc.setDrawColor(180,180,180); doc.setLineWidth(0.4); doc.rect(mg,y,cW,22);
+      doc.setDrawColor(180,180,180); doc.setLineWidth(0.4); doc.rect(mg,y,cW,28);
       if(logoB64){
-        doc.setFillColor(255,255,255); doc.rect(mg,y,38,22,'F');
-        doc.addImage(logoB64,'JPEG',mg+4,y+3,30,16);
+        doc.setFillColor(255,255,255); doc.rect(mg,y,32,28,'F');
+        doc.addImage(logoB64,'JPEG',mg+2,y+2,28,24);
       } else {
         doc.setFillColor(192,57,43); doc.rect(mg,y,38,22,'F');
         doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
@@ -1865,9 +1865,9 @@ async function generarPDF(){
         doc.text('DE EQUIPOS',mg+19,y+13,{align:'center'});
       }
       doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(11);
-      doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+38+(cW-38-50)/2,y+13,{align:'center'});
+doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+32+(cW-32-50)/2,y+16,{align:'center'});
       doc.setDrawColor(180,180,180);
-      doc.line(pW-mg-50,y,pW-mg-50,y+22); doc.line(pW-mg-50,y+8,pW-mg,y+8); doc.line(pW-mg-50,y+15,pW-mg,y+15);
+      doc.line(pW-mg-50,y,pW-mg-50,y+28); doc.line(pW-mg-50,y+9,pW-mg,y+9); doc.line(pW-mg-50,y+18,pW-mg,y+18);
       doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(30,30,30);
       doc.text('Version: '+cfg.version,pW-mg-25,y+5.5,{align:'center'});
       doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
