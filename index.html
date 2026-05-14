@@ -1352,8 +1352,8 @@ function resetTog(modo){
 // FOTOS
 // ============================================================
 function procesarFotos(input,modo){
-  const arr=modo==='r'?fotR:modo==='v'?fotV:fotE;
-  const pid=modo==='r'?'fp-r':modo==='v'?'fp-v':'fp-e';
+  const arr=modo==='r'?fotR:modo==='v'?fotV:modo==='vis'?fotAcc:fotE;
+  const pid=modo==='r'?'fp-r':modo==='v'?'fp-v':modo==='vis'?'fp-vis':'fp-e';
   Array.from(input.files).forEach(f=>{
     const rd=new FileReader();
     rd.onload=e=>{ arr.push({nombre:f.name,data:e.target.result}); renderFP(pid,arr,modo); };
@@ -1366,9 +1366,10 @@ function renderFP(pid,arr,modo){
     <div class="fw"><img src="${f.data}"><button class="fdel" onclick="delFoto('${modo}',${i})">✕</button></div>`).join('');
 }
 function delFoto(modo,i){
-  const arr=modo==='r'?fotR:modo==='v'?fotV:fotE;
+  const arr=modo==='r'?fotR:modo==='v'?fotV:modo==='vis'?fotAcc:fotE;
+  const pid=modo==='r'?'fp-r':modo==='v'?'fp-v':modo==='vis'?'fp-vis':'fp-e';
   arr.splice(i,1);
-  renderFP(modo==='r'?'fp-r':modo==='v'?'fp-v':'fp-e',arr,modo);
+  renderFP(pid,arr,modo);
 }
 
 // ============================================================
@@ -1929,7 +1930,7 @@ async function generarPDF(){
         });
       }
     }
-    
+
     // Firma
     if(y+22>pH-10) newPag();
     doc.setFillColor(248,232,230); doc.roundedRect(mg,y,cW,20,2,2,'F');
