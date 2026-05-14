@@ -219,10 +219,10 @@ input[type=file]{display:none;}
   body{overflow:hidden;}
   .scr{max-width:none;margin:0;padding:0;}
   #s-mod{display:none;height:calc(100vh - 52px);}
-  #s-mod.on{display:flex;flex-direction:row;overflow:hidden;}
+  #s-mod.on{display:flex !important;flex-direction:row;overflow:hidden;}
   .dash-sidebar{width:240px;flex-shrink:0;background:var(--bl);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow-y:auto;height:100%;}
   .dash-main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--gc);}
-  .dash-turno{background:var(--bl);border-bottom:1px solid var(--bd);padding:10px 20px;display:flex;gap:28px;flex-shrink:0;}
+  .dash-turno{display:none !important;}
   .dash-counters{display:flex;gap:12px;padding:14px 20px 0;flex-shrink:0;}
   .dash-counter{flex:1;border-radius:10px;padding:13px 15px;border:1px solid var(--bd);background:var(--bl);position:relative;overflow:hidden;}
   .dash-counter::after{content:'';position:absolute;top:-18px;right:-18px;width:60px;height:60px;border-radius:50%;opacity:.12;}
@@ -259,6 +259,26 @@ input[type=file]{display:none;}
   .dash-ev-nom{font-size:12px;font-weight:700;color:var(--go);}
   .dash-ev-sub{font-size:11px;color:var(--gm);}
   .dash-ev-hora{font-size:11px;color:var(--gm);flex-shrink:0;}
+  /* Ocultar elementos exclusivos de mobile en desktop */
+  #mod-grid-mobile{display:none !important;}
+  #mod-turno-bar{display:none !important;}
+  #sep-mobile{display:none !important;}
+  #mobile-bottom{display:none !important;}
+  /* Barra verde de turno en desktop — dentro de dash-main como primer elemento */
+  #dash-turno-bar-verde{background:var(--vc);border-bottom:1.5px solid #C0DD97;padding:9px 20px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;flex-shrink:0;}
+  /* Pantallas de módulos en desktop: scroll propio */
+  #s-asistencia.on,#s-visitas.on{
+    display:flex !important;flex-direction:column;height:calc(100vh - 52px);overflow:hidden;max-width:none;padding:0;
+  }
+  #s-asistencia.on > *:not(#lista-asistencia),
+  #s-visitas.on > *:not(#vis-lista-eventos):not(.card){flex-shrink:0;}
+  #lista-asistencia{overflow-y:auto;flex:1;padding:0 14px;}
+  #s-visitas.on{overflow-y:auto;}
+  /* Otros .scr que no son s-mod en desktop: scroll normal */
+  #s-recorrido.on,#s-vehiculo.on,#s-prev.on,#s-adm.on,#s-maestros.on{
+    display:block !important;max-width:680px;margin:0 auto;padding:14px;
+    height:calc(100vh - 52px);overflow-y:auto;
+  }
 }
 @media(max-width:1023px){
   .dash-sidebar{display:none;}
@@ -1099,24 +1119,7 @@ function fmtHI12(h){
   return `${n>12?n-12:n||12}:${mm} ${n>=12?'p.m.':'a.m.'}`;
 }
 
-function mostrarPantallaTurno(){
-  const t=localStorage.getItem('vig_turno');
-  if(t){
-    try{
-      const td=JSON.parse(t);
-      if(td&&td.sede&&td.operario&&td.turno){
-        turno=td;
-        if(!turno.accesos) turno.accesos=[];
-        actualizarDashboard();
-        renderEventosResumen();
-        irA('s-mod');
-        sincronizarTurnoSP();
-        return;
-      }
-    }catch(e){}
-  }
-  irA('s-turno');
-}
+
 
 function irA(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
