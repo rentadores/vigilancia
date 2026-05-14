@@ -237,10 +237,11 @@ input[type=file]{display:none;}
 <body>
 
 <header class="hdr">
-  <div class="hdr-logo">RE<small>NTADORES</small></div>
+  <img src="https://rentadores.github.io/vigilancia/logo.jpg" alt="Logo" style="height:36px;border-radius:6px;flex-shrink:0;">
   <div class="hdr-t" id="hdr-t">Sistema de Vigilancia</div>
   <div class="hdr-acts">
     <span class="sp-dot no" id="sp-dot"></span>
+    <button class="btn-hdr" id="btn-cerrar-sesion" onclick="cerrarSesionMS()" style="display:none;">🚪 Salir</button>
     <button class="btn-hdr" onclick="abrirAdmin()">⚙ Admin</button>
   </div>
 </header>
@@ -248,10 +249,11 @@ input[type=file]{display:none;}
 <!-- PANTALLA 1: LOGIN -->
 <div class="scr on" id="s-login">
   <div class="login-wrap">
-    <div class="login-logo">
-      <div class="login-logo-txt">RENTADORES</div>
-      <div class="login-logo-sub">DE EQUIPOS</div>
+    <div class="login-logo" style="background:white;padding:12px 24px;">
+      <img src="https://rentadores.github.io/vigilancia/logo.jpg" alt="Logo" style="height:80px;display:block;margin:0 auto;">
     </div>
+
+
     <div class="login-card">
       <div class="login-title">Sistema de Vigilancia</div>
       <div class="login-sub">Inicia sesión con tu cuenta Microsoft corporativa para continuar</div>
@@ -2299,11 +2301,27 @@ async function initMS(){
       const r=await msalApp.acquireTokenSilent({scopes:AZ.scopes,account:accounts[0]});
       setSpUI(true);
       document.getElementById('hdr-t').textContent=accounts[0].name.split(' ')[0];
+      document.getElementById('btn-cerrar-sesion').style.display='block';
       await spGetIds(r.accessToken);
       cargarMaestrosLocal(); // Cargar desde local mientras
       mostrarPantallaTurno();
     }
   }catch(e){ console.warn('MSAL:',e.message); }
+}
+
+async function cerrarSesionMS(){
+  if(!confirm('¿Cerrar sesión y cambiar de usuario?')) return;
+  try{
+    const accounts = msalApp.getAllAccounts();
+    if(accounts.length > 0){
+      await msalApp.logoutPopup({ account: accounts[0] });
+    }
+  }catch(e){ console.warn('Logout:', e.message); }
+  // Limpiar estado local
+  document.getElementById('btn-cerrar-sesion').style.display = 'none';
+  document.getElementById('hdr-t').textContent = 'Sistema de Vigilancia';
+  setSpUI(false);
+  irA('s-login');
 }
 
 async function loginMS(){
@@ -2314,6 +2332,7 @@ async function loginMS(){
     const r=await msalApp.loginPopup({scopes:AZ.scopes});
     setSpUI(true);
     document.getElementById('hdr-t').textContent=r.account.name.split(' ')[0];
+    document.getElementById('btn-cerrar-sesion').style.display='block';
     notif('✅ Bienvenido '+r.account.name.split(' ')[0]);
     await spGetIds(r.accessToken);
     cargarMaestrosLocal();
