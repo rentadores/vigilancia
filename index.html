@@ -288,6 +288,13 @@ input[type=file]{display:none;}
   .dash-content{display:contents;}
   .dash-bottom{display:none;}
   .btn-hamburger{display:flex;}
+  /* Menú hamburguesa compacto en móvil */
+  .hamburger-menu .si-item{padding:8px 12px;}
+  .hamburger-menu .si-ico-img{width:24px;height:24px;border-radius:6px;}
+  .hamburger-menu .si-ico-em{width:24px;height:24px;border-radius:6px;font-size:14px;}
+  .hamburger-menu .si-nom{font-size:11px;}
+  .hamburger-menu .si-desc{font-size:9px;}
+  .hamburger-menu .si-bdg{font-size:8px;padding:1px 5px;}
 }
 .btn-hamburger{display:none;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:white;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:16px;font-weight:700;}
 .hamburger-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);}
@@ -2136,9 +2143,15 @@ doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+32+(cW-32-50)/2,y+16,{al
           doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(24,95,165);
           doc.text(`Visita ${i+1} — ${ev.nombre}`,mg+7,y+7);
           doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,100);
-          doc.text('Hora:',pW-mg-22,y+7);
+          doc.text('Entrada:',pW-mg-30,y+4);
           doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(24,95,165);
-          doc.text(ev.hora,pW-mg-4,y+7,{align:'right'});
+          doc.text(ev.hora,pW-mg-4,y+4,{align:'right'});
+          if(ev.horaSalida){
+            doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,100);
+            doc.text('Salida:',pW-mg-30,y+9.5);
+            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(59,109,17);
+            doc.text(ev.horaSalida,pW-mg-4,y+9.5,{align:'right'});
+          }
           y+=13;
 
           // Datos
@@ -3223,7 +3236,12 @@ function renderVisitasList(){
           </span>
           <span class="ev-hora" style="color:${colorTxt};">${ev.hora}</span>
         </div>
-        <div class="ev-acts">
+        <div class="ev-acts" style="display:flex;gap:6px;align-items:center;">
+          ${ev.tipo === 'visitas' ? (
+            ev.horaSalida
+              ? `<span style="background:#EAF3DE;color:#3B6D11;border:1px solid #C0DD97;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;">🚪 Salida: ${ev.horaSalida}</span>`
+              : `<button style="background:#3B6D11;color:white;border:none;border-radius:6px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer;" onclick="marcarSalidaVisita(${idxGlobal})">🚪 Marcar Salida</button>`
+          ) : ''}
           <button class="btn btn-p btn-sm" onclick="elimVisita(${idxGlobal})">🗑</button>
         </div>
       </div>
@@ -3237,6 +3255,33 @@ function renderVisitasList(){
       </div>
     </div>`;
   }).join('');
+}
+
+async function marcarSalidaVisita(idx){
+  const ev = turno.accesos[idx];
+  if(!ev) return;
+  const ahora = fmtHI(new Date());
+  const hora = prompt('Hora de salida (HH:MM):', ahora);
+  if(!hora) return;
+  // Validar formato HH:MM
+  if(!/^\d{2}:\d{2}$/.test(hora)){ notif('⚠ Formato de hora inválido (HH:MM)'); return; }
+  ev.horaSalida = hora;
+  saveTurno();
+  renderVisitasList();
+  notif('✅ Salida registrada: ' + hora);
+  // Actualizar en SharePoint
+  if(ev.spItemId && spSiteId && spVisitasId){
+    try{
+      const tok = await getToken();
+      if(tok){
+        await fetch(
+          `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVisitasId}/items/${ev.spItemId}/fields`,
+          { method:'PATCH', headers:{ Authorization:`Bearer ${tok}`, 'Content-Type':'application/json' },
+            body: JSON.stringify({ HoraSalida: hora }) }
+        );
+      }
+    }catch(e){ console.warn('marcarSalidaVisita SP:', e); }
+  }
 }
 
 function elimVisita(idx){
@@ -3306,6 +3351,7 @@ async function spCargarVisitasTurno(informeId){
           fotos:        [],
           fotosURLs:    (()=>{ try{ return JSON.parse(f.FotosURLs||'[]'); } catch(e){ return []; } })(),
           timestamp:    f.FechaTurno ? new Date(f.FechaTurno).getTime() : Date.now(),
+          horaSalida:   f.HoraSalida   || '',
           spItemId:     i.id
         };
       });
@@ -3330,6 +3376,49 @@ function notifSilencioso(msg){
   clearTimeout(el._t); el._t=setTimeout(()=>{ el.style.display='none'; },3000);
 }
 function diag(msg){ console.log('[DIAG]',msg); }
+
+// ============================================================
+// INACTIVIDAD: 3 minutos sin actividad → refresca datos
+// ============================================================
+let _inactTimer = null;
+const INACT_MS = 3 * 60 * 1000; // 3 minutos
+
+function _resetInact(){
+  clearTimeout(_inactTimer);
+  _inactTimer = setTimeout(async () => {
+    // Solo actuar si hay sesión activa y turno abierto
+    const accounts = msalApp ? msalApp.getAllAccounts() : [];
+    if(!accounts.length || !turno.abierto) return;
+    notifSilencioso('🔄 Refrescando datos por inactividad...');
+    try{
+      const eventosSP = await spCargarEventosTurno(turno.informeId);
+      if(eventosSP.length > 0){
+        const eventosLocales = turno.eventos || [];
+        const fusionados = eventosSP.map(evSP => {
+          const evLocal = eventosLocales.find(el => el.hora === evSP.hora && el.tipo === evSP.tipo);
+          return (evLocal && evLocal.fotos?.length > 0) ? {...evSP, fotos: evLocal.fotos} : evSP;
+        });
+        turno.eventos = fusionados;
+      }
+      // Recargar accesos (visitas/mercadería)
+      if(spVisitasId){
+        const accesos = await spCargarVisitasTurno(turno.informeId);
+        if(accesos.length > 0){ turno.accesos = accesos; }
+      }
+      saveTurno();
+      // Volver a pantalla principal y re-renderizar
+      irA('s-mod');
+      actualizarDashboard();
+      renderEventosResumen && renderEventosResumen();
+      notif('✅ Datos actualizados');
+    }catch(e){ console.warn('Refresh inactividad:', e); }
+  }, INACT_MS);
+}
+
+['click','touchstart','keydown','scroll','mousemove'].forEach(ev =>
+  document.addEventListener(ev, _resetInact, { passive: true })
+);
+_resetInact(); // iniciar timer al cargar
 
 // ============================================================
 // INIT
