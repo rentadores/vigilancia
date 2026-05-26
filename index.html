@@ -1734,7 +1734,10 @@ function renderPreview(){
         h+=`<div class="pev">
           <div class="pev-h" style="background:var(--azc);border-left:4px solid var(--az);">
             <span class="badge" style="background:var(--azc);color:var(--az);">👤 Visita</span>
-            <span class="pev-hora" style="color:var(--az);">${ev.hora}</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+              <span style="font-size:11px;color:var(--gm);">Entrada: <b style="color:var(--az);">${ev.hora}</b></span>
+              ${ev.horaSalida ? `<span style="font-size:11px;color:var(--gm);">Salida: <b style="color:var(--v);">${ev.horaSalida}</b></span>` : ''}
+            </div>
           </div>
           <div style="padding:7px 11px;">
             <div style="font-size:14px;font-weight:700;color:var(--go);margin-bottom:4px;">${ev.nombre}</div>
