@@ -3406,15 +3406,17 @@ function diag(msg){ console.log('[DIAG]',msg); }
 // INACTIVIDAD: 3 minutos sin actividad → refresca datos
 // ============================================================
 let _inactTimer = null;
+let _inactDisparado = false;
 const INACT_MS = 3 * 60 * 1000; // 3 minutos
 
 function _resetInact(){
+  if(_inactDisparado) return; // ya disparó, no interrumpir
   clearTimeout(_inactTimer);
   _inactTimer = setTimeout(async () => {
-    // Requiere sesión activa; no importa si turno está abierto o no
+    _inactDisparado = true;
     const accounts = msalApp ? msalApp.getAllAccounts() : [];
-    if(!accounts.length) return;
-    notifSilencioso('🔄 Refrescando datos por inactividad...');
+    if(!accounts.length){ _inactDisparado = false; _resetInact(); return; }
+    notifSilencioso('🔄 Refrescando datos...');
     try{
       if(turno.abierto && turno.informeId){
         const eventosSP = await spCargarEventosTurno(turno.informeId);
@@ -3426,7 +3428,6 @@ function _resetInact(){
           });
           turno.eventos = fusionados;
         }
-        // Recargar accesos preservando horaSalida local si SP no la tiene
         if(spVisitasId){
           const accesos = await spCargarVisitasTurno(turno.informeId);
           if(accesos.length > 0){
@@ -3444,10 +3445,15 @@ function _resetInact(){
         actualizarDashboard();
         renderEventosResumen && renderEventosResumen();
       }
-      // Siempre volver a pantalla principal
       irA('s-mod');
       notif('🔄 Pantalla actualizada');
-    }catch(e){ console.warn('Refresh inactividad:', e); irA('s-mod'); }
+    }catch(e){
+      console.warn('Refresh inactividad:', e);
+      irA('s-mod');
+    } finally {
+      _inactDisparado = false;
+      _resetInact(); // reiniciar timer después del refresh
+    }
   }, INACT_MS);
 }
 
