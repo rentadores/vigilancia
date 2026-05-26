@@ -3445,11 +3445,11 @@ function _resetInact(){
         actualizarDashboard();
         renderEventosResumen && renderEventosResumen();
       }
-      irA('s-mod');
+      mostrarPantallaTurno();
       notif('🔄 Pantalla actualizada');
     }catch(e){
       console.warn('Refresh inactividad:', e);
-      irA('s-mod');
+      mostrarPantallaTurno();
     } finally {
       _inactDisparado = false;
       _resetInact(); // reiniciar timer después del refresh
@@ -3457,7 +3457,7 @@ function _resetInact(){
   }, INACT_MS);
 }
 
-['click','touchstart','keydown','scroll','mousemove'].forEach(ev =>
+['click','touchstart','keydown'].forEach(ev =>
   document.addEventListener(ev, _resetInact, { passive: true })
 );
 _resetInact(); // iniciar timer al cargar
