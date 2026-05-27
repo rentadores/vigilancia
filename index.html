@@ -3033,8 +3033,11 @@ async function loginMS(){
     setSpUI(true);
     // Primero cargar cfg desde SP para tener admins y correosPermitidos reales
     await spGetIds(r.accessToken);
-    // Ahora validar acceso con cfg actualizado
-    if(!tieneAcceso()){
+    // Validar acceso usando el email directamente del resultado del login
+    const emailLogin=(r.account.username||'').toLowerCase().trim();
+    const esAdminLogin=cfg.admins.map(a=>a.toLowerCase().trim()).includes(emailLogin);
+    const esPermitidoLogin=cfg.correosPermitidos.some(c=>(c.email||'').toLowerCase().trim()===emailLogin);
+    if(!esAdminLogin && !esPermitidoLogin){
       try{ await msalApp.logoutPopup({account:r.account}); }catch(ex){}
       setSpUI(false);
       document.getElementById('login-err').style.display='none';
@@ -3045,7 +3048,9 @@ async function loginMS(){
     document.getElementById('btn-cerrar-sesion').style.display='block';
     const btnHl=document.getElementById('btn-hamburger');
     if(btnHl) btnHl.style.display='flex';
-    aplicarVisibilidadAdmin();
+    // Aplicar visibilidad admin usando email directo
+    const btnAdm=document.getElementById('btn-admin-hdr');
+    if(btnAdm) btnAdm.style.display=esAdminLogin?'':'none';
     notif('✅ Bienvenido '+r.account.name.split(' ')[0]);
     cargarMaestrosLocal();
     mostrarPantallaTurno();
