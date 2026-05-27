@@ -1448,32 +1448,55 @@ async function cerrarTurnoForzado(){
 }
 
 function buildSelectores(){
-  // Selector de trabajadores
+  // Determinar sedes permitidas según email logueado
+  const sedesDisponibles = sedesVisiblesHistorial(); // admin=todas, correoPermitido=las suyas
+
+  // Selector de trabajadores — filtrar por sedes disponibles
   const cO=document.getElementById('sel-op'); cO.innerHTML='';
-  const esAdmActual=esAdmin();
-  const todos=cfg.trabajadores.map(t=>t.nombre);
-  todos.forEach(op=>{
+  // Solo mostrar trabajadores cuyas sedes tengan intersección con las sedes disponibles
+  const trabajadoresFiltrados = esAdmin()
+    ? cfg.trabajadores
+    : cfg.trabajadores.filter(t=>
+        !t.sedes||t.sedes.length===0 ||
+        t.sedes.some(s=>sedesDisponibles.includes(s))
+      );
+  trabajadoresFiltrados.forEach(op=>{
     const b=document.createElement('button');
     b.className='sel-btn';
-    b.innerHTML=`<span class="sel-ico">👤</span>${op}`;
+    b.innerHTML=`<span class="sel-ico">👤</span>${op.nombre}`;
     b.addEventListener('click',()=>{
-      selVal('operario',op,b);
-      actualizarSelectorSede(op);
+      selVal('operario',op.nombre,b);
+      actualizarSelectorSede(op.nombre);
     });
     cO.appendChild(b);
   });
-  // Selector de sede (se actualiza según trabajador)
+
+  // Selector de sede — solo las permitidas por el email logueado
   const cS=document.getElementById('sel-sede'); cS.innerHTML='';
-  cfg.sedes.forEach(s=>{
+  sedesDisponibles.forEach(s=>{
     const b=document.createElement('button');
     b.className='sel-btn';
     b.innerHTML=`<span class="sel-ico">🏢</span>${s}`;
     b.addEventListener('click',()=>selVal('sede',s,b));
     cS.appendChild(b);
   });
+
+  // Si solo hay 1 sede disponible: pre-seleccionar y bloquear
+  if(sedesDisponibles.length===1){
+    const unico=cS.querySelector('.sel-btn');
+    if(unico){
+      unico.classList.add('on');
+      unico.disabled=true;
+      unico.style.opacity='0.75';
+      unico.style.cursor='default';
+      turno.sede=sedesDisponibles[0];
+    }
+  }
+
   document.getElementById('btn-dia').classList.remove('on');
   document.getElementById('btn-noche').classList.remove('on');
-  turno.sede=null; turno.operario=null; turno.turno=null;
+  turno.operario=null; turno.turno=null;
+  if(sedesDisponibles.length!==1) turno.sede=null;
   document.getElementById('btn-abrir-turno').disabled=true;
 }
 
