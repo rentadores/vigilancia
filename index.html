@@ -320,6 +320,36 @@ input[type=file]{display:none;}
 .as-refri-del{background:none;border:none;color:var(--r);cursor:pointer;font-size:13px;padding:0;}
 .as-sep{border:none;border-top:2px dashed var(--am);margin:12px 0 8px;opacity:.5;}
 @keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+
+/* HISTORIAL DE INFORMES */
+.hist-filtros{background:var(--bl);border-radius:10px;padding:14px;box-shadow:var(--sh);margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;}
+.hist-filtros .fld{margin-bottom:0;flex:1;min-width:140px;}
+.hist-tabla-wrap{background:var(--bl);border-radius:10px;box-shadow:var(--sh);overflow:hidden;margin-bottom:12px;}
+.hist-tabla{width:100%;border-collapse:collapse;font-size:13px;}
+.hist-tabla th{background:var(--r);color:white;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;user-select:none;white-space:nowrap;}
+.hist-tabla th:hover{background:var(--ro);}
+.hist-tabla th .sort-ico{margin-left:5px;opacity:.7;font-size:10px;}
+.hist-tabla td{padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:middle;}
+.hist-tabla tr:last-child td{border-bottom:none;}
+.hist-tabla tr:hover td{background:var(--gc);}
+.hist-tabla tr:nth-child(even) td{background:#fafaf8;}
+.hist-tabla tr:nth-child(even):hover td{background:var(--gc);}
+.hist-pdf-btn{background:none;border:none;cursor:pointer;font-size:22px;padding:2px 6px;border-radius:6px;transition:background .15s;line-height:1;}
+.hist-pdf-btn:hover{background:var(--rc);}
+.hist-pag{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--bd);flex-wrap:wrap;gap:8px;}
+.hist-pag-info{font-size:12px;color:var(--gm);}
+.hist-pag-btns{display:flex;gap:5px;align-items:center;}
+.hist-pag-btn{background:var(--bl);border:1.5px solid var(--bd);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer;color:var(--go);transition:all .15s;}
+.hist-pag-btn:hover:not(:disabled){border-color:var(--r);color:var(--r);background:var(--rc);}
+.hist-pag-btn:disabled{opacity:.4;cursor:not-allowed;}
+.hist-pag-btn.on{background:var(--r);color:white;border-color:var(--r);}
+.hist-badge-dia{background:var(--amc);color:var(--am);padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700;}
+.hist-badge-noche{background:var(--azc);color:var(--az);padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700;}
+.hist-vacio{text-align:center;padding:36px 14px;color:var(--gm);}
+.hist-loading{text-align:center;padding:28px;color:var(--gm);font-size:13px;}
+@media(min-width:1024px){
+  #s-historial.on{display:block !important;max-width:960px;margin:0 auto;padding:14px;height:calc(100vh - 52px);overflow-y:auto;}
+}
 </style>
 </head>
 <body>
@@ -362,6 +392,11 @@ input[type=file]{display:none;}
   <div class="si-item" style="opacity:.6;cursor:not-allowed;">
     <div class="si-ico-em">🚛</div>
     <div><div class="si-nom">Traslados</div><span class="si-bdg prox">Próximamente</span></div>
+  </div>
+  <div class="si-divider"></div>
+  <div class="si-item" onclick="irHistorial();toggleHamburger()">
+    <div class="si-ico-em">📁</div>
+    <div><div class="si-nom">Ver Historial</div><div class="si-desc">Informes generados</div></div>
   </div>
 </div>
 
@@ -467,7 +502,7 @@ input[type=file]{display:none;}
       </div>
     </div>
     <div class="si-divider"></div>
-    <div class="si-item" id="si-historial">
+    <div class="si-item" id="si-historial" onclick="irHistorial()">
       <div class="si-ico-em">📁</div>
       <div>
         <div class="si-nom">Ver Historial</div>
@@ -700,6 +735,24 @@ input[type=file]{display:none;}
         <button class="btn btn-s" onclick="abrirMaestros('placas')">🚗 Gestionar Placas</button>
         <button class="btn btn-s" onclick="abrirMaestros('personas')">👤 Gestionar Personas</button>
       </div>
+    </div>
+    <div class="adm-s">
+      <h3>🔑 Administradores</h3>
+      <ul class="le" id="adm-admins"></ul>
+      <div class="ar">
+        <input type="text" id="adm-adminnew" placeholder="Nombre del administrador">
+        <button class="btn btn-r btn-sm" onclick="adm_addAdmin()">+ Agregar</button>
+      </div>
+      <div style="font-size:11px;color:var(--gm);margin-top:6px;">Los administradores pueden abrir turno en cualquier sede y ver todos los informes.</div>
+    </div>
+    <div class="adm-s">
+      <h3>👤 Trabajadores</h3>
+      <ul class="le" id="adm-trabajadores"></ul>
+      <div class="ar" style="margin-top:10px;">
+        <input type="text" id="adm-trabsnew" placeholder="Nombre del trabajador">
+        <button class="btn btn-r btn-sm" onclick="adm_addTrabajador()">+ Agregar</button>
+      </div>
+      <div style="font-size:11px;color:var(--gm);margin-top:6px;">Asigna una o más sedes a cada trabajador. Con una sola sede, la selección será automática al abrir turno.</div>
     </div>
     <div class="adm-s">
       <h3>📄 Informe</h3>
@@ -954,19 +1007,97 @@ input[type=file]{display:none;}
   </div>
 </div>
 
+<!-- PANTALLA 11: HISTORIAL DE INFORMES -->
+<div class="scr" id="s-historial">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 12px;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div style="font-size:16px;font-weight:700;">📁 Historial de Informes</div>
+      <div id="hist-subtitulo" style="font-size:12px;color:var(--gm);margin-top:2px;"></div>
+    </div>
+    <button class="btn btn-s" style="width:auto;padding:7px 16px;font-size:13px;" onclick="volverDesdeHistorial()">← Volver</button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="hist-filtros">
+    <div class="fld">
+      <label>Desde</label>
+      <input type="date" id="hist-f-desde">
+    </div>
+    <div class="fld">
+      <label>Hasta</label>
+      <input type="date" id="hist-f-hasta">
+    </div>
+    <div class="fld">
+      <label>Trabajador</label>
+      <select id="hist-f-trabajador">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <button class="btn btn-r" style="width:auto;padding:8px 16px;font-size:13px;" onclick="aplicarFiltrosHistorial()">🔍 Filtrar</button>
+      <button class="btn btn-s" style="width:auto;padding:8px 14px;font-size:13px;" onclick="limpiarFiltrosHistorial()">✕</button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="hist-tabla-wrap">
+    <div id="hist-contenido">
+      <div class="hist-loading"><span class="spin" style="border-top-color:var(--r);border-color:rgba(0,0,0,.1);"></span> Cargando informes...</div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // CONFIGURACIÓN
 // ============================================================
 let cfg = {
-  operarios: ['Cesar Perea','Donato Reyes'],
+  trabajadores: [
+    {nombre:'Cesar Perea', sedes:['Campiña'], esAdmin:false},
+    {nombre:'Donato Reyes', sedes:['Campiña'], esAdmin:false}
+  ],
+  admins: [],
   sedes: ['Campiña','Lurín'],
   correos: ['luis.canales@valledelzana.com.pe','giancarlo.reina@obrasdeingenieria-odi.com.pe'],
   titulo: 'INFORME - SEGURIDAD',
   version: '1.0',
   clave: '123456'
 };
-try{ const c=localStorage.getItem('vig_cfg'); if(c) cfg={...cfg,...JSON.parse(c)}; }catch(e){}
+try{
+  const c=localStorage.getItem('vig_cfg');
+  if(c){
+    const saved=JSON.parse(c);
+    // Migración automática: si hay operarios en formato antiguo (strings), convertir
+    if(saved.operarios && !saved.trabajadores){
+      saved.trabajadores = saved.operarios.map(op=>
+        typeof op==='string' ? {nombre:op, sedes:[], esAdmin:false} : op
+      );
+      delete saved.operarios;
+    }
+    // Asegurar que trabajadores sea array de objetos
+    if(saved.trabajadores){
+      saved.trabajadores = saved.trabajadores.map(t=>
+        typeof t==='string' ? {nombre:t, sedes:[], esAdmin:false} : t
+      );
+    }
+    if(!saved.admins) saved.admins=[];
+    cfg={...cfg,...saved};
+  }
+}catch(e){}
+
+// Helper: trabajador actual (por nombre seleccionado en turno)
+function getTrabajadorObj(nombre){
+  return cfg.trabajadores.find(t=>t.nombre===nombre)||null;
+}
+function esAdminNombre(nombre){
+  return cfg.admins.includes(nombre);
+}
+function sedesPermitidas(nombre){
+  if(esAdminNombre(nombre)) return cfg.sedes; // admin ve todas
+  const t=getTrabajadorObj(nombre);
+  if(!t||!t.sedes||t.sedes.length===0) return cfg.sedes; // sin restricción si no configurado
+  return t.sedes;
+}
 
 // ============================================================
 // CACHÉ DE MAESTROS (Placas / Personas / Estado Vehiculos)
@@ -1117,9 +1248,12 @@ function actualizarDashboard(){
   if(dt('cnt-vehiculo'))  dt('cnt-vehiculo').textContent  = evs.filter(e=>e.tipo==='vehiculo').length;
   if(dt('cnt-visitas'))   dt('cnt-visitas').textContent   = (turno.accesos||[]).length;
   if(dt('cnt-traslados')) dt('cnt-traslados').textContent = 0;
-  // Mostrar botón hamburguesa solo si hay turno activo
+   // Mostrar botón hamburguesa si hay turno activo O si hay sesión MS
   const btnH = document.getElementById('btn-hamburger');
-  if(btnH) btnH.style.display = turno.sede ? 'flex' : 'none';
+  if(btnH){
+    const cuentas = msalApp ? msalApp.getAllAccounts() : [];
+    btnH.style.display = (turno.sede || cuentas.length > 0) ? 'flex' : 'none';
+  }
 }
 
 function fmtHI12(h){
@@ -1226,14 +1360,58 @@ async function cerrarTurnoForzado(){
 }
 
 function buildSelectores(){
-  const cS=document.getElementById('sel-sede'); cS.innerHTML='';
-  cfg.sedes.forEach(s=>{ const b=document.createElement('button'); b.className='sel-btn'; b.innerHTML=`<span class="sel-ico">🏢</span>${s}`; b.addEventListener('click',()=>selVal('sede',s,b)); cS.appendChild(b); });
+  // Selector de trabajadores
   const cO=document.getElementById('sel-op'); cO.innerHTML='';
-  cfg.operarios.forEach(op=>{ const b=document.createElement('button'); b.className='sel-btn'; b.innerHTML=`<span class="sel-ico">👤</span>${op}`; b.addEventListener('click',()=>selVal('operario',op,b)); cO.appendChild(b); });
+  const todos=[...cfg.trabajadores.map(t=>t.nombre), ...cfg.admins];
+  todos.forEach(op=>{
+    const b=document.createElement('button');
+    b.className='sel-btn';
+    const esAdm=esAdminNombre(op);
+    b.innerHTML=`<span class="sel-ico">${esAdm?'🔑':'👤'}</span>${op}${esAdm?'<br><span style="font-size:9px;color:var(--r);font-weight:700;">ADMIN</span>':''}`;
+    b.addEventListener('click',()=>{
+      selVal('operario',op,b);
+      actualizarSelectorSede(op);
+    });
+    cO.appendChild(b);
+  });
+  // Selector de sede (se actualiza según trabajador)
+  const cS=document.getElementById('sel-sede'); cS.innerHTML='';
+  cfg.sedes.forEach(s=>{
+    const b=document.createElement('button');
+    b.className='sel-btn';
+    b.innerHTML=`<span class="sel-ico">🏢</span>${s}`;
+    b.addEventListener('click',()=>selVal('sede',s,b));
+    cS.appendChild(b);
+  });
   document.getElementById('btn-dia').classList.remove('on');
   document.getElementById('btn-noche').classList.remove('on');
   turno.sede=null; turno.operario=null; turno.turno=null;
   document.getElementById('btn-abrir-turno').disabled=true;
+}
+
+function actualizarSelectorSede(nombreTrabajador){
+  const permitidas=sedesPermitidas(nombreTrabajador);
+  const cS=document.getElementById('sel-sede'); cS.innerHTML='';
+  turno.sede=null;
+  permitidas.forEach(s=>{
+    const b=document.createElement('button');
+    b.className='sel-btn';
+    b.innerHTML=`<span class="sel-ico">🏢</span>${s}`;
+    b.addEventListener('click',()=>selVal('sede',s,b));
+    cS.appendChild(b);
+  });
+  // Si solo tiene 1 sede: pre-seleccionar y bloquear
+  if(permitidas.length===1){
+    const unico=cS.querySelector('.sel-btn');
+    if(unico){
+      unico.classList.add('on');
+      unico.disabled=true;
+      unico.style.opacity='0.75';
+      unico.style.cursor='default';
+      turno.sede=permitidas[0];
+      document.getElementById('btn-abrir-turno').disabled=!(turno.sede&&turno.operario&&turno.turno);
+    }
+  }
 }
 
 function selVal(tipo,val,btn){
@@ -2368,17 +2546,20 @@ function cargarAdmin(){
   document.getElementById('adm-ver').value=cfg.version;
   document.getElementById('adm-clv').value='';
   adm_rl('adm-correos',cfg.correos,'correos');
-  adm_rl('adm-ops',cfg.operarios,'operarios');
   adm_rl('adm-sedes',cfg.sedes,'sedes');
+  adm_rl_admins();
+  adm_rl_trabajadores();
 }
+
 function adm_rl(id,arr,tipo){
   document.getElementById(id).innerHTML=arr.map((it,i)=>`
     <li><span>${it}</span><button class="btn btn-p btn-sm" onclick="adm_del('${tipo}',${i})">🗑</button></li>`).join('');
 }
 function adm_del(tipo,i){
-  const mp={correos:'adm-correos',operarios:'adm-ops',sedes:'adm-sedes'};
-  if(cfg[tipo].length<=1){alert('Debe haber al menos uno.');return;}
-  cfg[tipo].splice(i,1); adm_rl(mp[tipo],cfg[tipo],tipo);
+  const mp={correos:'adm-correos',sedes:'adm-sedes'};
+  if((cfg[tipo]||[]).length<=1&&tipo!=='correos'){alert('Debe haber al menos uno.');return;}
+  cfg[tipo].splice(i,1);
+  if(mp[tipo]) adm_rl(mp[tipo],cfg[tipo],tipo);
 }
 function adm_addCorreo(){
   const v=document.getElementById('adm-cemail').value.trim();
@@ -2386,8 +2567,66 @@ function adm_addCorreo(){
   if(cfg.correos.includes(v)){alert('Ya existe.');return;}
   cfg.correos.push(v); document.getElementById('adm-cemail').value=''; adm_rl('adm-correos',cfg.correos,'correos');
 }
-function adm_addOp(){ const v=document.getElementById('adm-opnew').value.trim(); if(!v) return; cfg.operarios.push(v); document.getElementById('adm-opnew').value=''; adm_rl('adm-ops',cfg.operarios,'operarios'); }
-function adm_addSede(){ const v=document.getElementById('adm-sednew').value.trim(); if(!v) return; cfg.sedes.push(v); document.getElementById('adm-sednew').value=''; adm_rl('adm-sedes',cfg.sedes,'sedes'); }
+function adm_addSede(){
+  const v=document.getElementById('adm-sednew').value.trim(); if(!v) return;
+  if(cfg.sedes.includes(v)){alert('Ya existe.');return;}
+  cfg.sedes.push(v); document.getElementById('adm-sednew').value=''; adm_rl('adm-sedes',cfg.sedes,'sedes');
+  adm_rl_trabajadores(); // Refrescar checkboxes de sedes
+}
+
+// ---- ADMINS ----
+function adm_rl_admins(){
+  const ul=document.getElementById('adm-admins');
+  ul.innerHTML=cfg.admins.length?cfg.admins.map((a,i)=>`
+    <li><span>🔑 ${a}</span><button class="btn btn-p btn-sm" onclick="adm_delAdmin(${i})">🗑</button></li>`).join('')
+    :`<li style="color:var(--gm);font-size:13px;">Sin administradores configurados</li>`;
+}
+function adm_addAdmin(){
+  const v=document.getElementById('adm-adminnew').value.trim(); if(!v) return;
+  if(cfg.admins.includes(v)){alert('Ya existe.');return;}
+  cfg.admins.push(v); document.getElementById('adm-adminnew').value=''; adm_rl_admins();
+}
+function adm_delAdmin(i){
+  cfg.admins.splice(i,1); adm_rl_admins();
+}
+
+// ---- TRABAJADORES ----
+function adm_rl_trabajadores(){
+  const ul=document.getElementById('adm-trabajadores');
+  if(!cfg.trabajadores.length){
+    ul.innerHTML=`<li style="color:var(--gm);font-size:13px;">Sin trabajadores configurados</li>`; return;
+  }
+  ul.innerHTML=cfg.trabajadores.map((t,i)=>`
+    <li style="flex-direction:column;align-items:flex-start;gap:6px;padding:10px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+        <span style="font-weight:700;">👤 ${t.nombre}</span>
+        <button class="btn btn-p btn-sm" onclick="adm_delTrabajador(${i})">🗑</button>
+      </div>
+      <div style="font-size:11px;color:var(--gm);font-weight:700;text-transform:uppercase;letter-spacing:.3px;">Sedes asignadas:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${cfg.sedes.map(s=>`
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
+            <input type="checkbox" ${(t.sedes||[]).includes(s)?'checked':''} 
+              onchange="adm_toggleSedeTrabajador(${i},'${s}',this.checked)"
+              style="width:15px;height:15px;cursor:pointer;">
+            ${s}
+          </label>`).join('')}
+      </div>
+    </li>`).join('');
+}
+function adm_addTrabajador(){
+  const v=document.getElementById('adm-trabsnew').value.trim(); if(!v) return;
+  if(cfg.trabajadores.find(t=>t.nombre===v)){alert('Ya existe.');return;}
+  cfg.trabajadores.push({nombre:v,sedes:[],esAdmin:false});
+  document.getElementById('adm-trabsnew').value=''; adm_rl_trabajadores();
+}
+function adm_delTrabajador(i){ cfg.trabajadores.splice(i,1); adm_rl_trabajadores(); }
+function adm_toggleSedeTrabajador(i,sede,checked){
+  if(!cfg.trabajadores[i].sedes) cfg.trabajadores[i].sedes=[];
+  if(checked){ if(!cfg.trabajadores[i].sedes.includes(sede)) cfg.trabajadores[i].sedes.push(sede); }
+  else{ cfg.trabajadores[i].sedes=cfg.trabajadores[i].sedes.filter(s=>s!==sede); }
+}
+
 function adm_guardar(){
   cfg.titulo=document.getElementById('adm-tit').value||'INFORME - SEGURIDAD';
   cfg.version=document.getElementById('adm-ver').value||'1.0';
@@ -2575,6 +2814,8 @@ async function initMS(){
       setSpUI(true);
       document.getElementById('hdr-t').textContent=accounts[0].name.split(' ')[0];
       document.getElementById('btn-cerrar-sesion').style.display='block';
+      const btnH=document.getElementById('btn-hamburger');
+      if(btnH) btnH.style.display='flex';
       await spGetIds(r.accessToken);
       cargarMaestrosLocal(); // Cargar desde local mientras
       mostrarPantallaTurno();
@@ -2606,6 +2847,8 @@ async function loginMS(){
     setSpUI(true);
     document.getElementById('hdr-t').textContent=r.account.name.split(' ')[0];
     document.getElementById('btn-cerrar-sesion').style.display='block';
+    const btnHl=document.getElementById('btn-hamburger');
+    if(btnHl) btnHl.style.display='flex';
     notif('✅ Bienvenido '+r.account.name.split(' ')[0]);
     await spGetIds(r.accessToken);
     cargarMaestrosLocal();
@@ -3381,6 +3624,229 @@ async function spCargarVisitasTurno(informeId){
         };
       });
   } catch(e){ console.error('spCargarVisitasTurno:', e); return []; }
+}
+
+// ============================================================
+// HISTORIAL DE INFORMES
+// ============================================================
+let historialDatos=[];       // Todos los informes cargados
+let historialFiltrados=[];   // Después de aplicar filtros
+let historialPagina=1;
+const HIST_POR_PAG=15;
+let historialOrdenCol='fecha';
+let historialOrdenAsc=false; // Por defecto fecha descendente
+
+async function irHistorial(){
+  // Marcar activo en sidebar
+  document.querySelectorAll('.si-item').forEach(i=>i.classList.remove('si-on'));
+  const siH=document.getElementById('si-historial');
+  if(siH) siH.classList.add('si-on');
+  irA('s-historial');
+  const tok=await getToken();
+  if(!tok||!spSiteId){
+    document.getElementById('hist-contenido').innerHTML=`<div class="hist-vacio">⚠ Necesitas conexión con Microsoft para ver el historial.<br><small>Inicia sesión e intenta nuevamente.</small></div>`;
+    return;
+  }
+  document.getElementById('hist-subtitulo').textContent='Cargando informes desde SharePoint...';
+  document.getElementById('hist-contenido').innerHTML=`<div class="hist-loading"><span class="spin" style="border-top-color:var(--r);border-color:rgba(0,0,0,.1);"></span> Cargando informes...</div>`;
+  await cargarHistorial(tok);
+}
+
+function volverDesdeHistorial(){
+  document.querySelectorAll('.si-item').forEach(i=>i.classList.remove('si-on'));
+  if(turno.abierto) irA('s-mod'); else irA('s-turno');
+}
+
+async function cargarHistorial(tok){
+  historialDatos=[];
+  // Determinar qué usuario está activo para filtrar sedes
+  const cuentas=msalApp?msalApp.getAllAccounts():[];
+  const nombreUsuario=cuentas.length>0?cuentas[0].name:'';
+  // Determinar sedes visibles: admin ve todas, trabajador solo las suyas
+  let sedesVisibles=cfg.sedes;
+  if(!esAdminNombre(nombreUsuario)){
+    const permit=sedesPermitidas(nombreUsuario);
+    // Si tiene sedes configuradas, filtrar; si no tiene restricción, mostrar todas
+    sedesVisibles=permit.length>0?permit:cfg.sedes;
+  }
+
+  try{
+    for(const sede of sedesVisibles){
+      const sedeNorm=sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+      const url=`https://graph.microsoft.com/v1.0/sites/${spSiteId}/drive/root:/Fotos_Vigilancia/Informes/${sedeNorm}:/children?$top=200&$orderby=lastModifiedDateTime desc`;
+      try{
+        const res=await fetch(url,{headers:{Authorization:`Bearer ${tok}`}});
+        if(!res.ok) continue;
+        const d=await res.json();
+        if(!d.value) continue;
+        d.value.filter(f=>f.name&&f.name.toLowerCase().endsWith('.pdf')).forEach(f=>{
+          const parsed=parsearNombreInforme(f.name,sede);
+          if(parsed){
+            historialDatos.push({
+              ...parsed,
+              nombre:f.name,
+              webUrl:f.webUrl||'',
+              downloadUrl:f['@microsoft.graph.downloadUrl']||f.webUrl||'',
+              fechaISO:f.lastModifiedDateTime||''
+            });
+          }
+        });
+      }catch(e){ console.warn('Historial sede '+sede+':',e); }
+    }
+  }catch(e){ console.error('cargarHistorial:',e); }
+
+  // Ordenar por defecto: fecha descendente
+  historialDatos.sort((a,b)=>b.fechaStamp-a.fechaStamp);
+  historialFiltrados=[...historialDatos];
+  historialPagina=1;
+
+  // Poblar filtro de trabajadores
+  const trabajadoresEnHistorial=[...new Set(historialDatos.map(h=>h.trabajador).filter(Boolean))].sort();
+  const selT=document.getElementById('hist-f-trabajador');
+  selT.innerHTML=`<option value="">Todos</option>`+trabajadoresEnHistorial.map(t=>`<option value="${t}">${t}</option>`).join('');
+
+  const sub=document.getElementById('hist-subtitulo');
+  sub.textContent=`${historialDatos.length} informe${historialDatos.length!==1?'s':''} encontrado${historialDatos.length!==1?'s':''}`;
+
+  renderTablaHistorial();
+}
+
+function parsearNombreInforme(nombre,sede){
+  // Formato: Informe_{Sede}_{Turno}_{YYYYMMDD}_{Operario}.pdf
+  const base=nombre.replace(/\.pdf$/i,'');
+  const partes=base.split('_');
+  // partes[0]=Informe, partes[1]=Sede (puede tener guiones), partes[-1]=Operario, partes[-2]=Fecha(8 dígitos), partes[-3]=Turno
+  if(partes.length<5) return null;
+  const turnoVal=partes[partes.length-3]||'';
+  const fechaStr=partes[partes.length-2]||'';
+  const trabajadorParts=partes.slice(partes.length-1);
+  const trabajador=trabajadorParts.join(' ');
+  if(!/^\d{8}$/.test(fechaStr)) return null;
+  const yyyy=fechaStr.slice(0,4),mm=fechaStr.slice(4,6),dd=fechaStr.slice(6,8);
+  const fechaStamp=new Date(`${yyyy}-${mm}-${dd}`).getTime()||0;
+  const fechaDisplay=`${dd}/${mm}/${yyyy}`;
+  return {sede, turno:turnoVal, trabajador, fechaStr, fechaDisplay, fechaStamp};
+}
+
+function aplicarFiltrosHistorial(){
+  const desde=document.getElementById('hist-f-desde').value;
+  const hasta=document.getElementById('hist-f-hasta').value;
+  const trab=document.getElementById('hist-f-trabajador').value;
+  historialFiltrados=historialDatos.filter(h=>{
+    if(desde){ const d=new Date(desde).getTime(); if(h.fechaStamp<d) return false; }
+    if(hasta){ const d=new Date(hasta).getTime()+86400000; if(h.fechaStamp>d) return false; }
+    if(trab&&h.trabajador!==trab) return false;
+    return true;
+  });
+  historialPagina=1;
+  renderTablaHistorial();
+}
+
+function limpiarFiltrosHistorial(){
+  document.getElementById('hist-f-desde').value='';
+  document.getElementById('hist-f-hasta').value='';
+  document.getElementById('hist-f-trabajador').value='';
+  historialFiltrados=[...historialDatos];
+  historialPagina=1;
+  renderTablaHistorial();
+}
+
+function ordenarHistorialPor(col){
+  if(historialOrdenCol===col){ historialOrdenAsc=!historialOrdenAsc; }
+  else{ historialOrdenCol=col; historialOrdenAsc=col!=='fecha'; }
+  historialFiltrados.sort((a,b)=>{
+    let va,vb;
+    if(col==='fecha'){va=a.fechaStamp;vb=b.fechaStamp;}
+    else if(col==='sede'){va=a.sede||'';vb=b.sede||'';}
+    else if(col==='trabajador'){va=a.trabajador||'';vb=b.trabajador||'';}
+    else if(col==='turno'){va=a.turno||'';vb=b.turno||'';}
+    else{va='';vb='';}
+    if(typeof va==='number') return historialOrdenAsc?va-vb:vb-va;
+    return historialOrdenAsc?va.localeCompare(vb):vb.localeCompare(va);
+  });
+  historialPagina=1;
+  renderTablaHistorial();
+}
+
+function renderTablaHistorial(){
+  const cont=document.getElementById('hist-contenido');
+  if(!historialFiltrados.length){
+    cont.innerHTML=`<div class="hist-vacio">📭 No se encontraron informes con los filtros aplicados.</div>`;
+    return;
+  }
+  const total=historialFiltrados.length;
+  const totalPags=Math.ceil(total/HIST_POR_PAG);
+  const inicio=(historialPagina-1)*HIST_POR_PAG;
+  const pagina=historialFiltrados.slice(inicio,inicio+HIST_POR_PAG);
+
+  const ico=(col)=>{
+    if(historialOrdenCol!==col) return `<span class="sort-ico">↕</span>`;
+    return `<span class="sort-ico">${historialOrdenAsc?'↑':'↓'}</span>`;
+  };
+
+  let html=`<div style="overflow-x:auto;">
+  <table class="hist-tabla">
+    <thead>
+      <tr>
+        <th onclick="ordenarHistorialPor('fecha')">#${ico('fecha')} Fecha</th>
+        <th onclick="ordenarHistorialPor('sede')">Sede${ico('sede')}</th>
+        <th onclick="ordenarHistorialPor('trabajador')">Trabajador${ico('trabajador')}</th>
+        <th onclick="ordenarHistorialPor('turno')">Turno${ico('turno')}</th>
+        <th style="text-align:center;cursor:default;">PDF</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  pagina.forEach((h,i)=>{
+    const n=inicio+i+1;
+    const turnoClass=h.turno==='DIA'?'hist-badge-dia':'hist-badge-noche';
+    const turnoIco=h.turno==='DIA'?'☀':'🌙';
+    html+=`<tr>
+      <td style="font-weight:600;white-space:nowrap;">${n}. ${h.fechaDisplay}</td>
+      <td>${h.sede||'—'}</td>
+      <td>${h.trabajador||'—'}</td>
+      <td><span class="${turnoClass}">${turnoIco} ${h.turno||'—'}</span></td>
+      <td style="text-align:center;">
+        <button class="hist-pdf-btn" title="Ver PDF" onclick="abrirPDFHistorial('${encodeURIComponent(h.webUrl)}','${encodeURIComponent(h.nombre)}')">📄</button>
+      </td>
+    </tr>`;
+  });
+
+  html+=`</tbody></table></div>`;
+
+  // Paginación
+  html+=`<div class="hist-pag">
+    <div class="hist-pag-info">Mostrando ${inicio+1}–${Math.min(inicio+HIST_POR_PAG,total)} de ${total} informe${total!==1?'s':''}</div>
+    <div class="hist-pag-btns">
+      <button class="hist-pag-btn" onclick="cambiarPagHistorial(1)" ${historialPagina===1?'disabled':''}>«</button>
+      <button class="hist-pag-btn" onclick="cambiarPagHistorial(${historialPagina-1})" ${historialPagina===1?'disabled':''}>‹</button>`;
+
+  // Páginas numeradas (máximo 5 visibles)
+  const rango=2;
+  for(let p=Math.max(1,historialPagina-rango);p<=Math.min(totalPags,historialPagina+rango);p++){
+    html+=`<button class="hist-pag-btn${p===historialPagina?' on':''}" onclick="cambiarPagHistorial(${p})">${p}</button>`;
+  }
+
+  html+=`<button class="hist-pag-btn" onclick="cambiarPagHistorial(${historialPagina+1})" ${historialPagina>=totalPags?'disabled':''}>›</button>
+      <button class="hist-pag-btn" onclick="cambiarPagHistorial(${totalPags})" ${historialPagina>=totalPags?'disabled':''}>»</button>
+    </div>
+  </div>`;
+
+  cont.innerHTML=html;
+}
+
+function cambiarPagHistorial(p){
+  const totalPags=Math.ceil(historialFiltrados.length/HIST_POR_PAG);
+  if(p<1||p>totalPags) return;
+  historialPagina=p;
+  renderTablaHistorial();
+  document.getElementById('s-historial').scrollTo(0,0);
+}
+
+function abrirPDFHistorial(urlEnc, nombreEnc){
+  const url=decodeURIComponent(urlEnc);
+  if(url) window.open(url,'_blank');
+  else notif('⚠ URL del PDF no disponible');
 }
 
 // ============================================================
