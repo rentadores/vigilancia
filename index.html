@@ -3014,12 +3014,19 @@ async function cerrarSesionMS(){
   try{
     const accounts = msalApp.getAllAccounts();
     if(accounts.length > 0){
-      await msalApp.logoutPopup({ account: accounts[0] });
+      await msalApp.logoutPopup({
+        account: accounts[0],
+        logoutHint: accounts[0].username // Evita el selector de cuenta
+      });
     }
   }catch(e){ console.warn('Logout:', e.message); }
   // Limpiar estado local
   document.getElementById('btn-cerrar-sesion').style.display = 'none';
   document.getElementById('hdr-t').textContent = 'Sistema de Vigilancia';
+  const btnAdm=document.getElementById('btn-admin-hdr');
+  if(btnAdm) btnAdm.style.display='none';
+  const btnH=document.getElementById('btn-hamburger');
+  if(btnH) btnH.style.display='none';
   setSpUI(false);
   irA('s-login');
 }
