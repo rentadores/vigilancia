@@ -2772,13 +2772,20 @@ function adm_toggleSedeTrabajador(i,sede,checked){
   else{ cfg.trabajadores[i].sedes=cfg.trabajadores[i].sedes.filter(s=>s!==sede); }
 }
 
-function adm_guardar(){
+async function adm_guardar(){
   cfg.titulo=document.getElementById('adm-tit').value||'INFORME - SEGURIDAD';
   cfg.version=document.getElementById('adm-ver').value||'1.0';
   const nc=document.getElementById('adm-clv').value; if(nc) cfg.clave=nc;
-  localStorage.setItem('vig_cfg',JSON.stringify(cfg));
-  notif('✅ Configuración guardada');
-  setTimeout(()=>cerrarAdmin(),800);
+  const btn=document.querySelector('#s-adm .btn.btn-r');
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spin" style="border-top-color:white;border-color:rgba(255,255,255,.3);"></span> Guardando...'; }
+  const ok=await spGuardarCfg();
+  if(btn){ btn.disabled=false; btn.innerHTML='💾 Guardar'; }
+  if(ok){
+    notif('✅ Configuración guardada en SharePoint');
+  }else{
+    notif('💾 Guardado localmente (sin conexión SP)');
+  }
+  setTimeout(()=>cerrarAdmin(),900);
 }
 function cerrarAdmin(){ if(turno.abierto) irA('s-mod'); else irA('s-turno'); }
 
@@ -2938,6 +2945,8 @@ const AZ={
 };
 let msalApp=null, spSiteId=null, spListId=null, spFotosLibId=null, spFotosDriveId=null;
 let spTurnosId=null, spTurnoItemId=null;
+let spCfgId=null;       // Lista Configuracion_App
+let spCfgItemId=null;   // ID del ítem config_principal
 let spVehId=null;       // Lista Eventos_Vehicular
 let spAsistenciaId=null; // Lista Asistencia_Turno
 let spPlacasId=null;    // Lista Maestro_Placas
@@ -3051,6 +3060,7 @@ async function spGetIds(tok){
     const lev=find('Estado_Vehiculos'); if(lev) spEstadoVehId=lev.id;
     const las=find('Asistencia_Turno'); if(las) spAsistenciaId=las.id;
     const lvm=find('Control_Visitas_Mercaderia'); if(lvm) spVisitasId=lvm.id;
+    const lcfg=find('Configuracion_App'); if(lcfg) spCfgId=lcfg.id;
     const libFotos=find('Fotos_Vigilancia');
     if(libFotos){
       spFotosLibId=libFotos.id;
@@ -3058,7 +3068,92 @@ async function spGetIds(tok){
       const driveData=await driveRes.json(); spFotosDriveId=driveData.id;
     }
     console.log('SP listo — site:',spSiteId,'eventos:',spListId,'veh:',spVehId,'placas:',spPlacasId,'personas:',spPersonasId,'estadoVeh:',spEstadoVehId);
+    // Cargar configuración desde SharePoint (sobreescribe localStorage)
+    await spCargarCfg(tok);
+    // Actualizar visibilidad del botón Admin tras cargar cfg
+    aplicarVisibilidadAdmin();
   }catch(e){ console.error('spGetIds:',e); }
+}
+
+// ============================================================
+// SP: CONFIGURACIÓN
+// ============================================================
+async function spCargarCfg(tok){
+  if(!tok) tok=await getToken();
+  if(!tok||!spSiteId||!spCfgId) return false;
+  try{
+    const res=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spCfgId}/items?$expand=fields&$top=10`,
+      {headers:{Authorization:`Bearer ${tok}`}}
+    );
+    const d=await res.json();
+    if(!d.value||!d.value.length) return false;
+    const item=d.value.find(i=>(i.fields?.Title||'')===('config_principal'));
+    if(!item) return false;
+    spCfgItemId=item.id;
+    const json=item.fields?.ConfigJSON||'';
+    if(!json) return false;
+    const saved=JSON.parse(json);
+    // Aplicar misma migración que al leer localStorage
+    if(saved.operarios&&!saved.trabajadores){
+      saved.trabajadores=saved.operarios.map(op=>
+        typeof op==='string'?{nombre:op,sedes:[],esAdmin:false}:op
+      );
+      delete saved.operarios;
+    }
+    if(saved.trabajadores){
+      saved.trabajadores=saved.trabajadores.map(t=>
+        typeof t==='string'?{nombre:t,sedes:[],esAdmin:false}:t
+      );
+    }
+    if(!saved.admins) saved.admins=[];
+    if(!saved.correosPermitidos) saved.correosPermitidos=[];
+    if(saved.correosPermitidos){
+      saved.correosPermitidos=saved.correosPermitidos.map(c=>
+        typeof c==='string'?{email:c,sedes:[]}:c
+      );
+    }
+    cfg={...cfg,...saved};
+    // Sincronizar localStorage
+    localStorage.setItem('vig_cfg',JSON.stringify(cfg));
+    console.log('✅ cfg cargada desde SharePoint');
+    return true;
+  }catch(e){ console.error('spCargarCfg:',e); return false; }
+}
+
+async function spGuardarCfg(){
+  const tok=await getToken();
+  if(!tok||!spSiteId||!spCfgId){
+    // Fallback: solo localStorage
+    localStorage.setItem('vig_cfg',JSON.stringify(cfg));
+    return false;
+  }
+  const body={fields:{ConfigJSON:JSON.stringify(cfg)}};
+  try{
+    if(spCfgItemId){
+      // Actualizar ítem existente
+      await fetch(
+        `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spCfgId}/items/${spCfgItemId}/fields`,
+        {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+         body:JSON.stringify(body.fields)}
+      );
+    }else{
+      // Crear ítem nuevo
+      const res=await fetch(
+        `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spCfgId}/items`,
+        {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+         body:JSON.stringify({fields:{Title:'config_principal',ConfigJSON:JSON.stringify(cfg)}})}
+      );
+      if(res.ok){ const d=await res.json(); spCfgItemId=d.id; }
+    }
+    localStorage.setItem('vig_cfg',JSON.stringify(cfg));
+    console.log('✅ cfg guardada en SharePoint');
+    return true;
+  }catch(e){
+    console.error('spGuardarCfg:',e);
+    localStorage.setItem('vig_cfg',JSON.stringify(cfg));
+    return false;
+  }
 }
 
 // ============================================================
