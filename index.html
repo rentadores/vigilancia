@@ -2966,7 +2966,9 @@ async function initMS(){
     if(accounts.length>0){
       const r=await msalApp.acquireTokenSilent({scopes:AZ.scopes,account:accounts[0]});
       setSpUI(true);
-      // Validar acceso
+      // Primero cargar cfg desde SP para tener admins y correosPermitidos reales
+      await spGetIds(r.accessToken);
+      // Ahora validar acceso con cfg actualizado
       if(!tieneAcceso()){
         try{ await msalApp.logoutPopup({account:accounts[0]}); }catch(ex){}
         setSpUI(false);
@@ -2978,7 +2980,6 @@ async function initMS(){
       const btnH=document.getElementById('btn-hamburger');
       if(btnH) btnH.style.display='flex';
       aplicarVisibilidadAdmin();
-      await spGetIds(r.accessToken);
       cargarMaestrosLocal();
       mostrarPantallaTurno();
     }
@@ -3007,9 +3008,10 @@ async function loginMS(){
   try{
     const r=await msalApp.loginPopup({scopes:AZ.scopes});
     setSpUI(true);
-    // Validar acceso antes de continuar
+    // Primero cargar cfg desde SP para tener admins y correosPermitidos reales
+    await spGetIds(r.accessToken);
+    // Ahora validar acceso con cfg actualizado
     if(!tieneAcceso()){
-      // Cerrar sesión de MSAL inmediatamente
       try{ await msalApp.logoutPopup({account:r.account}); }catch(ex){}
       setSpUI(false);
       document.getElementById('login-err').style.display='none';
@@ -3020,10 +3022,8 @@ async function loginMS(){
     document.getElementById('btn-cerrar-sesion').style.display='block';
     const btnHl=document.getElementById('btn-hamburger');
     if(btnHl) btnHl.style.display='flex';
-    // Mostrar botón Admin solo si es admin
     aplicarVisibilidadAdmin();
     notif('✅ Bienvenido '+r.account.name.split(' ')[0]);
-    await spGetIds(r.accessToken);
     cargarMaestrosLocal();
     mostrarPantallaTurno();
   }catch(e){
