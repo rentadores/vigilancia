@@ -3091,6 +3091,8 @@ async function spGetIds(tok){
       const driveData=await driveRes.json(); spFotosDriveId=driveData.id;
     }
     console.log('SP listo — site:',spSiteId,'eventos:',spListId,'veh:',spVehId,'placas:',spPlacasId,'personas:',spPersonasId,'estadoVeh:',spEstadoVehId);
+    console.log('SP listas encontradas:',ld.value.map(l=>l.displayName+'|'+l.name).join(', '));
+    console.log('spCfgId:',spCfgId);
     // Cargar configuración desde SharePoint (sobreescribe localStorage)
     await spCargarCfg(tok);
     // Actualizar visibilidad del botón Admin tras cargar cfg
