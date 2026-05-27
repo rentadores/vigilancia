@@ -3746,7 +3746,8 @@ function parsearNombreInforme(nombre,sede){
   const trabajador=trabajadorParts.join(' ');
   if(!/^\d{8}$/.test(fechaStr)) return null;
   const yyyy=fechaStr.slice(0,4),mm=fechaStr.slice(4,6),dd=fechaStr.slice(6,8);
-  const fechaStamp=new Date(`${yyyy}-${mm}-${dd}`).getTime()||0;
+  // Usar hora local explícita para evitar desfase UTC en zona Peru (UTC-5)
+  const fechaStamp=new Date(parseInt(yyyy),parseInt(mm)-1,parseInt(dd)).getTime()||0;
   const fechaDisplay=`${dd}/${mm}/${yyyy}`;
   return {sede, turno:turnoVal, trabajador, fechaStr, fechaDisplay, fechaStamp};
 }
@@ -3756,8 +3757,16 @@ function aplicarFiltrosHistorial(){
   const hasta=document.getElementById('hist-f-hasta').value;
   const trab=document.getElementById('hist-f-trabajador').value;
   historialFiltrados=historialDatos.filter(h=>{
-    if(desde){ const d=new Date(desde).getTime(); if(h.fechaStamp<d) return false; }
-    if(hasta){ const d=new Date(hasta).getTime()+86400000; if(h.fechaStamp>d) return false; }
+    if(desde){
+      const [dy,dm,dd]=desde.split('-').map(Number);
+      const d=new Date(dy,dm-1,dd).getTime();
+      if(h.fechaStamp<d) return false;
+    }
+    if(hasta){
+      const [hy,hm,hd]=hasta.split('-').map(Number);
+      const d=new Date(hy,hm-1,hd,23,59,59).getTime();
+      if(h.fechaStamp>d) return false;
+    }
     if(trab&&h.trabajador!==trab) return false;
     return true;
   });
