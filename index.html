@@ -740,7 +740,7 @@ input[type=file]{display:none;}
       <h3>🔑 Administradores</h3>
       <ul class="le" id="adm-admins"></ul>
       <div class="ar">
-        <input type="text" id="adm-adminnew" placeholder="Nombre del administrador">
+        <input type="text" id="adm-adminnew" placeholder="correo@empresa.com.pe">
         <button class="btn btn-r btn-sm" onclick="adm_addAdmin()">+ Agregar</button>
       </div>
       <div style="font-size:11px;color:var(--gm);margin-top:6px;">Los administradores pueden abrir turno en cualquier sede y ver todos los informes.</div>
@@ -1085,15 +1085,28 @@ try{
   }
 }catch(e){}
 
-// Helper: trabajador actual (por nombre seleccionado en turno)
+// Helper: obtener email del usuario logueado
+function getEmailActual(){
+  if(!msalApp) return '';
+  const cuentas=msalApp.getAllAccounts();
+  return cuentas.length>0?(cuentas[0].username||'').toLowerCase().trim():'';
+}
+
+// Helper: ¿el usuario logueado es admin?
+function esAdmin(){
+  const email=getEmailActual();
+  if(!email) return false;
+  return cfg.admins.map(a=>a.toLowerCase().trim()).includes(email);
+}
+
+// Helper: trabajador por nombre
 function getTrabajadorObj(nombre){
   return cfg.trabajadores.find(t=>t.nombre===nombre)||null;
 }
-function esAdminNombre(nombre){
-  return cfg.admins.includes(nombre);
-}
+
+// Helper: sedes permitidas para un nombre de trabajador
 function sedesPermitidas(nombre){
-  if(esAdminNombre(nombre)) return cfg.sedes; // admin ve todas
+  if(esAdmin()) return cfg.sedes; // admin ve todas
   const t=getTrabajadorObj(nombre);
   if(!t||!t.sedes||t.sedes.length===0) return cfg.sedes; // sin restricción si no configurado
   return t.sedes;
@@ -1362,12 +1375,12 @@ async function cerrarTurnoForzado(){
 function buildSelectores(){
   // Selector de trabajadores
   const cO=document.getElementById('sel-op'); cO.innerHTML='';
-  const todos=[...cfg.trabajadores.map(t=>t.nombre), ...cfg.admins];
+  const esAdmActual=esAdmin();
+  const todos=cfg.trabajadores.map(t=>t.nombre);
   todos.forEach(op=>{
     const b=document.createElement('button');
     b.className='sel-btn';
-    const esAdm=esAdminNombre(op);
-    b.innerHTML=`<span class="sel-ico">${esAdm?'🔑':'👤'}</span>${op}${esAdm?'<br><span style="font-size:9px;color:var(--r);font-weight:700;">ADMIN</span>':''}`;
+    b.innerHTML=`<span class="sel-ico">👤</span>${op}`;
     b.addEventListener('click',()=>{
       selVal('operario',op,b);
       actualizarSelectorSede(op);
@@ -2578,13 +2591,23 @@ function adm_addSede(){
 function adm_rl_admins(){
   const ul=document.getElementById('adm-admins');
   ul.innerHTML=cfg.admins.length?cfg.admins.map((a,i)=>`
-    <li><span>🔑 ${a}</span><button class="btn btn-p btn-sm" onclick="adm_delAdmin(${i})">🗑</button></li>`).join('')
+    <li>
+      <div>
+        <span style="font-weight:700;">🔑 ${a}</span>
+        <div style="font-size:11px;color:var(--gm);margin-top:2px;">Acceso por correo corporativo</div>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="adm_delAdmin(${i})">🗑</button>
+    </li>`).join('')
     :`<li style="color:var(--gm);font-size:13px;">Sin administradores configurados</li>`;
 }
 function adm_addAdmin(){
-  const v=document.getElementById('adm-adminnew').value.trim(); if(!v) return;
-  if(cfg.admins.includes(v)){alert('Ya existe.');return;}
-  cfg.admins.push(v); document.getElementById('adm-adminnew').value=''; adm_rl_admins();
+  const v=document.getElementById('adm-adminnew').value.trim().toLowerCase();
+  if(!v) return;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){alert('Ingresa un correo electrónico válido.');return;}
+  if(cfg.admins.map(a=>a.toLowerCase()).includes(v)){alert('Este correo ya está registrado.');return;}
+  cfg.admins.push(v);
+  document.getElementById('adm-adminnew').value='';
+  adm_rl_admins();
 }
 function adm_delAdmin(i){
   cfg.admins.splice(i,1); adm_rl_admins();
@@ -3659,15 +3682,15 @@ function volverDesdeHistorial(){
 
 async function cargarHistorial(tok){
   historialDatos=[];
-  // Determinar qué usuario está activo para filtrar sedes
-  const cuentas=msalApp?msalApp.getAllAccounts():[];
-  const nombreUsuario=cuentas.length>0?cuentas[0].name:'';
-  // Determinar sedes visibles: admin ve todas, trabajador solo las suyas
+  // Determinar sedes visibles según rol del usuario logueado
   let sedesVisibles=cfg.sedes;
-  if(!esAdminNombre(nombreUsuario)){
-    const permit=sedesPermitidas(nombreUsuario);
-    // Si tiene sedes configuradas, filtrar; si no tiene restricción, mostrar todas
-    sedesVisibles=permit.length>0?permit:cfg.sedes;
+  if(!esAdmin()){
+    // Buscar al trabajador por nombre para obtener sus sedes
+    const cuentas=msalApp?msalApp.getAllAccounts():[];
+    const nombreUsuario=cuentas.length>0?cuentas[0].name:'';
+    const t=getTrabajadorObj(nombreUsuario);
+    if(t&&t.sedes&&t.sedes.length>0) sedesVisibles=t.sedes;
+    // Si no está configurado como trabajador, ve todas (fallback seguro)
   }
 
   try{
