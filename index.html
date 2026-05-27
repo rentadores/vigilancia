@@ -361,7 +361,7 @@ input[type=file]{display:none;}
   <div class="hdr-acts">
     <span class="sp-dot no" id="sp-dot"></span>
     <button class="btn-hdr" id="btn-cerrar-sesion" onclick="cerrarSesionMS()" style="display:none;">🚪 Salir</button>
-    <button class="btn-hdr" onclick="abrirAdmin()">⚙ Admin</button>
+    <button class="btn-hdr" id="btn-admin-hdr" onclick="abrirAdmin()" style="display:none;">⚙ Admin</button>
   </div>
 </header>
 
@@ -740,10 +740,20 @@ input[type=file]{display:none;}
       <h3>🔑 Administradores</h3>
       <ul class="le" id="adm-admins"></ul>
       <div class="ar">
-        <input type="text" id="adm-adminnew" placeholder="correo@empresa.com.pe">
+        <input type="email" id="adm-adminnew" placeholder="correo@empresa.com">
         <button class="btn btn-r btn-sm" onclick="adm_addAdmin()">+ Agregar</button>
       </div>
-      <div style="font-size:11px;color:var(--gm);margin-top:6px;">Los administradores pueden abrir turno en cualquier sede y ver todos los informes.</div>
+      <div style="font-size:11px;color:var(--gm);margin-top:6px;">Acceso total: todas las sedes, todos los informes y panel Admin. Identificados por correo Microsoft.</div>
+    </div>
+    <div class="adm-s">
+      <h3>✉ Correos con acceso permitido</h3>
+      <ul class="le" id="adm-permitidos"></ul>
+      <div class="ar" style="flex-wrap:wrap;gap:6px;">
+        <input type="email" id="adm-permitido-email" placeholder="correo@empresa.com" style="flex:1;min-width:180px;">
+        <select id="adm-permitido-sede" style="flex:1;min-width:120px;padding:7px 9px;border:1.5px solid var(--bd);border-radius:7px;font-size:13px;"></select>
+        <button class="btn btn-r btn-sm" onclick="adm_addPermitido()">+ Agregar</button>
+      </div>
+      <div style="font-size:11px;color:var(--gm);margin-top:6px;">Acceso a la app sin panel Admin. El historial mostrará solo los informes de las sedes asignadas.</div>
     </div>
     <div class="adm-s">
       <h3>👤 Trabajadores</h3>
@@ -1057,6 +1067,10 @@ let cfg = {
     {nombre:'Donato Reyes', sedes:['Campiña'], esAdmin:false}
   ],
   admins: [],
+  correosPermitidos: [
+    {email:'vigilancia.campina@rentadoresdeequipos.com.pe', sedes:['Campiña']},
+    {email:'vigilancia.lurin@rentadoresdeequipos.com.pe',  sedes:['Lurín']}
+  ],
   sedes: ['Campiña','Lurín'],
   correos: ['luis.canales@valledelzana.com.pe','giancarlo.reina@obrasdeingenieria-odi.com.pe'],
   titulo: 'INFORME - SEGURIDAD',
@@ -1067,20 +1081,25 @@ try{
   const c=localStorage.getItem('vig_cfg');
   if(c){
     const saved=JSON.parse(c);
-    // Migración automática: si hay operarios en formato antiguo (strings), convertir
     if(saved.operarios && !saved.trabajadores){
-      saved.trabajadores = saved.operarios.map(op=>
-        typeof op==='string' ? {nombre:op, sedes:[], esAdmin:false} : op
+      saved.trabajadores=saved.operarios.map(op=>
+        typeof op==='string'?{nombre:op,sedes:[],esAdmin:false}:op
       );
       delete saved.operarios;
     }
-    // Asegurar que trabajadores sea array de objetos
     if(saved.trabajadores){
-      saved.trabajadores = saved.trabajadores.map(t=>
-        typeof t==='string' ? {nombre:t, sedes:[], esAdmin:false} : t
+      saved.trabajadores=saved.trabajadores.map(t=>
+        typeof t==='string'?{nombre:t,sedes:[],esAdmin:false}:t
       );
     }
     if(!saved.admins) saved.admins=[];
+    if(!saved.correosPermitidos) saved.correosPermitidos=cfg.correosPermitidos;
+    // Migrar correosPermitidos si estaban como strings simples
+    if(saved.correosPermitidos){
+      saved.correosPermitidos=saved.correosPermitidos.map(c=>
+        typeof c==='string'?{email:c,sedes:[]}:c
+      );
+    }
     cfg={...cfg,...saved};
   }
 }catch(e){}
@@ -1106,10 +1125,66 @@ function getTrabajadorObj(nombre){
 
 // Helper: sedes permitidas para un nombre de trabajador
 function sedesPermitidas(nombre){
-  if(esAdmin()) return cfg.sedes; // admin ve todas
+  if(esAdmin()) return cfg.sedes;
   const t=getTrabajadorObj(nombre);
-  if(!t||!t.sedes||t.sedes.length===0) return cfg.sedes; // sin restricción si no configurado
+  if(!t||!t.sedes||t.sedes.length===0) return cfg.sedes;
   return t.sedes;
+}
+
+// Helper: ¿el email tiene acceso permitido (no admin)?
+function esCorreoPermitido(){
+  const email=getEmailActual();
+  if(!email) return false;
+  return cfg.correosPermitidos.some(c=>(c.email||'').toLowerCase().trim()===email);
+}
+
+// Helper: ¿el email tiene CUALQUIER tipo de acceso?
+function tieneAcceso(){
+  return esAdmin() || esCorreoPermitido();
+}
+
+// Helper: sedes visibles en historial según email logueado
+function sedesVisiblesHistorial(){
+  if(esAdmin()) return cfg.sedes;
+  const email=getEmailActual();
+  const cp=cfg.correosPermitidos.find(c=>(c.email||'').toLowerCase().trim()===email);
+  if(cp&&cp.sedes&&cp.sedes.length>0) return cp.sedes;
+  return cfg.sedes; // fallback
+}
+
+// Helper: sedes del turno activo para buscar en SP (evita conflicto entre sedes)
+function sedesParaBuscarTurno(){
+  if(esAdmin()) return null; // admin busca en todas
+  const email=getEmailActual();
+  const cp=cfg.correosPermitidos.find(c=>(c.email||'').toLowerCase().trim()===email);
+  if(cp&&cp.sedes&&cp.sedes.length>0) return cp.sedes;
+  return null;
+}
+
+// Mostrar/ocultar botón Admin según rol
+function aplicarVisibilidadAdmin(){
+  const btnAdm=document.getElementById('btn-admin-hdr');
+  if(btnAdm) btnAdm.style.display=esAdmin()?'':'none';
+}
+
+// Pantalla de acceso denegado
+function mostrarAccesoDenegado(email){
+  const loginCard=document.querySelector('.login-card');
+  if(loginCard){
+    loginCard.innerHTML=`
+      <div style="font-size:40px;margin-bottom:12px;">🚫</div>
+      <div style="font-size:17px;font-weight:700;color:var(--r);margin-bottom:8px;">Acceso no permitido</div>
+      <div style="font-size:13px;color:var(--gm);margin-bottom:6px;line-height:1.6;">
+        La cuenta <b>${email}</b> no tiene permiso para acceder a esta aplicación.
+      </div>
+      <div style="font-size:12px;color:var(--gm);margin-bottom:20px;">
+        Contacta al administrador del sistema para solicitar acceso.
+      </div>
+      <button class="btn-ms" onclick="location.reload()" style="background:var(--r);">
+        ← Volver al inicio
+      </button>`;
+    irA('s-login');
+  }
 }
 
 // ============================================================
@@ -2561,7 +2636,54 @@ function cargarAdmin(){
   adm_rl('adm-correos',cfg.correos,'correos');
   adm_rl('adm-sedes',cfg.sedes,'sedes');
   adm_rl_admins();
+  adm_rl_permitidos();
   adm_rl_trabajadores();
+  // Poblar select de sedes en correos permitidos
+  const selSede=document.getElementById('adm-permitido-sede');
+  if(selSede){
+    selSede.innerHTML=cfg.sedes.map(s=>`<option value="${s}">${s}</option>`).join('');
+  }
+}
+
+// ---- CORREOS PERMITIDOS ----
+function adm_rl_permitidos(){
+  const ul=document.getElementById('adm-permitidos');
+  if(!ul) return;
+  ul.innerHTML=cfg.correosPermitidos.length
+    ? cfg.correosPermitidos.map((c,i)=>`
+        <li>
+          <div>
+            <span style="font-weight:700;">✉ ${c.email}</span>
+            <div style="font-size:11px;color:var(--gm);margin-top:2px;">Sedes: ${(c.sedes||[]).join(', ')||'Todas'}</div>
+          </div>
+          <button class="btn btn-p btn-sm" onclick="adm_delPermitido(${i})">🗑</button>
+        </li>`).join('')
+    : `<li style="color:var(--gm);font-size:13px;">Sin correos configurados</li>`;
+}
+function adm_addPermitido(){
+  const email=document.getElementById('adm-permitido-email').value.trim().toLowerCase();
+  const sede=document.getElementById('adm-permitido-sede').value;
+  if(!email){alert('Ingresa un correo.');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){alert('Correo inválido.');return;}
+  // Verificar si ya existe
+  const existe=cfg.correosPermitidos.findIndex(c=>c.email.toLowerCase()===email);
+  if(existe>=0){
+    // Si existe, agregar la sede si no la tiene
+    if(sede&&!cfg.correosPermitidos[existe].sedes.includes(sede)){
+      cfg.correosPermitidos[existe].sedes.push(sede);
+      notif(`Sede ${sede} agregada a ${email}`);
+    }else{
+      alert('Este correo ya está registrado con esa sede.');return;
+    }
+  }else{
+    cfg.correosPermitidos.push({email, sedes: sede?[sede]:[]});
+  }
+  document.getElementById('adm-permitido-email').value='';
+  adm_rl_permitidos();
+}
+function adm_delPermitido(i){
+  cfg.correosPermitidos.splice(i,1);
+  adm_rl_permitidos();
 }
 
 function adm_rl(id,arr,tipo){
@@ -2835,12 +2957,20 @@ async function initMS(){
     if(accounts.length>0){
       const r=await msalApp.acquireTokenSilent({scopes:AZ.scopes,account:accounts[0]});
       setSpUI(true);
+      // Validar acceso
+      if(!tieneAcceso()){
+        try{ await msalApp.logoutPopup({account:accounts[0]}); }catch(ex){}
+        setSpUI(false);
+        mostrarAccesoDenegado(accounts[0].username);
+        return;
+      }
       document.getElementById('hdr-t').textContent=accounts[0].name.split(' ')[0];
       document.getElementById('btn-cerrar-sesion').style.display='block';
       const btnH=document.getElementById('btn-hamburger');
       if(btnH) btnH.style.display='flex';
+      aplicarVisibilidadAdmin();
       await spGetIds(r.accessToken);
-      cargarMaestrosLocal(); // Cargar desde local mientras
+      cargarMaestrosLocal();
       mostrarPantallaTurno();
     }
   }catch(e){ console.warn('MSAL:',e.message); }
@@ -2868,10 +2998,21 @@ async function loginMS(){
   try{
     const r=await msalApp.loginPopup({scopes:AZ.scopes});
     setSpUI(true);
+    // Validar acceso antes de continuar
+    if(!tieneAcceso()){
+      // Cerrar sesión de MSAL inmediatamente
+      try{ await msalApp.logoutPopup({account:r.account}); }catch(ex){}
+      setSpUI(false);
+      document.getElementById('login-err').style.display='none';
+      mostrarAccesoDenegado(r.account.username);
+      return;
+    }
     document.getElementById('hdr-t').textContent=r.account.name.split(' ')[0];
     document.getElementById('btn-cerrar-sesion').style.display='block';
     const btnHl=document.getElementById('btn-hamburger');
     if(btnHl) btnHl.style.display='flex';
+    // Mostrar botón Admin solo si es admin
+    aplicarVisibilidadAdmin();
     notif('✅ Bienvenido '+r.account.name.split(' ')[0]);
     await spGetIds(r.accessToken);
     cargarMaestrosLocal();
@@ -2949,7 +3090,13 @@ async function spBuscarTurnoAbierto(){
   try{
     const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spTurnosId}/items?$expand=fields&$top=50&$orderby=createdDateTime desc`,{headers:{Authorization:`Bearer ${tok}`}});
     const d=await res.json(); if(!d.value||!d.value.length) return null;
-    const item=d.value.find(i=>(i.fields?.Estado||'').toString().trim()==='Abierto');
+    // Filtrar por sedes del usuario logueado (evita conflicto entre sedes distintas)
+    const sedesFiltro=sedesParaBuscarTurno(); // null = admin, ve todas
+    const item=d.value.find(i=>{
+      if((i.fields?.Estado||'').toString().trim()!=='Abierto') return false;
+      if(!sedesFiltro) return true; // admin ve todos
+      return sedesFiltro.includes(i.fields?.Sede||'');
+    });
     if(!item) return null;
     spTurnoItemId=item.id; localStorage.setItem('vig_turno_spid',spTurnoItemId);
     const f=item.fields||{};
@@ -3682,16 +3829,8 @@ function volverDesdeHistorial(){
 
 async function cargarHistorial(tok){
   historialDatos=[];
-  // Determinar sedes visibles según rol del usuario logueado
-  let sedesVisibles=cfg.sedes;
-  if(!esAdmin()){
-    // Buscar al trabajador por nombre para obtener sus sedes
-    const cuentas=msalApp?msalApp.getAllAccounts():[];
-    const nombreUsuario=cuentas.length>0?cuentas[0].name:'';
-    const t=getTrabajadorObj(nombreUsuario);
-    if(t&&t.sedes&&t.sedes.length>0) sedesVisibles=t.sedes;
-    // Si no está configurado como trabajador, ve todas (fallback seguro)
-  }
+  // Determinar sedes visibles según email logueado
+  const sedesVisibles=sedesVisiblesHistorial();
 
   try{
     for(const sede of sedesVisibles){
