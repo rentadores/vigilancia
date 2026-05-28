@@ -147,6 +147,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gc);color:var(
 .upa{border:2px dashed var(--bd);border-radius:9px;padding:14px;text-align:center;cursor:pointer;color:var(--gm);font-size:13px;transition:all .2s;margin-top:5px;display:block;}
 .upa:hover{border-color:var(--r);color:var(--r);background:var(--rc);}
 .upa-ico{font-size:26px;display:block;margin-bottom:3px;}
+.upa-row{display:flex;gap:8px;margin-top:5px;}
+.upa-row .upa{flex:1;margin-top:0;}
 input[type=file]{display:none;}
 
 /* TOGGLE */
@@ -620,8 +622,12 @@ input[type=file]{display:none;}
     </div>
     <div class="fld">
       <label>Fotos</label>
-      <input type="file" id="inp-r" multiple accept="image/*" onchange="procesarFotos(this,'r')">
-      <label for="inp-r" class="upa"><span class="upa-ico">📷</span>Tomar foto o elegir desde galería</label>
+      <input type="file" id="inp-r-cam" accept="image/*" capture="environment" onchange="procesarFotos(this,'r')">
+      <input type="file" id="inp-r-gal" multiple accept="image/*" onchange="procesarFotos(this,'r')">
+      <div class="upa-row">
+        <label for="inp-r-cam" class="upa"><span class="upa-ico">📷</span>Cámara</label>
+        <label for="inp-r-gal" class="upa"><span class="upa-ico">🖼</span>Galería</label>
+      </div>
       <div class="fp" id="fp-r"></div>
     </div>
     <button class="btn btn-r" id="btn-guardar-r" onclick="guardarEvento('recorrido')">✅ Guardar Evento</button>
@@ -681,8 +687,12 @@ input[type=file]{display:none;}
 
     <div class="fld">
       <label>Fotos del vehículo</label>
-      <input type="file" id="inp-v" multiple accept="image/*" onchange="procesarFotos(this,'v')">
-      <label for="inp-v" class="upa"><span class="upa-ico">📷</span>Tomar foto o elegir desde galería</label>
+      <input type="file" id="inp-v-cam" accept="image/*" capture="environment" onchange="procesarFotos(this,'v')">
+      <input type="file" id="inp-v-gal" multiple accept="image/*" onchange="procesarFotos(this,'v')">
+      <div class="upa-row">
+        <label for="inp-v-cam" class="upa"><span class="upa-ico">📷</span>Cámara</label>
+        <label for="inp-v-gal" class="upa"><span class="upa-ico">🖼</span>Galería</label>
+      </div>
       <div class="fp" id="fp-v"></div>
     </div>
     <button class="btn btn-r" id="btn-guardar-v" onclick="guardarEventoVehiculo()">✅ Guardar Evento</button>
@@ -914,8 +924,12 @@ input[type=file]{display:none;}
 
     <div class="fld">
       <label>Fotos</label>
-      <input type="file" id="inp-vis" multiple accept="image/*" onchange="procesarFotos(this,'vis')">
-      <label for="inp-vis" class="upa"><span class="upa-ico">📷</span>Tomar foto o elegir desde galería</label>
+      <input type="file" id="inp-vis-cam" accept="image/*" capture="environment" onchange="procesarFotos(this,'vis')">
+      <input type="file" id="inp-vis-gal" multiple accept="image/*" onchange="procesarFotos(this,'vis')">
+      <div class="upa-row">
+        <label for="inp-vis-cam" class="upa"><span class="upa-ico">📷</span>Cámara</label>
+        <label for="inp-vis-gal" class="upa"><span class="upa-ico">🖼</span>Galería</label>
+      </div>
       <div class="fp" id="fp-vis"></div>
     </div>
 
@@ -1010,8 +1024,12 @@ input[type=file]{display:none;}
     <div class="fld">
       <label>Fotos</label>
       <div class="fp" id="fp-e"></div>
-      <input type="file" id="inp-fotos-e" multiple accept="image/*" onchange="procesarFotos(this,'e')">
-      <label for="inp-fotos-e" class="upa" style="margin-top:5px;"><span class="upa-ico">📷</span>Agregar más fotos</label>
+      <input type="file" id="inp-fotos-e-cam" accept="image/*" capture="environment" onchange="procesarFotos(this,'e')">
+      <input type="file" id="inp-fotos-e-gal" multiple accept="image/*" onchange="procesarFotos(this,'e')">
+      <div class="upa-row">
+        <label for="inp-fotos-e-cam" class="upa"><span class="upa-ico">📷</span>Cámara</label>
+        <label for="inp-fotos-e-gal" class="upa"><span class="upa-ico">🖼</span>Galería</label>
+      </div>
     </div>
     <button class="btn btn-r" onclick="guardarEdicion()">💾 Guardar Cambios</button>
   </div>
