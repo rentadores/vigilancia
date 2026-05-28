@@ -1930,7 +1930,14 @@ function acCerrar(tipo){
 function abrirEditar(idx){
   idxEditar=idx;
   const ev=turno.eventos[idx];
-  fotE=[...(ev.fotos||[])];
+  // Fotos base64 locales
+  const fotosBase64=ev.fotos||[];
+  // Fotos solo en SP (URL) que no están ya representadas en base64
+  const urlsEnBase64=new Set(fotosBase64.map(f=>f.url).filter(Boolean));
+  const fotosDeURL=(ev.fotosURLs||[])
+    .filter(u=>!urlsEnBase64.has(u))
+    .map(u=>({nombre:'foto_sp',url:u,data:u}));
+  fotE=[...fotosBase64,...fotosDeURL];
   document.getElementById('e-hora').value=ev.hora;
   document.getElementById('e-obs').value=ev.obs||'';
   document.getElementById('tog-e').checked=ev.esAlerta||false;
@@ -2045,7 +2052,7 @@ function procesarFotos(input,modo){
 }
 function renderFP(pid,arr,modo){
   document.getElementById(pid).innerHTML=arr.map((f,i)=>`
-    <div class="fw"><img src="${f.data}"><button class="fdel" onclick="delFoto('${modo}',${i})">✕</button></div>`).join('');
+    <div class="fw"><img src="${f.data||f.url}" onerror="this.style.opacity='0.3'"><button class="fdel" onclick="delFoto('${modo}',${i})">✕</button></div>`).join('');
 }
 function delFoto(modo,i){
   const arr=modo==='r'?fotR:modo==='v'?fotV:modo==='vis'?fotAcc:modo==='vis-edit'?fotVisEdit:fotE;
