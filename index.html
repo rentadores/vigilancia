@@ -149,6 +149,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gc);color:var(
 .upa-ico{font-size:26px;display:block;margin-bottom:3px;}
 .upa-row{display:flex;gap:8px;margin-top:5px;}
 .upa-row .upa{flex:1;margin-top:0;}
+.ev-h.hvis{background:var(--azc);border-left:4px solid var(--az);}
 input[type=file]{display:none;}
 
 /* TOGGLE */
@@ -1021,6 +1022,13 @@ input[type=file]{display:none;}
       </div>
       <textarea id="e-obs" placeholder="Describa lo observado..."></textarea>
     </div>
+    <!-- Campos exclusivos para evento vehicular -->
+    <div id="e-veh-campos" style="display:none;">
+      <div class="fld"><label>Conductor</label><input type="text" id="e-veh-conductor" placeholder="Nombre del conductor" autocomplete="off"></div>
+      <div class="fld"><label>Kilometraje</label><input type="number" id="e-veh-km" placeholder="KM actual" min="0"></div>
+      <div class="fld"><label id="e-veh-destino-lbl">Destino</label><input type="text" id="e-veh-destino" placeholder="Destino o procedencia" autocomplete="off"></div>
+      <div class="fld"><label>Detalle</label><textarea id="e-veh-detalle" placeholder="Detalle adicional..." style="min-height:60px;"></textarea></div>
+    </div>
     <div class="fld">
       <label>Fotos</label>
       <div class="fp" id="fp-e"></div>
@@ -1031,7 +1039,8 @@ input[type=file]{display:none;}
         <label for="inp-fotos-e-gal" class="upa"><span class="upa-ico">🖼</span>Galería</label>
       </div>
     </div>
-    <button class="btn btn-r" onclick="guardarEdicion()">💾 Guardar Cambios</button>
+    <button class="btn btn-r" id="btn-guardar-edicion" onclick="guardarEdicion()">💾 Guardar Cambios</button>
+    <div style="margin-top:8px;"><button class="btn btn-s" onclick="cerrarMov('m-editar')">Cancelar</button></div>
   </div>
 </div>
 
@@ -1601,14 +1610,16 @@ function actualizarBarMod(){
   const h=new Date(turno.horaInicio);
   const badge=turno.turno==='DIA'?`<span class="badge b-dia">☀ DÍA</span>`:`<span class="badge b-noche">🌙 NOCHE</span>`;
   const al=turno.eventos.filter(e=>e.esAlerta).length;
+  const totalEvBar=(turno.eventos||[]).length+(turno.accesos||[]).length;
   document.getElementById('mod-turno-bar').innerHTML=`
     <div><div class="inf-d">Sede</div><div class="inf-v">${turno.sede}</div></div>
     <div><div class="inf-d">Operario</div><div class="inf-v">${turno.operario}</div></div>
     <div><div class="inf-d">Turno</div>${badge}</div>
     <div><div class="inf-d">Inicio</div><div class="inf-v">${fmtH(h)}</div></div>
-    <div><div class="inf-d">Eventos</div><div class="inf-v">${turno.eventos.length}</div></div>
+    <div><div class="inf-d">Eventos</div><div class="inf-v">${totalEvBar}</div></div>
     ${al>0?`<div><div class="inf-d" style="color:var(--r)">Alertas</div><div class="inf-v" style="color:var(--r)">${al}</div></div>`:''}`;
-  document.getElementById('contador-eventos').textContent=`${turno.eventos.length} evento${turno.eventos.length!==1?'s':''}`;
+  const totalEv=(turno.eventos||[]).length+(turno.accesos||[]).length;
+  document.getElementById('contador-eventos').textContent=`${totalEv} evento${totalEv!==1?'s':''}`;
 }
 
 function sortEventos(eventos){
@@ -1617,24 +1628,34 @@ function sortEventos(eventos){
 
 function renderEventosResumen(){
   const cont=document.getElementById('lista-eventos-resumen');
-  if(!turno.eventos.length){
+  const todosEvs=[
+    ...(turno.eventos||[]).map(e=>({...e,_src:'eventos'})),
+    ...(turno.accesos||[]).map(e=>({...e,_src:'accesos'}))
+  ];
+  if(!todosEvs.length){
     cont.innerHTML=`<div class="vacio"><span class="vic">📋</span>Sin eventos registrados aún<br><small>Selecciona un módulo para registrar</small></div>`;
-    return;
+    actualizarBarMod(); actualizarDashboard(); return;
   }
-  const evOrdenados=sortEventos(turno.eventos);
+  const evOrdenados=sortEventos(todosEvs);
   cont.innerHTML=evOrdenados.map((ev)=>{
-    const idx=turno.eventos.indexOf(ev);
     const esVeh=ev.tipo==='vehiculo';
+    const esAcceso=ev._src==='accesos';
+    const esVisita=ev.tipo==='visitas';
+    const esMerc=ev.tipo==='mercaderia';
+    const idxOrig=esAcceso?(turno.accesos||[]).indexOf(turno.accesos.find(a=>a.timestamp===ev.timestamp&&a.tipo===ev.tipo)):
+                           (turno.eventos||[]).indexOf(turno.eventos.find(e=>e.timestamp===ev.timestamp&&e.tipo===ev.tipo));
     // Header color
-    const hClass=esVeh?'hv':ev.esAlerta?'ha':'hn';
-    const horaClass=esVeh?'hv':ev.esAlerta?'ha':'hn';
+    const hClass=esVeh?'hv':esVisita||esMerc?'hvis':ev.esAlerta?'ha':'hn';
     // Badges
     const tipoBadge=ev.tipo==='recorrido'?`<span class="badge b-recorrido">🚶 Recorrido</span>`:
                     esVeh?`<span class="badge b-vehiculo">🚗 Vehículo</span>`:
+                    esVisita?`<span class="badge b-visita">👤 Visita</span>`:
+                    esMerc?`<span class="badge b-mercaderia">🚚 Mercadería</span>`:
                     `<span class="badge b-asistencia">📋 Asistencia</span>`;
     const estadoBadge=esVeh
       ?`<span class="badge ${ev.veh?.movimiento==='ENTRADA'?'b-entrada':'b-salida'}">${ev.veh?.movimiento||''}</span>`
-      :(ev.esAlerta?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`);
+      :esAcceso?'':
+      (ev.esAlerta?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`);
     // Ficha vehicular mini
     const fichaVeh=esVeh&&ev.veh?`
       <div class="veh-mini">
@@ -1646,20 +1667,35 @@ function renderEventosResumen(){
       </div>
       ${ev.veh.detalle?`<div class="veh-items-box"><b>Detalle:</b> ${ev.veh.detalle}</div>`:''}
     `:'';
+    // Ficha acceso mini
+    const fichaAcceso=esAcceso?`
+      <div style="font-size:14px;font-weight:700;color:var(--go);margin-bottom:4px;">${ev.nombre||''}</div>
+      ${ev.empresa?`<div style="font-size:12px;color:var(--gm);">🏢 ${ev.empresa}</div>`:''}
+      ${ev.contacto?`<div style="font-size:12px;color:var(--gm);">👁 ${ev.contacto}</div>`:''}
+      ${ev.placa?`<div style="font-size:12px;color:var(--gm);">🚗 ${ev.placa}</div>`:''}
+      ${ev.detalle?`<div style="font-size:12px;color:var(--gm);margin-top:4px;">${ev.detalle}</div>`:''}
+      ${ev.horaSalida?`<div style="font-size:12px;color:#3B6D11;font-weight:700;margin-top:4px;">🚪 Salida: ${ev.horaSalida}</div>`:''}
+    `:'';
+    // Botones acción
+    const botonesAcceso=esAcceso?`
+      ${esVisita&&!ev.horaSalida?`<button style="background:#3B6D11;color:white;border:none;border-radius:6px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer;" onclick="marcarSalidaVisita(${idxOrig})">🚪 Salida</button>`:''}
+      <button class="btn btn-s btn-sm" onclick="abrirEditarVisita(${idxOrig})">✏️</button>
+      <button class="btn btn-p btn-sm" onclick="elimVisita(${idxOrig})">🗑</button>
+    `:`
+      <button class="btn btn-s btn-sm" onclick="abrirEditar(${idxOrig})">✏️</button>
+      <button class="btn btn-p btn-sm" onclick="elimEvento(${idxOrig})">🗑</button>
+    `;
     return `<div class="ev">
       <div class="ev-h ${hClass}">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           ${tipoBadge}${estadoBadge}
-          <span class="ev-hora ${horaClass}">${ev.hora}</span>
+          <span class="ev-hora">${ev.hora}</span>
         </div>
-        <div class="ev-acts">
-          <button class="btn btn-s btn-sm" onclick="abrirEditar(${idx})">✏️</button>
-          <button class="btn btn-p btn-sm" onclick="elimEvento(${idx})">🗑</button>
-        </div>
+        <div class="ev-acts">${botonesAcceso}</div>
       </div>
       <div class="ev-body">
-        ${fichaVeh}
-        ${ev.obs&&!esVeh?`<div class="ev-obs">${ev.obs}</div>`:''}
+        ${fichaVeh}${fichaAcceso}
+        ${ev.obs&&!esVeh&&!esAcceso?`<div class="ev-obs">${ev.obs}</div>`:''}
         ${renderFotoEvento(ev)}
       </div>
     </div>`;
@@ -1820,9 +1856,9 @@ async function guardarEventoVehiculo(){
         const url=await spUpFoto(evento.fotos[i].data,`veh_${placa}_${hora.replace(':','-')}_f${i+1}.jpg`,carp);
         if(url) evento.fotosURLs.push(url);
       }
-      const ok=await spSaveEvVehiculo(evento);
-      if(ok){
-        // Actualizar estado vehículo en background
+      const spId=await spSaveEvVehiculo(evento);
+      if(spId){
+        evento.spItemId=spId;
         spActualizarEstadoVeh(placa,selVehTipoActual);
         notif('✅ Guardado en SharePoint');
       }else{ notif('⚠ Error al guardar en SharePoint — solo local'); }
@@ -1900,16 +1936,77 @@ function abrirEditar(idx){
   document.getElementById('tog-e').checked=ev.esAlerta||false;
   setTog('e');
   renderFP('fp-e',fotE,'e');
+  const esVeh=ev.tipo==='vehiculo';
+  document.getElementById('e-veh-campos').style.display=esVeh?'block':'none';
+  if(esVeh&&ev.veh){
+    document.getElementById('e-veh-conductor').value=ev.veh.conductor||'';
+    document.getElementById('e-veh-km').value=ev.veh.km||'';
+    document.getElementById('e-veh-destino').value=ev.veh.destino||'';
+    document.getElementById('e-veh-detalle').value=ev.veh.detalle||'';
+    document.getElementById('e-veh-destino-lbl').textContent=ev.veh.movimiento==='ENTRADA'?'Procedencia':'Destino';
+  }
   abrirMov('m-editar');
 }
 
-function guardarEdicion(){
+async function guardarEdicion(){
   const hora=document.getElementById('e-hora').value;
   const obs=document.getElementById('e-obs').value.trim();
   const esAlerta=document.getElementById('tog-e').checked;
-  if(!hora||!obs){alert('Completa todos los campos.');return;}
-  turno.eventos[idxEditar]={...turno.eventos[idxEditar],hora,obs,esAlerta,fotos:[...fotE],timestamp:Date.now()};
+  if(!hora){alert('Indica la hora.');return;}
+  const ev=turno.eventos[idxEditar];
+  const esVeh=ev.tipo==='vehiculo';
+  const btn=document.getElementById('btn-guardar-edicion');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Guardando...';
+
+  // Subir fotos nuevas si las hay
+  const fotosURLsActuales=[...(ev.fotosURLs||[])];
+  const tok=await getToken();
+  if(tok&&spSiteId){
+    const sedeNorm=turno.sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+    const carp=`${sedeNorm}/${turno.informeId}`;
+    for(let i=0;i<fotE.length;i++){
+      const f=fotE[i];
+      const yaExiste=(ev.fotos||[]).find(a=>a.data===f.data);
+      if(!yaExiste){
+        const url=await spUpFoto(f.data,`edit_${hora.replace(':','-')}_f${Date.now()}.jpg`,carp);
+        if(url) fotosURLsActuales.push(url);
+      }
+    }
+  }
+
+  const evActualizado={...ev,hora,obs:obs||(ev.obs||''),esAlerta,fotos:[...fotE],fotosURLs:fotosURLsActuales};
+
+  if(esVeh){
+    evActualizado.veh={
+      ...ev.veh,
+      conductor: document.getElementById('e-veh-conductor').value.trim(),
+      km:        document.getElementById('e-veh-km').value,
+      destino:   document.getElementById('e-veh-destino').value.trim(),
+      detalle:   document.getElementById('e-veh-detalle').value.trim()
+    };
+    evActualizado.obs=`${ev.veh.movimiento} — ${ev.veh.placa}${evActualizado.veh.conductor?' — '+evActualizado.veh.conductor:''}`;
+    if(ev.spItemId&&spSiteId&&spVehId&&tok){
+      try{
+        await fetch(
+          `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVehId}/items/${ev.spItemId}/fields`,
+          {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+           body:JSON.stringify({
+             HoraEvento:   hora,
+             VehConductor: evActualizado.veh.conductor,
+             VehKm:        String(evActualizado.veh.km||''),
+             VehDestino:   evActualizado.veh.destino,
+             VehDetalle:   evActualizado.veh.detalle,
+             FotosURLs:    JSON.stringify(fotosURLsActuales)
+           })}
+        );
+        notif('✅ Vehículo actualizado en SharePoint');
+      }catch(e){ console.error('editarVeh SP:',e); notif('💾 Actualizado localmente'); }
+    } else { notif('💾 Actualizado localmente'); }
+  }
+
+  turno.eventos[idxEditar]=evActualizado;
   saveTurno(); renderEventosResumen(); cerrarMov('m-editar');
+  btn.disabled=false; btn.textContent='💾 Guardar Cambios';
 }
 
 // ============================================================
@@ -3447,9 +3544,10 @@ async function spSaveEvVehiculo(ev){
     }};
     const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVehId}/items`,
       {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok){ const err=await res.json(); console.error('spSaveEvVehiculo error:',res.status,err); return false; }
-    return true;
-  }catch(e){ console.error('spSaveEvVehiculo:',e); return false; }
+    if(!res.ok){ const err=await res.json(); console.error('spSaveEvVehiculo error:',res.status,err); return null; }
+    const data=await res.json();
+    return data.id||null;
+  }catch(e){ console.error('spSaveEvVehiculo:',e); return null; }
 }
 
 // ============================================================
