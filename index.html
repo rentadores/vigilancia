@@ -1927,21 +1927,13 @@ function acCerrar(tipo){
 // ============================================================
 // EDITAR EVENTO
 // ============================================================
-function abrirEditar(idx){
+async function abrirEditar(idx){
   idxEditar=idx;
   const ev=turno.eventos[idx];
-  // Si hay fotos en base64 usarlas; si no (evento restaurado desde SP) usar fotosURLs
-  const fotosBase64=ev.fotos||[];
-  if(fotosBase64.length>0){
-    fotE=[...fotosBase64];
-  } else {
-    fotE=(ev.fotosURLs||[]).map(u=>({nombre:'foto_sp',url:u,data:u}));
-  }
   document.getElementById('e-hora').value=ev.hora;
   document.getElementById('e-obs').value=ev.obs||'';
   document.getElementById('tog-e').checked=ev.esAlerta||false;
   setTog('e');
-  renderFP('fp-e',fotE,'e');
   const esVeh=ev.tipo==='vehiculo';
   document.getElementById('e-veh-campos').style.display=esVeh?'block':'none';
   if(esVeh&&ev.veh){
@@ -1952,6 +1944,32 @@ function abrirEditar(idx){
     document.getElementById('e-veh-destino-lbl').textContent=ev.veh.movimiento==='ENTRADA'?'Procedencia':'Destino';
   }
   abrirMov('m-editar');
+  // Fotos en base64 local: mostrar directamente
+  if((ev.fotos||[]).length>0){
+    fotE=[...ev.fotos];
+    renderFP('fp-e',fotE,'e');
+  } else if((ev.fotosURLs||[]).length>0){
+    // Fotos solo en SP: descargar con token y convertir a base64
+    fotE=[];
+    document.getElementById('fp-e').innerHTML=`<div style="font-size:12px;color:var(--gm);padding:6px;">⏳ Cargando fotos...</div>`;
+    const tok=await getToken();
+    if(tok){
+      for(const url of ev.fotosURLs){
+        try{
+          const res=await fetch(url,{headers:{Authorization:`Bearer ${tok}`}});
+          if(res.ok){
+            const blob=await res.blob();
+            const data=await new Promise(r=>{const rd=new FileReader();rd.onload=e=>r(e.target.result);rd.readAsDataURL(blob);});
+            fotE.push({nombre:'foto_sp',data,url});
+          }
+        }catch(e){ console.warn('No se pudo cargar foto SP:',url,e); }
+      }
+    }
+    renderFP('fp-e',fotE,'e');
+  } else {
+    fotE=[];
+    renderFP('fp-e',fotE,'e');
+  }
 }
 
 async function guardarEdicion(){
