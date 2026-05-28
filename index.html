@@ -1035,6 +1035,31 @@ input[type=file]{display:none;}
   </div>
 </div>
 
+<!-- MODAL: EDITAR VISITA / MERCADERÍA -->
+<div class="mov" id="m-editar-vis">
+  <div class="modal">
+    <div class="modal-t">✏️ Editar Registro<button class="bx" onclick="cerrarMov('m-editar-vis')">✕</button></div>
+    <div class="fld"><label>Hora del evento</label><input type="time" id="evis-hora"></div>
+    <div class="fld"><label>Nombre</label><input type="text" id="evis-nombre" placeholder="Nombre completo" autocomplete="off"></div>
+    <div class="fld"><label id="evis-empresa-lbl">Empresa / DNI</label><input type="text" id="evis-empresa" placeholder="Empresa S.A. o DNI 12345678" autocomplete="off"></div>
+    <div class="fld"><label id="evis-contacto-lbl">Contacto</label><input type="text" id="evis-contacto" placeholder="Nombre del receptor interno" autocomplete="off"></div>
+    <div class="fld"><label>Placa (opcional)</label><input type="text" id="evis-placa" placeholder="ABC-123" maxlength="10" autocomplete="off" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="fld"><label>Detalle</label><textarea id="evis-detalle" placeholder="Motivo de la visita o descripción..." style="min-height:64px;"></textarea></div>
+    <div class="fld">
+      <label>Fotos</label>
+      <div class="fp" id="fp-vis-edit"></div>
+      <input type="file" id="inp-vis-edit-cam" accept="image/*" capture="environment" onchange="procesarFotos(this,'vis-edit')">
+      <input type="file" id="inp-vis-edit-gal" multiple accept="image/*" onchange="procesarFotos(this,'vis-edit')">
+      <div class="upa-row">
+        <label for="inp-vis-edit-cam" class="upa"><span class="upa-ico">📷</span>Cámara</label>
+        <label for="inp-vis-edit-gal" class="upa"><span class="upa-ico">🖼</span>Galería</label>
+      </div>
+    </div>
+    <button class="btn btn-r" id="btn-guardar-vis-edit" onclick="guardarEdicionVisita()">💾 Guardar Cambios</button>
+    <div style="margin-top:8px;"><button class="btn btn-s" onclick="cerrarMov('m-editar-vis')">Cancelar</button></div>
+  </div>
+</div>
+
 <!-- PANTALLA 11: HISTORIAL DE INFORMES -->
 <div class="scr" id="s-historial">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 12px;flex-wrap:wrap;gap:8px;">
@@ -1330,7 +1355,7 @@ function loadTurno(){
 }
 function clearTurno(){ localStorage.removeItem('vig_turno'); }
 
-let fotR=[],fotE=[],fotV=[],fotAcc=[],idxEditar=null;
+let fotR=[],fotE=[],fotV=[],fotAcc=[],fotVisEdit=[],idxEditar=null,idxEditarVis=null;
 
 // ============================================================
 // NAVEGACIÓN
@@ -1912,8 +1937,8 @@ function resetTog(modo){
 // FOTOS
 // ============================================================
 function procesarFotos(input,modo){
-  const arr=modo==='r'?fotR:modo==='v'?fotV:modo==='vis'?fotAcc:fotE;
-  const pid=modo==='r'?'fp-r':modo==='v'?'fp-v':modo==='vis'?'fp-vis':'fp-e';
+  const arr=modo==='r'?fotR:modo==='v'?fotV:modo==='vis'?fotAcc:modo==='vis-edit'?fotVisEdit:fotE;
+  const pid=modo==='r'?'fp-r':modo==='v'?'fp-v':modo==='vis'?'fp-vis':modo==='vis-edit'?'fp-vis-edit':'fp-e';
   Array.from(input.files).forEach(f=>{
     const rd=new FileReader();
     rd.onload=e=>{ arr.push({nombre:f.name,data:e.target.result}); renderFP(pid,arr,modo); };
@@ -1926,8 +1951,8 @@ function renderFP(pid,arr,modo){
     <div class="fw"><img src="${f.data}"><button class="fdel" onclick="delFoto('${modo}',${i})">✕</button></div>`).join('');
 }
 function delFoto(modo,i){
-  const arr=modo==='r'?fotR:modo==='v'?fotV:modo==='vis'?fotAcc:fotE;
-  const pid=modo==='r'?'fp-r':modo==='v'?'fp-v':modo==='vis'?'fp-vis':'fp-e';
+  const arr=modo==='r'?fotR:modo==='v'?fotV:modo==='vis'?fotAcc:modo==='vis-edit'?fotVisEdit:fotE;
+  const pid=modo==='r'?'fp-r':modo==='v'?'fp-v':modo==='vis'?'fp-vis':modo==='vis-edit'?'fp-vis-edit':'fp-e';
   arr.splice(i,1);
   renderFP(pid,arr,modo);
 }
@@ -3821,6 +3846,7 @@ function renderVisitasList(){
               ? `<span style="background:#EAF3DE;color:#3B6D11;border:1px solid #C0DD97;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;">🚪 Salida: ${ev.horaSalida}</span>`
               : `<button style="background:#3B6D11;color:white;border:none;border-radius:6px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer;" onclick="marcarSalidaVisita(${idxGlobal})">🚪 Marcar Salida</button>`
           ) : ''}
+          <button class="btn btn-s btn-sm" onclick="abrirEditarVisita(${idxGlobal})">✏️</button>
           <button class="btn btn-p btn-sm" onclick="elimVisita(${idxGlobal})">🗑</button>
         </div>
       </div>
@@ -3834,6 +3860,97 @@ function renderVisitasList(){
       </div>
     </div>`;
   }).join('');
+}
+
+function abrirEditarVisita(idx){
+  idxEditarVis=idx;
+  const ev=turno.accesos[idx];
+  if(!ev) return;
+  fotVisEdit=[...(ev.fotos||[])];
+  document.getElementById('evis-hora').value=ev.hora||'';
+  document.getElementById('evis-nombre').value=ev.nombre||'';
+  document.getElementById('evis-empresa').value=ev.empresa||'';
+  document.getElementById('evis-contacto').value=ev.contacto||'';
+  document.getElementById('evis-placa').value=ev.placa||'';
+  document.getElementById('evis-detalle').value=ev.detalle||'';
+  const esVisita=ev.tipo==='visitas';
+  document.getElementById('evis-empresa-lbl').textContent=esVisita?'Empresa / DNI':'Empresa / DNI';
+  document.getElementById('evis-contacto-lbl').textContent=esVisita?'Contacto (a quien visita)':'Contacto (a quien entrega)';
+  renderFP('fp-vis-edit',fotVisEdit,'vis-edit');
+  abrirMov('m-editar-vis');
+}
+
+async function guardarEdicionVisita(){
+  const hora    =document.getElementById('evis-hora').value;
+  const nombre  =document.getElementById('evis-nombre').value.trim();
+  const empresa =document.getElementById('evis-empresa').value.trim();
+  const contacto=document.getElementById('evis-contacto').value.trim();
+  const placa   =document.getElementById('evis-placa').value.trim().toUpperCase();
+  const detalle =document.getElementById('evis-detalle').value.trim();
+  if(!hora)  { alert('Indica la hora.');return; }
+  if(!nombre){ alert('El nombre es obligatorio.');return; }
+
+  const btn=document.getElementById('btn-guardar-vis-edit');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span>Guardando...';
+
+  const ev=turno.accesos[idxEditarVis];
+  const eventoLabel=ev.tipo==='visitas'?'Visita':'Entrega Mercadería';
+
+  // Subir fotos nuevas (las que no tienen fotosURLs aún)
+  const fotosURLsActuales=[...(ev.fotosURLs||[])];
+  const fotosAnterioresCount=(ev.fotos||[]).length - fotVisEdit.filter(f=>!(ev.fotos||[]).find(a=>a.data===f.data)).length;
+  const tok=await getToken();
+  if(tok&&spSiteId){
+    const sedeNorm=turno.sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+    const carp=`${sedeNorm}/${turno.informeId}`;
+    for(let i=0;i<fotVisEdit.length;i++){
+      const f=fotVisEdit[i];
+      const yaExiste=(ev.fotos||[]).find(a=>a.data===f.data);
+      if(!yaExiste){
+        const url=await spUpFoto(f.data,`vis_edit_${hora.replace(':','-')}_f${Date.now()}.jpg`,carp);
+        if(url) fotosURLsActuales.push(url);
+      }
+    }
+  }
+
+  // Actualizar evento en memoria
+  turno.accesos[idxEditarVis]={
+    ...ev,
+    hora, nombre, empresa, contacto, placa, detalle,
+    obs:`${eventoLabel} — ${nombre}${empresa?' / '+empresa:''}`,
+    fotos:[...fotVisEdit],
+    fotosURLs:fotosURLsActuales,
+    timestamp:ev.timestamp||Date.now()
+  };
+  saveTurno();
+
+  // PATCH a SharePoint si tiene spItemId
+  if(ev.spItemId&&spSiteId&&spVisitasId&&tok){
+    try{
+      await fetch(
+        `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVisitasId}/items/${ev.spItemId}/fields`,
+        {method:'PATCH',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+         body:JSON.stringify({
+           HoraEvento:    hora,
+           NombrePersona: nombre,
+           EmpresaDNI:    empresa,
+           Contacto:      contacto,
+           PlacaAuto:     placa,
+           Detalle:       detalle,
+           FotosURLs:     JSON.stringify(fotosURLsActuales)
+         })}
+      );
+      notif('✅ Registro actualizado en SharePoint');
+    }catch(e){ console.error('editarVisita SP:',e); notif('💾 Actualizado localmente'); }
+  } else {
+    notif('💾 Registro actualizado localmente');
+  }
+
+  btn.disabled=false;
+  btn.textContent='💾 Guardar Cambios';
+  renderVisitasList();
+  cerrarMov('m-editar-vis');
 }
 
 async function marcarSalidaVisita(idx){
