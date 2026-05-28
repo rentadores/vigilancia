@@ -1719,7 +1719,27 @@ function renderFotoEvento(ev){
   return `<div style="font-size:12px;color:var(--gm);margin-top:4px;">Sin fotos</div>`;
 }
 
-function elimEvento(idx){ if(!confirm('¿Eliminar este evento?')) return; turno.eventos.splice(idx,1); saveTurno(); renderEventosResumen(); }
+async function elimEvento(idx){
+  if(!confirm('¿Eliminar este evento?')) return;
+  const ev=turno.eventos[idx];
+  if(ev&&ev.spItemId&&spSiteId){
+    try{
+      const tok=await getToken();
+      if(tok){
+        const listId=ev.tipo==='vehiculo'?spVehId:spListId;
+        if(listId){
+          await fetch(
+            `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${listId}/items/${ev.spItemId}`,
+            {method:'DELETE',headers:{Authorization:`Bearer ${tok}`}}
+          );
+        }
+      }
+    }catch(e){ console.error('elimEvento SP:',e); }
+  }
+  turno.eventos.splice(idx,1);
+  saveTurno();
+  renderEventosResumen();
+}
 
 // ============================================================
 // PANTALLA 4: RECORRIDO
@@ -1771,8 +1791,9 @@ async function guardarEvento(tipo){
         const url=await spUpFoto(evento.fotos[i].data,`${tipo}_${hora.replace(':','-')}_f${i+1}.jpg`,carp);
         if(url) evento.fotosURLs.push(url);
       }
-      const ok=await spSaveEv(evento);
-      notif(ok?'✅ Guardado en SharePoint':'⚠ Error al guardar en SharePoint — solo local');
+      const spId=await spSaveEv(evento);
+      if(spId){ evento.spItemId=spId; notif('✅ Guardado en SharePoint'); }
+      else{ notif('⚠ Error al guardar en SharePoint — solo local'); }
     }catch(e){ console.error('SP guardarEvento:',e); notif('⚠ Error SP: '+e.message); }
   }else{ notif('💾 Guardado localmente'); }
   turno.eventos.push(evento); saveTurno(); renderEventosResumen();
@@ -3534,9 +3555,9 @@ async function spSaveEv(ev){
     const body={fields:{Title:turno.informeId,Sede:turno.sede,Operario:turno.operario,Turno:turno.turno,TipoEvento:ev.tipo||'recorrido',HoraEvento:ev.hora,Observacion:ev.obs||'',EsAlerta:ev.esAlerta||false,FotosURLs:JSON.stringify(ev.fotosURLs||[]),InformeID:turno.informeId,FechaTurno:new Date().toISOString()}};
     const res=await fetch(`https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spListId}/items`,
       {method:'POST',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok){ const err=await res.json(); console.error('spSaveEv error:',res.status,err); return false; }
-    return true;
-  }catch(e){ console.error('spSaveEv:',e); return false; }
+    if(!res.ok){ const err=await res.json(); console.error('spSaveEv error:',res.status,err); return null; }
+    const data=await res.json(); return data.id||null;
+  }catch(e){ console.error('spSaveEv:',e); return null; }
 }
 
 // ============================================================
@@ -3909,8 +3930,9 @@ async function guardarEventoVisita(){
         const url = await spUpFoto(evento.fotos[i].data, `vis_${tipoEv}_${hora.replace(':','-')}_f${i+1}.jpg`, carp);
         if(url) evento.fotosURLs.push(url);
       }
-      const ok = await spSaveEvVisita(evento);
-      notif(ok ? '✅ Guardado en SharePoint' : '⚠ Error SP — solo local');
+      const spId = await spSaveEvVisita(evento);
+      if(spId){ evento.spItemId = spId; notif('✅ Guardado en SharePoint'); }
+      else{ notif('⚠ Error SP — solo local'); }
     } catch(e){ console.error('SP visita:', e); notif('⚠ Error SP: ' + e.message); }
   } else {
     notif('💾 Guardado localmente');
@@ -4108,8 +4130,20 @@ async function marcarSalidaVisita(idx){
   }
 }
 
-function elimVisita(idx){
+async function elimVisita(idx){
   if(!confirm('¿Eliminar este registro?')) return;
+  const ev=turno.accesos[idx];
+  if(ev&&ev.spItemId&&spSiteId&&spVisitasId){
+    try{
+      const tok=await getToken();
+      if(tok){
+        await fetch(
+          `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVisitasId}/items/${ev.spItemId}`,
+          {method:'DELETE',headers:{Authorization:`Bearer ${tok}`}}
+        );
+      }
+    }catch(e){ console.error('elimVisita SP:',e); }
+  }
   turno.accesos.splice(idx, 1);
   saveTurno();
   renderVisitasList();
@@ -4141,9 +4175,9 @@ async function spSaveEvVisita(ev){
       `https://graph.microsoft.com/v1.0/sites/${spSiteId}/lists/${spVisitasId}/items`,
       { method:'POST', headers:{ Authorization:`Bearer ${tok}`, 'Content-Type':'application/json' }, body: JSON.stringify(body) }
     );
-    if(!res.ok){ const err = await res.json(); console.error('spSaveEvVisita:', res.status, err); return false; }
-    return true;
-  } catch(e){ console.error('spSaveEvVisita:', e); return false; }
+    if(!res.ok){ const err = await res.json(); console.error('spSaveEvVisita:', res.status, err); return null; }
+    const data = await res.json(); return data.id || null;
+  } catch(e){ console.error('spSaveEvVisita:', e); return null; }
 }
 
 // SP: Cargar visitas/mercadería al restaurar turno
