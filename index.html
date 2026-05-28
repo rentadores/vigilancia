@@ -2587,8 +2587,10 @@ doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+32+(cW-32-50)/2,y+16,{al
     doc.text(turno.operario,mg+cW/4,y+19,{align:'center'});
 
     const sedeNorm=turno.sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
-    const fa=new Date().toISOString().slice(0,10).replace(/-/g,'');
-    const nom=`Informe_${sedeNorm}_${turno.turno}_${fa}_${turno.operario.replace(/ /g,'')}.pdf`;
+    const ahora=new Date();
+    const fa=`${ahora.getFullYear()}${String(ahora.getMonth()+1).padStart(2,'0')}${String(ahora.getDate()).padStart(2,'0')}`;
+    const fh=`${String(ahora.getHours()).padStart(2,'0')}${String(ahora.getMinutes()).padStart(2,'0')}`;
+    const nom=`Informe_${sedeNorm}_${turno.turno}_${fa}_${fh}_${turno.operario.replace(/ /g,'')}.pdf`;
     doc.save(nom);
     notif('✅ PDF descargado');
 
@@ -4009,18 +4011,27 @@ async function cargarHistorial(tok){
 }
 
 function parsearNombreInforme(nombre,sede){
-  // Formato: Informe_{Sede}_{Turno}_{YYYYMMDD}_{Operario}.pdf
+  // Formato nuevo:  Informe_{Sede}_{Turno}_{YYYYMMDD}_{HHMM}_{Operario}.pdf
+  // Formato legado: Informe_{Sede}_{Turno}_{YYYYMMDD}_{Operario}.pdf
   const base=nombre.replace(/\.pdf$/i,'');
   const partes=base.split('_');
-  // partes[0]=Informe, partes[1]=Sede (puede tener guiones), partes[-1]=Operario, partes[-2]=Fecha(8 dígitos), partes[-3]=Turno
   if(partes.length<5) return null;
-  const turnoVal=partes[partes.length-3]||'';
-  const fechaStr=partes[partes.length-2]||'';
-  const trabajadorParts=partes.slice(partes.length-1);
-  const trabajador=trabajadorParts.join(' ');
+  // Detectar formato: si partes[length-2] es 4 dígitos numéricos → nuevo formato (HHMM)
+  const esNuevoFormato=/^\d{4}$/.test(partes[partes.length-2]||'');
+  let turnoVal, fechaStr, trabajador;
+  if(esNuevoFormato){
+    // nuevo: ..._{Turno}_{YYYYMMDD}_{HHMM}_{Operario}
+    turnoVal=partes[partes.length-4]||'';
+    fechaStr=partes[partes.length-3]||'';
+    trabajador=partes[partes.length-1]||'';
+  } else {
+    // legado: ..._{Turno}_{YYYYMMDD}_{Operario}
+    turnoVal=partes[partes.length-3]||'';
+    fechaStr=partes[partes.length-2]||'';
+    trabajador=partes[partes.length-1]||'';
+  }
   if(!/^\d{8}$/.test(fechaStr)) return null;
   const yyyy=fechaStr.slice(0,4),mm=fechaStr.slice(4,6),dd=fechaStr.slice(6,8);
-  // Usar hora local explícita para evitar desfase UTC en zona Peru (UTC-5)
   const fechaStamp=new Date(parseInt(yyyy),parseInt(mm)-1,parseInt(dd)).getTime()||0;
   const fechaDisplay=`${dd}/${mm}/${yyyy}`;
   return {sede, turno:turnoVal, trabajador, fechaStr, fechaDisplay, fechaStamp};
