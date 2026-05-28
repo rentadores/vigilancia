@@ -1709,10 +1709,12 @@ function renderFotoEvento(ev){
     return `<div class="ev-fotos">${ev.fotos.slice(0,4).map(f=>`<img class="thumb" src="${f.data}">`).join('')}
       ${ev.fotos.length>4?`<div style="width:50px;height:50px;background:var(--gc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gm);">+${ev.fotos.length-4}</div>`:''}
     </div><div style="font-size:11px;color:var(--gm);margin-top:4px;">📷 ${ev.fotos.length} foto${ev.fotos.length>1?'s':''}</div>`;
-  }else if(ev.fotosURLs&&ev.fotosURLs.length>0){
-    return `<div class="ev-fotos">${ev.fotosURLs.slice(0,4).map(url=>`<img class="thumb" src="${url}" onerror="this.style.display='none'">`).join('')}
-      ${ev.fotosURLs.length>4?`<div style="width:50px;height:50px;background:var(--gc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gm);">+${ev.fotosURLs.length-4}</div>`:''}
-    </div><div style="font-size:11px;color:var(--gm);margin-top:4px;">📷 ${ev.fotosURLs.length} foto${ev.fotosURLs.length>1?'s':''} (SP)</div>`;
+  }
+  if(ev.fotosURLs&&ev.fotosURLs.length>0){
+    return `<div style="font-size:12px;color:var(--gm);margin-top:4px;display:flex;align-items:center;gap:6px;">
+      <span style="background:var(--gc);border-radius:6px;padding:4px 10px;font-weight:700;">📷 ${ev.fotosURLs.length} foto${ev.fotosURLs.length>1?'s':''}</span>
+      <span style="font-size:11px;color:var(--gm);">guardadas en SharePoint</span>
+    </div>`;
   }
   return `<div style="font-size:12px;color:var(--gm);margin-top:4px;">Sin fotos</div>`;
 }
@@ -1949,22 +1951,11 @@ async function abrirEditar(idx){
     fotE=[...ev.fotos];
     renderFP('fp-e',fotE,'e');
   } else if((ev.fotosURLs||[]).length>0){
-    // Fotos solo en SP: descargar con token y convertir a base64
+    // Fotos solo en SP: usar cargarFotosDesdeURLs (misma lógica que restaurar turno)
     fotE=[];
     document.getElementById('fp-e').innerHTML=`<div style="font-size:12px;color:var(--gm);padding:6px;">⏳ Cargando fotos...</div>`;
-    const tok=await getToken();
-    if(tok){
-      for(const url of ev.fotosURLs){
-        try{
-          const res=await fetch(url,{headers:{Authorization:`Bearer ${tok}`}});
-          if(res.ok){
-            const blob=await res.blob();
-            const data=await new Promise(r=>{const rd=new FileReader();rd.onload=e=>r(e.target.result);rd.readAsDataURL(blob);});
-            fotE.push({nombre:'foto_sp',data,url});
-          }
-        }catch(e){ console.warn('No se pudo cargar foto SP:',url,e); }
-      }
-    }
+    await cargarFotosDesdeURLs([ev]);
+    fotE=[...(ev.fotos||[])];
     renderFP('fp-e',fotE,'e');
   } else {
     fotE=[];
@@ -1982,23 +1973,24 @@ async function guardarEdicion(){
   const btn=document.getElementById('btn-guardar-edicion');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Guardando...';
 
-  // Subir fotos nuevas si las hay
+  // Preservar todas las URLs SP existentes
   const fotosURLsActuales=[...(ev.fotosURLs||[])];
+  const urlsEnSP=new Set(fotosURLsActuales);
   const tok=await getToken();
-  if(tok&&spSiteId){
+  // Solo subir fotos nuevas: base64 puro que no tienen URL SP ya registrada
+  const fotosNuevas=fotE.filter(f=>f.data&&f.data.startsWith('data:')&&(!f.url||!urlsEnSP.has(f.url)));
+  if(tok&&spSiteId&&fotosNuevas.length>0){
     const sedeNorm=turno.sede.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]/g,'_');
     const carp=`${sedeNorm}/${turno.informeId}`;
-    for(let i=0;i<fotE.length;i++){
-      const f=fotE[i];
-      const yaExiste=(ev.fotos||[]).find(a=>a.data===f.data);
-      if(!yaExiste){
-        const url=await spUpFoto(f.data,`edit_${hora.replace(':','-')}_f${Date.now()}.jpg`,carp);
-        if(url) fotosURLsActuales.push(url);
-      }
+    for(const fn of fotosNuevas){
+      const url=await spUpFoto(fn.data,`edit_${hora.replace(':','-')}_f${Date.now()}.jpg`,carp);
+      if(url) fotosURLsActuales.push(url);
     }
   }
+  // En memoria solo guardar fotos nuevas en base64 (las de SP viven en fotosURLs)
+  const fotosB64=fotE.filter(f=>f.data&&f.data.startsWith('data:')&&(!f.url||!urlsEnSP.has(f.url)));
 
-  const evActualizado={...ev,hora,obs:obs||(ev.obs||''),esAlerta,fotos:[...fotE],fotosURLs:fotosURLsActuales};
+  const evActualizado={...ev,hora,obs:obs||(ev.obs||''),esAlerta,fotos:fotosB64,fotosURLs:fotosURLsActuales};
 
   if(esVeh){
     evActualizado.veh={
