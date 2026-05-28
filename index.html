@@ -1930,14 +1930,13 @@ function acCerrar(tipo){
 function abrirEditar(idx){
   idxEditar=idx;
   const ev=turno.eventos[idx];
-  // Fotos base64 locales
+  // Si hay fotos en base64 usarlas; si no (evento restaurado desde SP) usar fotosURLs
   const fotosBase64=ev.fotos||[];
-  // Fotos solo en SP (URL) que no están ya representadas en base64
-  const urlsEnBase64=new Set(fotosBase64.map(f=>f.url).filter(Boolean));
-  const fotosDeURL=(ev.fotosURLs||[])
-    .filter(u=>!urlsEnBase64.has(u))
-    .map(u=>({nombre:'foto_sp',url:u,data:u}));
-  fotE=[...fotosBase64,...fotosDeURL];
+  if(fotosBase64.length>0){
+    fotE=[...fotosBase64];
+  } else {
+    fotE=(ev.fotosURLs||[]).map(u=>({nombre:'foto_sp',url:u,data:u}));
+  }
   document.getElementById('e-hora').value=ev.hora;
   document.getElementById('e-obs').value=ev.obs||'';
   document.getElementById('tog-e').checked=ev.esAlerta||false;
