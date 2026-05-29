@@ -457,7 +457,7 @@ input[type=file]{display:none;}
   </div>
   <div id="form-turno">
     <div class="card"><div class="card-t">🏢 Sede</div><div class="sel-grid" id="sel-sede"></div></div>
-    <div class="card"><div class="card-t">👤 Operario</div><div class="sel-grid" id="sel-op"></div></div>
+    <div class="card"><div class="card-t">👤 Encargado</div><div class="sel-grid" id="sel-op"></div></div>
     <div class="card">
       <div class="card-t">🕐 Turno</div>
       <div class="sel-grid">
@@ -532,7 +532,7 @@ input[type=file]{display:none;}
     <!-- Barra info turno -->
     <div class="dash-turno" id="dash-turno-bar">
       <div><div style="font-size:9px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;">Sede</div><div style="font-size:13px;font-weight:700;" id="dt-sede">—</div></div>
-      <div><div style="font-size:9px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;">Operario</div><div style="font-size:13px;font-weight:700;" id="dt-operario">—</div></div>
+      <div><div style="font-size:9px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;">Encargado</div><div style="font-size:13px;font-weight:700;" id="dt-operario">—</div></div>
       <div><div style="font-size:9px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;">Turno</div><div style="font-size:13px;font-weight:700;" id="dt-turno">—</div></div>
       <div><div style="font-size:9px;font-weight:700;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;">Inicio</div><div style="font-size:13px;font-weight:700;" id="dt-inicio">—</div></div>
     </div>
@@ -737,7 +737,7 @@ input[type=file]{display:none;}
       <div style="font-size:11px;color:var(--gm);margin-top:4px;">El PDF se envía a todos los correos.</div>
     </div>
     <div class="adm-s">
-      <h3>👥 Operarios</h3>
+      <h3>👥 Encargados</h3>
       <ul class="le" id="adm-ops"></ul>
       <div class="ar">
         <input type="text" id="adm-opnew" placeholder="Nombre completo">
@@ -1626,7 +1626,7 @@ function actualizarBarMod(){
   const totalEvBar=(turno.eventos||[]).length+(turno.accesos||[]).length;
   document.getElementById('mod-turno-bar').innerHTML=`
     <div><div class="inf-d">Sede</div><div class="inf-v">${turno.sede}</div></div>
-    <div><div class="inf-d">Operario</div><div class="inf-v">${turno.operario}</div></div>
+    <div><div class="inf-d">Encargado</div><div class="inf-v">${turno.operario}</div></div>
     <div><div class="inf-d">Turno</div>${badge}</div>
     <div><div class="inf-d">Inicio</div><div class="inf-v">${fmtH(h)}</div></div>
     <div><div class="inf-d">Eventos</div><div class="inf-v">${totalEvBar}</div></div>
@@ -2170,7 +2170,7 @@ function renderPreview(){
   let h=`<div class="card">
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bd);">
       <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Sede</div><div style="font-weight:700;">${turno.sede}</div></div>
-      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Operario</div><div style="font-weight:700;">${turno.operario}</div></div>
+      <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Encargado</div><div style="font-weight:700;">${turno.operario}</div></div>
       <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Turno</div><span class="badge ${turno.turno==='DIA'?'b-dia':'b-noche'}">${turno.turno}</span></div>
       <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Fecha</div><div style="font-weight:700;">${fecha}</div></div>
       <div><div style="font-size:11px;color:var(--gm);text-transform:uppercase;">Recorridos</div><div style="font-weight:700;">${evRec.length}</div></div>
@@ -2456,7 +2456,7 @@ doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+32+(cW-32-50)/2,y+16,{al
     doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(192,57,43);
     doc.text('RESUMEN DEL TURNO',mg+5,y+7);
     doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
-    doc.text(`Operario: ${turno.operario}`,mg+5,y+13);
+    doc.text(`Encargado: ${turno.operario}`,mg+5,y+13);
     doc.text(`Recorridos: ${evRec.length}`,mg+75,y+13);
     doc.text(`Vehiculares: ${evVeh.length}`,mg+113,y+13);
     doc.text(`Fotos: ${tF}`,mg+153,y+13);
@@ -2930,7 +2930,7 @@ doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+32+(cW-32-50)/2,y+16,{al
                 <p>Estimado/a,</p>
                 <p>Se adjunta informe de vigilancia - Turno <strong>${turno.turno}</strong> - Sede <strong>${turno.sede}</strong>.</p>
                 <ul>
-                  <li><strong>Operario:</strong> ${turno.operario}</li>
+                  <li><strong>Encargado:</strong> ${turno.operario}</li>
                   <li><strong>Fecha:</strong> ${fecha}</li>
                   <li><strong>Recorridos:</strong> ${evRec.length}</li>
                   <li><strong>Vehiculares:</strong> ${evVeh.length}</li>
