@@ -3304,22 +3304,46 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.warn('[SW] Error al registrar:', err));
   });
 }
+
+async function initMS(){
   try{
     msalApp=new msal.PublicClientApplication({
       auth:{clientId:AZ.clientId,authority:`https://login.microsoftonline.com/${AZ.tenantId}`,redirectUri:window.location.origin+window.location.pathname},
       cache:{cacheLocation:'sessionStorage',storeAuthStateInCookie:true}
     });
     await msalApp.initialize();
-    await msalApp.handleRedirectPromise();
+    // Capturar resultado del redirect de Microsoft
+    const redirectResult = await msalApp.handleRedirectPromise();
+    if(redirectResult){
+      // Venimos de un loginRedirect exitoso
+      const r = redirectResult;
+      setSpUI(true);
+      await spGetIds(r.accessToken);
+      const emailLogin=(r.account.username||'').toLowerCase().trim();
+      const esAdminLogin=cfg.admins.map(a=>a.toLowerCase().trim()).includes(emailLogin);
+      const esPermitidoLogin=cfg.correosPermitidos.some(c=>(c.email||'').toLowerCase().trim()===emailLogin);
+      if(!esAdminLogin && !esPermitidoLogin){
+        setSpUI(false);
+        Object.keys(sessionStorage).filter(k=>k.startsWith('msal.')).forEach(k=>sessionStorage.removeItem(k));
+        mostrarAccesoDenegado(r.account.username);
+        return;
+      }
+      document.getElementById('hdr-t').textContent=r.account.name.split(' ')[0];
+      document.getElementById('btn-cerrar-sesion').style.display='block';
+      const btnHr=document.getElementById('btn-hamburger');
+      if(btnHr) btnHr.style.display='flex';
+      aplicarVisibilidadAdmin();
+      cargarMaestrosLocal();
+      mostrarPantallaTurno();
+      return;
+    }
+    // Sesión silenciosa (ya estaba logueado)
     const accounts=msalApp.getAllAccounts();
     if(accounts.length>0){
       const r=await msalApp.acquireTokenSilent({scopes:AZ.scopes,account:accounts[0]});
       setSpUI(true);
-      // Primero cargar cfg desde SP para tener admins y correosPermitidos reales
       await spGetIds(r.accessToken);
-      // Ahora validar acceso con cfg actualizado
       if(!tieneAcceso()){
-        try{ await msalApp.logoutPopup({account:accounts[0]}); }catch(ex){}
         setSpUI(false);
         mostrarAccesoDenegado(accounts[0].username);
         return;
@@ -3337,27 +3361,31 @@ if ('serviceWorker' in navigator) {
 
 async function cerrarSesionMS(){
   if(!confirm('¿Cerrar sesión y cambiar de usuario?')) return;
-  try{
-    // Limpiar sesión solo en MSAL local, sin popup de Microsoft
-    const accounts = msalApp.getAllAccounts();
-    if(accounts.length > 0){
-      // Remover cuenta del caché local de MSAL
-      msalApp.getTokenCache().removeAccount(accounts[0]);
-    }
-  }catch(e){ console.warn('Logout:', e.message); }
   // Limpiar sessionStorage de MSAL
   Object.keys(sessionStorage)
     .filter(k=>k.startsWith('msal.'))
     .forEach(k=>sessionStorage.removeItem(k));
-  // Limpiar estado de la app
-  document.getElementById('btn-cerrar-sesion').style.display='none';
-  document.getElementById('hdr-t').textContent='Sistema de Vigilancia';
-  const btnAdm=document.getElementById('btn-admin-hdr');
-  if(btnAdm) btnAdm.style.display='none';
-  const btnH=document.getElementById('btn-hamburger');
-  if(btnH) btnH.style.display='none';
-  setSpUI(false);
-  irA('s-login');
+  try{
+    const accounts = msalApp.getAllAccounts();
+    if(accounts.length > 0){
+      // Logout con redirect — limpia sesión en Microsoft y regresa al login
+      await msalApp.logoutRedirect({
+        account: accounts[0],
+        postLogoutRedirectUri: window.location.origin + window.location.pathname
+      });
+    }
+  }catch(e){
+    console.warn('Logout:', e.message);
+    // Fallback: limpiar local y mostrar login
+    document.getElementById('btn-cerrar-sesion').style.display='none';
+    document.getElementById('hdr-t').textContent='Sistema de Vigilancia';
+    const btnAdm=document.getElementById('btn-admin-hdr');
+    if(btnAdm) btnAdm.style.display='none';
+    const btnH=document.getElementById('btn-hamburger');
+    if(btnH) btnH.style.display='none';
+    setSpUI(false);
+    irA('s-login');
+  }
 }
 
 async function loginMS(){
@@ -3365,35 +3393,12 @@ async function loginMS(){
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Conectando...';
   document.getElementById('login-err').style.display='none';
   try{
-    const r=await msalApp.loginPopup({scopes:AZ.scopes});
-    setSpUI(true);
-    // Primero cargar cfg desde SP para tener admins y correosPermitidos reales
-    await spGetIds(r.accessToken);
-    // Validar acceso usando el email directamente del resultado del login
-    const emailLogin=(r.account.username||'').toLowerCase().trim();
-    const esAdminLogin=cfg.admins.map(a=>a.toLowerCase().trim()).includes(emailLogin);
-    const esPermitidoLogin=cfg.correosPermitidos.some(c=>(c.email||'').toLowerCase().trim()===emailLogin);
-    if(!esAdminLogin && !esPermitidoLogin){
-      try{ await msalApp.logoutPopup({account:r.account}); }catch(ex){}
-      setSpUI(false);
-      document.getElementById('login-err').style.display='none';
-      mostrarAccesoDenegado(r.account.username);
-      return;
-    }
-    document.getElementById('hdr-t').textContent=r.account.name.split(' ')[0];
-    document.getElementById('btn-cerrar-sesion').style.display='block';
-    const btnHl=document.getElementById('btn-hamburger');
-    if(btnHl) btnHl.style.display='flex';
-    // Aplicar visibilidad admin usando email directo
-    const btnAdm=document.getElementById('btn-admin-hdr');
-    if(btnAdm) btnAdm.style.display=esAdminLogin?'':'none';
-    notif('✅ Bienvenido '+r.account.name.split(' ')[0]);
-    cargarMaestrosLocal();
-    mostrarPantallaTurno();
+    // Usar redirect en lugar de popup (compatible con PWA y móviles)
+    await msalApp.loginRedirect({scopes:AZ.scopes});
+    // La página se redirige a Microsoft — el resultado se captura en initMS()
   }catch(e){
     console.error('Login:',e);
     document.getElementById('login-err').style.display='block';
-  }finally{
     btn.disabled=false;
     btn.innerHTML=`<svg class="ms-ico" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>Iniciar sesión con Microsoft`;
   }
