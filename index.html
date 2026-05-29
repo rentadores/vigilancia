@@ -1451,6 +1451,7 @@ function mostrarPantallaTurno(){
     }
 
     if(tSP&&tSP.informeId){
+      document.getElementById('turno-progreso-info').textContent='🔄 Cargando datos del turno...';
       document.getElementById('turno-en-progreso').style.display='block';
       document.getElementById('form-turno').style.display='none';
       if(!tLocal||tLocal.informeId!==tSP.informeId||(tLocal.eventos||[]).length===0){
@@ -1476,7 +1477,7 @@ function mostrarPantallaTurno(){
           document.getElementById('turno-progreso-info').textContent=`${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${fusionados.length} evento${fusionados.length!==1?'s':''} · actualizado desde SharePoint`;
         }else{
           Object.assign(turno,tLocal);
-          document.getElementById('turno-progreso-info').textContent=`${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''}`;
+         document.getElementById('turno-progreso-info').textContent=`${tLocal.sede||'?'} · ${tLocal.operario||'?'} · Turno ${tLocal.turno||'?'} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''}`;
         }
       }
       notifSilencioso('✅ Turno activo encontrado');
@@ -1484,7 +1485,7 @@ function mostrarPantallaTurno(){
       document.getElementById('turno-en-progreso').style.display='block';
       document.getElementById('form-turno').style.display='none';
       Object.assign(turno,tLocal);
-      document.getElementById('turno-progreso-info').textContent=`${tLocal.sede} · ${tLocal.operario} · Turno ${tLocal.turno} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''} · guardado localmente`;
+      document.getElementById('turno-progreso-info').textContent=`${tLocal.sede||'?'} · ${tLocal.operario||'?'} · Turno ${tLocal.turno||'?'} · ${tLocal.eventos.length} evento${tLocal.eventos.length!==1?'s':''} · guardado localmente`;
       notifSilencioso('⚠ Turno local (sin SP)');
     }else{
       document.getElementById('turno-en-progreso').style.display='none';
