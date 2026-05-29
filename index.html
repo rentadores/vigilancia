@@ -4675,6 +4675,15 @@ function _resetInact(){
 );
 _resetInact(); // iniciar timer al cargar
 
+// ── PWA: registrar Service Worker ──────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/vigilancia/sw.js')
+      .then(reg => console.log('[SW] Registrado:', reg.scope))
+      .catch(err => console.warn('[SW] Error al registrar:', err));
+  });
+}
+
 // ============================================================
 // INIT
 // ============================================================
