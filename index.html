@@ -2197,29 +2197,54 @@ function renderPreview(){
     });
   }
 
-  // Sección vehicular
+  // Sección vehicular — agrupada por placa
   if(evVeh.length>0){
     h+=`<div style="font-size:12px;font-weight:700;color:var(--am);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px;">🚗 Control Vehicular</div>`;
+    const placasOrdenP=[];
+    const porPlacaP={};
     evVeh.forEach(ev=>{
-      const movBadge=ev.veh?.movimiento==='ENTRADA'?`<span class="badge b-entrada">ENTRADA</span>`:`<span class="badge b-salida">SALIDA</span>`;
-      h+=`<div class="pev">
-        <div class="pev-h pv">
-          ${movBadge}
-          <span style="font-size:15px;font-weight:700;color:var(--go);letter-spacing:1px;">${ev.veh?.placa||''}</span>
-          <span class="pev-hora" style="color:var(--am);">${ev.hora}</span>
+      const placa=(ev.veh?.placa||'SIN PLACA').toUpperCase();
+      if(!porPlacaP[placa]){ porPlacaP[placa]=[]; placasOrdenP.push(placa); }
+      porPlacaP[placa].push(ev);
+    });
+    placasOrdenP.forEach(p=>{ porPlacaP[p].sort((a,b)=>(a.hora||'').localeCompare(b.hora||'')); });
+    placasOrdenP.forEach(placa=>{
+      const evs=porPlacaP[placa];
+      const entradas=evs.filter(e=>e.veh?.movimiento==='ENTRADA').length;
+      const salidas=evs.filter(e=>e.veh?.movimiento==='SALIDA').length;
+      h+=`<div class="veh-grupo" style="margin-bottom:10px;">
+        <div class="veh-grupo-hdr">
+          <span class="badge" style="background:rgba(255,255,255,0.25);color:#fff;">🚗 Vehículo</span>
+          <span class="veh-grupo-hdr-placa">${placa}</span>
+          <span style="font-size:11px;margin-left:auto;">
+            ${entradas>0?`<span style="color:#C8F0A0;font-weight:700;">↓${entradas} entrada${entradas>1?'s':''}</span> `:''}
+            ${salidas>0?`<span style="color:#FFAAAA;font-weight:700;">↑${salidas} salida${salidas>1?'s':''}</span>`:''}
+          </span>
         </div>
-        <div style="padding:7px 11px;">
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
-            ${ev.veh?.tipo?`<span style="font-size:12px;color:var(--gm);"><b>Tipo:</b> ${ev.veh.tipo}</span>`:''}
-            ${ev.veh?.conductor?`<span style="font-size:12px;color:var(--gm);"><b>Conductor:</b> ${ev.veh.conductor}</span>`:''}
-            ${ev.veh?.km?`<span style="font-size:12px;color:var(--gm);"><b>KM:</b> ${Number(ev.veh.km).toLocaleString()}</span>`:''}
-            ${ev.veh?.destino?`<span style="font-size:12px;color:var(--gm);"><b>Destino:</b> ${ev.veh.destino}</span>`:''}
+        <div class="veh-grupo-body">`;
+      evs.forEach(ev=>{
+        const mov=ev.veh?.movimiento||'';
+        const clsMov=mov==='ENTRADA'?'entrada':'salida';
+        const movBadge=mov==='ENTRADA'?`<span class="badge b-entrada">ENTRADA</span>`:`<span class="badge b-salida">SALIDA</span>`;
+        h+=`<div class="veh-ev">
+          <div class="veh-ev-hdr ${clsMov}">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;">
+              ${movBadge}
+              <span class="ev-hora">${ev.hora}</span>
+              ${ev.veh?.conductor?`<span style="font-size:12px;color:var(--gm);"><b>Conductor:</b> ${ev.veh.conductor}</span>`:''}
+              ${ev.veh?.km?`<span style="font-size:12px;color:var(--gm);"><b>KM:</b> ${Number(ev.veh.km).toLocaleString()}</span>`:''}
+              ${ev.veh?.destino?`<span style="font-size:12px;color:var(--gm);"><b>${mov==='ENTRADA'?'Procedencia':'Destino'}:</b> ${ev.veh.destino}</span>`:''}
+            </div>
           </div>
-          ${ev.veh?.detalle?`<div style="font-size:12px;color:var(--gm);background:var(--gc);border-radius:5px;padding:5px 8px;">${ev.veh.detalle}</div>`:''}
-        </div>
-        ${ev.fotos&&ev.fotos.length>0?`<div class="pev-fotos">${ev.fotos.map(f=>`<img class="pthumb" src="${f.data}">`).join('')}</div>`:
-          ev.fotosURLs&&ev.fotosURLs.length>0?`<div class="pev-fotos">${ev.fotosURLs.map(url=>`<img class="pthumb" src="${url}" onerror="this.style.display='none'">`).join('')}</div>`:''}
-      </div>`;
+          <div class="veh-ev-body">
+            ${ev.veh?.tipo?`<div style="font-size:12px;color:var(--gm);margin-bottom:4px;"><b>Tipo:</b> ${ev.veh.tipo}</div>`:''}
+            ${ev.veh?.detalle?`<div class="veh-items-box"><b>Detalle:</b> ${ev.veh.detalle}</div>`:''}
+            ${ev.fotos&&ev.fotos.length>0?`<div class="pev-fotos">${ev.fotos.map(f=>`<img class="pthumb" src="${f.data}">`).join('')}</div>`:
+              ev.fotosURLs&&ev.fotosURLs.length>0?`<div class="pev-fotos">${ev.fotosURLs.map(url=>`<img class="pthumb" src="${url}" onerror="this.style.display='none'">`).join('')}</div>`:''}
+          </div>
+        </div>`;
+      });
+      h+=`</div></div>`;
     });
   }
 
@@ -2507,28 +2532,72 @@ doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+32+(cW-32-50)/2,y+16,{al
       doc.text('CONTROL VEHICULAR',pW/2,y+6.3,{align:'center'});
       y+=13;
 
-      evVeh.forEach((ev,i)=>{
+      // Agrupar por placa
+      const placasOrdenPDF=[];
+      const porPlacaPDF={};
+      evVeh.forEach(ev=>{
+        const placa=(ev.veh?.placa||'SIN PLACA').toUpperCase();
+        if(!porPlacaPDF[placa]){ porPlacaPDF[placa]=[]; placasOrdenPDF.push(placa); }
+        porPlacaPDF[placa].push(ev);
+      });
+      placasOrdenPDF.forEach(p=>{ porPlacaPDF[p].sort((a,b)=>(a.hora||'').localeCompare(b.hora||'')); });
+
+      placasOrdenPDF.forEach(placa=>{
+        const evsPlaca=porPlacaPDF[placa];
+        // Encabezado de placa — fondo ámbar oscuro, texto blanco
+        if(y+12>pH-20) newPag();
+        doc.setFillColor(200,134,10); doc.roundedRect(mg,y,cW,11,1.5,1.5,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(255,255,255);
+        doc.text('Vehículo',mg+4,y+7.5);
+        doc.setFontSize(12); doc.text(placa,mg+28,y+8);
+        // Resumen entradas/salidas
+        const nEnt=evsPlaca.filter(e=>e.veh?.movimiento==='ENTRADA').length;
+        const nSal=evsPlaca.filter(e=>e.veh?.movimiento==='SALIDA').length;
+        doc.setFontSize(7.5);
+        let resX=pW-mg-4;
+        if(nSal>0){ doc.setTextColor(255,180,180); doc.text(`↑${nSal} salida${nSal>1?'s':''}`,resX,y+8,{align:'right'}); resX-=28; }
+        if(nEnt>0){ doc.setTextColor(180,240,160); doc.text(`↓${nEnt} entrada${nEnt>1?'s':''}`,resX,y+8,{align:'right'}); }
+        y+=13;
+
+        evsPlaca.forEach((ev,i)=>{
         if(y+32>pH-20) newPag();
         const veh=ev.veh||{};
         const esEntrada=veh.movimiento==='ENTRADA';
-        // Color movimiento
         const ccMov=esEntrada?[59,109,17]:[163,45,45];
+        const ccFondo=esEntrada?[234,243,222]:[252,235,235];
 
-        // Cabecera: franja ámbar con ENTRADA/SALIDA en verde/rojo y placa
-        doc.setFillColor(250,238,218); doc.roundedRect(mg,y,cW,11,1.5,1.5,'F');
-        doc.setFillColor(186,117,23); doc.rect(mg,y,3,11,'F');
+        // Fila movimiento — fondo verde/rojo suave con borde izquierdo
+        doc.setFillColor(...ccFondo); doc.roundedRect(mg,y,cW,11,1,1,'F');
+        doc.setFillColor(...ccMov); doc.rect(mg,y,3,11,'F');
         // Badge ENTRADA/SALIDA
         doc.setFillColor(...ccMov); doc.roundedRect(mg+6,y+1.5,22,8,1.5,1.5,'F');
         doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
         doc.text(veh.movimiento||'',mg+17,y+6.5,{align:'center'});
-        // Placa grande
-        doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(30,30,30);
-        doc.text(veh.placa||'',mg+33,y+8);
         // Hora
-        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,100);
-        doc.text('Hora:',pW-mg-30,y+8);
-        doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(186,117,23);
-        doc.text(ev.hora,pW-mg-4,y+8,{align:'right'});
+        doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(30,30,30);
+        doc.text(ev.hora,mg+32,y+8);
+        // Conductor
+        if(veh.conductor){
+          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+          doc.text('Conductor:',mg+55,y+5);
+          doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+          doc.text(veh.conductor,mg+55,y+10);
+        }
+        // KM
+        if(veh.km){
+          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+          doc.text('KM:',mg+120,y+5);
+          doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+          doc.text(String(Number(veh.km).toLocaleString()),mg+120,y+10);
+        }
+        // Destino/Procedencia
+        if(veh.destino){
+          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(100,100,100);
+          doc.text(esEntrada?'Procedencia:':'Destino:',mg+145,y+5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,30,30);
+          const dt=doc.splitTextToSize(veh.destino,cW-148);
+          doc.text(dt[0]||'',mg+145,y+10);
+        }
         y+=14;
 
         // Ficha datos vehículo
@@ -2602,7 +2671,9 @@ doc.text(`${cfg.titulo} ${turno.sede.toUpperCase()}`,mg+32+(cW-32-50)/2,y+16,{al
           doc.text('Sin fotos registradas',mg+2,y); doc.setFont('helvetica','normal'); y+=6;
         }
         doc.setDrawColor(220,220,220); doc.line(mg,y,pW-mg,y); y+=6;
-      });
+        }); // fin evsPlaca.forEach
+        y+=3;
+      }); // fin placasOrdenPDF.forEach
     }
 
     // ---- SECCIÓN ASISTENCIA ----
