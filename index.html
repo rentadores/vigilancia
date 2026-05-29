@@ -3380,7 +3380,7 @@ async function cerrarSesionMS(){
   if(!ok) return;
   sessionStorage.clear();
   Object.keys(localStorage).filter(k=>k.startsWith('msal.')).forEach(k=>localStorage.removeItem(k));
-  window.location.reload();
+  window.location.href = window.location.origin + window.location.pathname;
 }
 
 async function loginMS(){
@@ -3389,7 +3389,7 @@ async function loginMS(){
   document.getElementById('login-err').style.display='none';
   try{
     // Usar redirect en lugar de popup (compatible con PWA y móviles)
-    await msalApp.loginRedirect({scopes:AZ.scopes});
+    await msalApp.loginRedirect({scopes:AZ.scopes, prompt:'select_account'});
     // La página se redirige a Microsoft — el resultado se captura en initMS()
   }catch(e){
     console.error('Login:',e);
