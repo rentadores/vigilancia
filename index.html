@@ -3360,32 +3360,27 @@ async function initMS(){
 }
 
 async function cerrarSesionMS(){
-  if(!confirm('¿Cerrar sesión y cambiar de usuario?')) return;
-  // Limpiar sessionStorage de MSAL
-  Object.keys(sessionStorage)
-    .filter(k=>k.startsWith('msal.'))
-    .forEach(k=>sessionStorage.removeItem(k));
-  try{
-    const accounts = msalApp.getAllAccounts();
-    if(accounts.length > 0){
-      // Logout con redirect — limpia sesión en Microsoft y regresa al login
-      await msalApp.logoutRedirect({
-        account: accounts[0],
-        postLogoutRedirectUri: window.location.origin + window.location.pathname
-      });
-    }
-  }catch(e){
-    console.warn('Logout:', e.message);
-    // Fallback: limpiar local y mostrar login
-    document.getElementById('btn-cerrar-sesion').style.display='none';
-    document.getElementById('hdr-t').textContent='Sistema de Vigilancia';
-    const btnAdm=document.getElementById('btn-admin-hdr');
-    if(btnAdm) btnAdm.style.display='none';
-    const btnH=document.getElementById('btn-hamburger');
-    if(btnH) btnH.style.display='none';
-    setSpUI(false);
-    irA('s-login');
-  }
+  const ok = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:12px;padding:28px 24px;max-width:300px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <div style="font-size:2rem;margin-bottom:12px;">🚪</div>
+        <p style="font-weight:600;font-size:1rem;margin:0 0 8px;">Cerrar sesión</p>
+        <p style="color:#666;font-size:0.9rem;margin:0 0 24px;">¿Deseas cerrar sesión?</p>
+        <div style="display:flex;gap:12px;justify-content:center;">
+          <button id="btn-logout-no" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;background:#f5f5f5;font-size:0.95rem;cursor:pointer;">Cancelar</button>
+          <button id="btn-logout-si" style="flex:1;padding:10px;border:none;border-radius:8px;background:#C0392B;color:#fff;font-size:0.95rem;font-weight:600;cursor:pointer;">Salir</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('btn-logout-si').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    document.getElementById('btn-logout-no').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+  if(!ok) return;
+  sessionStorage.clear();
+  Object.keys(localStorage).filter(k=>k.startsWith('msal.')).forEach(k=>localStorage.removeItem(k));
+  window.location.reload();
 }
 
 async function loginMS(){
