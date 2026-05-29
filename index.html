@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#C0392B">
+<meta name="apple-mobile-web-app-title" content="Vigilancia">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>Vigilancia - Rentadores de Equipos</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://unpkg.com/@azure/msal-browser@3.14.0/lib/msal-browser.min.js"></script>
@@ -3292,7 +3296,14 @@ let spPersonasId=null;  // Lista Maestro_Personas
 let spEstadoVehId=null; // Lista Estado_Vehiculos
 let spVisitasId=null;   // Lista Control_Visitas_Mercaderia
 
-async function initMS(){
+// ── PWA: registrar Service Worker ──────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/vigilancia/sw.js')
+      .then(reg => console.log('[SW] Registrado:', reg.scope))
+      .catch(err => console.warn('[SW] Error al registrar:', err));
+  });
+}
   try{
     msalApp=new msal.PublicClientApplication({
       auth:{clientId:AZ.clientId,authority:`https://login.microsoftonline.com/${AZ.tenantId}`,redirectUri:window.location.origin+window.location.pathname},
