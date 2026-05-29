@@ -150,6 +150,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gc);color:var(
 .upa-row{display:flex;gap:8px;margin-top:5px;}
 .upa-row .upa{flex:1;margin-top:0;}
 .ev-h.hvis{background:var(--azc);border-left:4px solid var(--az);}
+/* VEHICULAR agrupado */
+.veh-grupo{border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:9px;}
+.veh-grupo-hdr{background:var(--amc);border-left:4px solid var(--am);padding:9px 11px;display:flex;align-items:center;gap:8px;}
+.veh-grupo-hdr-placa{font-size:15px;font-weight:900;color:var(--go);letter-spacing:1px;}
+.veh-grupo-body{display:flex;flex-direction:column;gap:0;}
+.veh-ev{border-top:1px solid var(--bd);}
+.veh-ev-hdr{padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;}
+.veh-ev-hdr.entrada{background:var(--vc);border-left:4px solid var(--v);}
+.veh-ev-hdr.salida{background:var(--rc);border-left:4px solid var(--r);}
+.veh-ev-body{padding:9px 11px;}
 input[type=file]{display:none;}
 
 /* TOGGLE */
@@ -1636,38 +1646,86 @@ function renderEventosResumen(){
     cont.innerHTML=`<div class="vacio"><span class="vic">📋</span>Sin eventos registrados aún<br><small>Selecciona un módulo para registrar</small></div>`;
     actualizarBarMod(); actualizarDashboard(); return;
   }
-  const evOrdenados=sortEventos(todosEvs);
-  cont.innerHTML=evOrdenados.map((ev)=>{
-    const esVeh=ev.tipo==='vehiculo';
+
+  // Separar vehiculares del resto
+  const evVeh=(turno.eventos||[]).filter(e=>e.tipo==='vehiculo').map(e=>({...e,_src:'eventos'}));
+  const evResto=sortEventos([
+    ...(turno.eventos||[]).filter(e=>e.tipo!=='vehiculo').map(e=>({...e,_src:'eventos'})),
+    ...(turno.accesos||[]).map(e=>({...e,_src:'accesos'}))
+  ]);
+
+  // Agrupar vehiculares por placa, conservando orden de primera aparición
+  const placasOrden=[];
+  const porPlaca={};
+  evVeh.forEach(ev=>{
+    const placa=(ev.veh?.placa||'SIN PLACA').toUpperCase();
+    if(!porPlaca[placa]){ porPlaca[placa]=[]; placasOrden.push(placa); }
+    porPlaca[placa].push(ev);
+  });
+  // Ordenar eventos dentro de cada placa por hora ascendente
+  placasOrden.forEach(p=>{
+    porPlaca[p].sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
+  });
+
+  // Renderizar grupo vehicular por placa
+  function renderGrupoVeh(placa){
+    const evs=porPlaca[placa];
+    const eventosHTML=evs.map(ev=>{
+      const idxOrig=(turno.eventos||[]).indexOf(turno.eventos.find(e=>e.timestamp===ev.timestamp&&e.tipo===ev.tipo));
+      const mov=ev.veh?.movimiento||'';
+      const clsMov=mov==='ENTRADA'?'entrada':'salida';
+      const badgeMov=`<span class="badge ${mov==='ENTRADA'?'b-entrada':'b-salida'}">${mov}</span>`;
+      const detalleHTML=ev.veh?`
+        ${ev.veh.conductor?`<span style="font-size:12px;color:var(--gm);"><b>Conductor:</b> ${ev.veh.conductor}</span>`:''}
+        ${ev.veh.km?`<span style="font-size:12px;color:var(--gm);"><b>KM:</b> ${Number(ev.veh.km).toLocaleString()}</span>`:''}
+        ${ev.veh.destino?`<span style="font-size:12px;color:var(--gm);"><b>${mov==='ENTRADA'?'Procedencia':'Destino'}:</b> ${ev.veh.destino}</span>`:''}
+      `:'';
+      const bodyHTML=`
+        ${ev.veh?.tipo?`<div class="veh-mini-campo"><b>Tipo:</b> ${ev.veh.tipo}</div>`:''}
+        ${ev.veh?.detalle?`<div class="veh-items-box"><b>Detalle:</b> ${ev.veh.detalle}</div>`:''}
+        ${renderFotoEvento(ev)}
+      `;
+      return `<div class="veh-ev">
+        <div class="veh-ev-hdr ${clsMov}">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;">
+            ${badgeMov}
+            <span class="ev-hora">${ev.hora}</span>
+            ${detalleHTML}
+          </div>
+          <div class="ev-acts">
+            <button class="btn btn-s btn-sm" onclick="abrirEditar(${idxOrig})">✏️</button>
+            <button class="btn btn-p btn-sm" onclick="elimEvento(${idxOrig})">🗑</button>
+          </div>
+        </div>
+        <div class="veh-ev-body">${bodyHTML}</div>
+      </div>`;
+    }).join('');
+    const totalEvs=evs.length;
+    const entradas=evs.filter(e=>e.veh?.movimiento==='ENTRADA').length;
+    const salidas=evs.filter(e=>e.veh?.movimiento==='SALIDA').length;
+    return `<div class="veh-grupo">
+      <div class="veh-grupo-hdr">
+        <span class="badge b-vehiculo">🚗 Vehículo</span>
+        <span class="veh-grupo-hdr-placa">${placa}</span>
+        <span style="font-size:11px;color:var(--gm);margin-left:auto;">${entradas>0?`<span style="color:var(--v);font-weight:700;">↓${entradas} entrada${entradas>1?'s':''}</span> `:''} ${salidas>0?`<span style="color:var(--r);font-weight:700;">↑${salidas} salida${salidas>1?'s':''}</span>`:''}</span>
+      </div>
+      <div class="veh-grupo-body">${eventosHTML}</div>
+    </div>`;
+  }
+
+  // Renderizar eventos no-vehiculares
+  function renderEvResto(ev){
     const esAcceso=ev._src==='accesos';
     const esVisita=ev.tipo==='visitas';
     const esMerc=ev.tipo==='mercaderia';
     const idxOrig=esAcceso?(turno.accesos||[]).indexOf(turno.accesos.find(a=>a.timestamp===ev.timestamp&&a.tipo===ev.tipo)):
                            (turno.eventos||[]).indexOf(turno.eventos.find(e=>e.timestamp===ev.timestamp&&e.tipo===ev.tipo));
-    // Header color
-    const hClass=esVeh?'hv':esVisita||esMerc?'hvis':ev.esAlerta?'ha':'hn';
-    // Badges
+    const hClass=esVisita||esMerc?'hvis':ev.esAlerta?'ha':'hn';
     const tipoBadge=ev.tipo==='recorrido'?`<span class="badge b-recorrido">🚶 Recorrido</span>`:
-                    esVeh?`<span class="badge b-vehiculo">🚗 Vehículo</span>`:
                     esVisita?`<span class="badge b-visita">👤 Visita</span>`:
                     esMerc?`<span class="badge b-mercaderia">🚚 Mercadería</span>`:
                     `<span class="badge b-asistencia">📋 Asistencia</span>`;
-    const estadoBadge=esVeh
-      ?`<span class="badge ${ev.veh?.movimiento==='ENTRADA'?'b-entrada':'b-salida'}">${ev.veh?.movimiento||''}</span>`
-      :esAcceso?'':
-      (ev.esAlerta?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`);
-    // Ficha vehicular mini
-    const fichaVeh=esVeh&&ev.veh?`
-      <div class="veh-mini">
-        <div class="veh-mini-placa">${ev.veh.placa||''}</div>
-        ${ev.veh.tipo?`<div class="veh-mini-campo"><b>Tipo:</b> ${ev.veh.tipo}</div>`:''}
-        ${ev.veh.conductor?`<div class="veh-mini-campo"><b>Conductor:</b> ${ev.veh.conductor}</div>`:''}
-        ${ev.veh.km?`<div class="veh-mini-campo"><b>KM:</b> ${Number(ev.veh.km).toLocaleString()}</div>`:''}
-        ${ev.veh.destino?`<div class="veh-mini-campo"><b>Destino:</b> ${ev.veh.destino}</div>`:''}
-      </div>
-      ${ev.veh.detalle?`<div class="veh-items-box"><b>Detalle:</b> ${ev.veh.detalle}</div>`:''}
-    `:'';
-    // Ficha acceso mini
+    const estadoBadge=esAcceso?'':(ev.esAlerta?`<span class="badge b-alerta">⚠ ALERTA</span>`:`<span class="badge b-normal">NORMAL</span>`);
     const fichaAcceso=esAcceso?`
       <div style="font-size:14px;font-weight:700;color:var(--go);margin-bottom:4px;">${ev.nombre||''}</div>
       ${ev.empresa?`<div style="font-size:12px;color:var(--gm);">🏢 ${ev.empresa}</div>`:''}
@@ -1676,7 +1734,6 @@ function renderEventosResumen(){
       ${ev.detalle?`<div style="font-size:12px;color:var(--gm);margin-top:4px;">${ev.detalle}</div>`:''}
       ${ev.horaSalida?`<div style="font-size:12px;color:#3B6D11;font-weight:700;margin-top:4px;">🚪 Salida: ${ev.horaSalida}</div>`:''}
     `:'';
-    // Botones acción
     const botonesAcceso=esAcceso?`
       ${esVisita&&!ev.horaSalida?`<button style="background:#3B6D11;color:white;border:none;border-radius:6px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer;" onclick="marcarSalidaVisita(${idxOrig})">🚪 Salida</button>`:''}
       <button class="btn btn-s btn-sm" onclick="abrirEditarVisita(${idxOrig})">✏️</button>
@@ -1694,12 +1751,17 @@ function renderEventosResumen(){
         <div class="ev-acts">${botonesAcceso}</div>
       </div>
       <div class="ev-body">
-        ${fichaVeh}${fichaAcceso}
-        ${ev.obs&&!esVeh&&!esAcceso?`<div class="ev-obs">${ev.obs}</div>`:''}
+        ${fichaAcceso}
+        ${ev.obs&&!esAcceso?`<div class="ev-obs">${ev.obs}</div>`:''}
         ${renderFotoEvento(ev)}
       </div>
     </div>`;
-  }).join('');
+  }
+
+  // Construir HTML final: grupos veh primero, luego resto cronológico
+  const htmlVeh=placasOrden.map(renderGrupoVeh).join('');
+  const htmlResto=evResto.map(renderEvResto).join('');
+  cont.innerHTML=htmlVeh+htmlResto;
   actualizarBarMod();
   actualizarDashboard();
 }
